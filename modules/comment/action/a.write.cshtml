@@ -1,0 +1,275 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var pcode = Request["pcode"];
+
+    var cync = Session[m + "cync"];
+
+    //Session["wcode"]
+    if (Session["wcode"] == null || Session["wcode"].ToString() == "" || Session["wcode"].ToString() != pcode)
+    {
+        return;
+    }
+
+    var name = Request["name"];
+    var nic = Request["nic"];
+    
+    var content = Request.Unvalidated("content");
+    var subject = Request.Unvalidated("subject");
+    var mbruid = my["uid"];
+    var id = my["id"];
+    var pw = Request["pw"];
+    var html = Request["html"];
+    var agent = Request.UserAgent;
+    var upload = Request["upfiles"];
+    var hidden = Request["hidden"];
+    var notice = Request["notice"];
+    var adddata = Request["adddata"];
+    var iframe = Request["iframe"];
+    var skin = Request["skin"];
+    var sort = Request["sort"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var orderby = Request["orderby"];
+    var uid = Request["uid"];
+    var ip = AppState["myip"].ToString();
+    var today_cut = date["year"] + date["month"] + date["day"];
+    var getlink_url1 = "./?";
+    var getlink_url2 = _System.getLinkFilter("iframe|sort|orderby|recnum|where|keyword", iframe + "|" + sort + "|" + orderby + "|" + recnum + "|" + where + "|" + keyword);
+    var display = "0";
+
+    int my_level = Convert.ToInt32(my["level"]);
+
+    dynamic d_comment = _DB.Get_code("comment");
+    
+    if (hidden == "" || hidden == null)
+    {
+        hidden = "0";
+        display = "1";
+    }
+    if (notice == "" || notice == null)
+    {
+        notice = "0";
+    }
+
+    if (my["uid"] > 0)
+    {
+        name = my["name"];
+        nic = my["nic"];
+    }
+    else
+    {
+        name = name.Trim();
+        nic = name;
+        mbruid = "0";
+    }
+
+    if (pw != "" && pw != null)
+    {
+        pw = FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1");       // SHA encodeing
+    }
+    else
+    {
+        pw = "";
+    }
+
+    subject = (Request["subject"] != null && Request["subject"] != "" ? Request["subject"].Trim() : "");
+    
+    if (my["admin"] != "1")
+    {
+        subject = _System.htmlspecialchars(subject);
+    }
+    
+    if (subject == "")
+    {
+        subject = _System.getStrCut(_System.Strip_tags(content).Replace("&amp;", ""), 35, "...");
+    }
+    if (html == "")
+    {
+        html = "TEXT";
+    }
+
+    if (Convert.ToInt32(d_comment["perm_write"]) > my_level)
+    {
+        @_System.getLink("", "", "댓글등록 권한이 없습니다.", "")
+        return;
+    }
+
+
+    // abuses checking
+    if (d_comment["badword_action"] == "1")
+    {
+        if (d_comment["badword"] != "")
+        {
+            bool is_value = false;
+            char[] delimiter = { ',' };
+            string[] strArray = d_comment["badword"].Split(delimiter);
+
+            for (int k = 0; k < strArray.Length; k++)
+            {
+                if (subject.IndexOf(strArray[k]) > -1 || content.IndexOf(strArray[k]) > -1)
+                {
+                    if (d_comment["badword_escape"] != "")
+                    {
+                        int escape_length = strArray[k].Length;
+                        string escape_set = "";
+
+                        for (int es = 1; es <= escape_length; es++)
+                        {
+                            escape_set = escape_set + d_comment["badword_escape"];
+                        }
+                        subject = subject.Replace(strArray[k], escape_set);
+                        content = content.Replace(strArray[k], escape_set);
+                    }
+                    else
+                    {
+                        @_System.getLink("", "", "등록이 제한된 단어를 사용하셨습니다. [" + strArray[k] + "]", "")
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+
+    // modify comment
+    if (uid != null && uid != "" && uid != "0")
+    {
+        int R_num = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "uid=" + uid);
+
+        if (R_num == 0)
+        {
+            @_System.getLink("", "", "존재하지 않는 댓글입니다.", "")
+            return;
+        }
+        
+        dynamic R = _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "uid=" + uid);
+
+        if (my["id"] == "" || (my["id"] != R["id"]) && my["admin"] != "1")
+        {
+            if (pw == "")
+            {
+                @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+                return;
+            }
+            else
+            {
+                if (R["pw"] != FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1"))
+                {
+                    @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+                    return;
+                }
+            }
+        }
+
+        string UPDATE_CM_SQL = "UPDATE " + AppState["table_s_comment"] + " SET pw='" + pw + "',hidden='" + hidden + "',notice='" + notice + "',subject='" + subject + "',content='" + content + "',html='" + html + "',d_modify=getdate(),upload='" + upload + "' WHERE uid=" + R["uid"];
+        @_DB.Execute(UPDATE_CM_SQL);        
+
+        if (c != "" && c != null)
+        {
+            getlink_url1 += "r=" + r + "&c=" + c;
+        }
+        else
+        {
+            getlink_url1 += "r=" + r + "&m=" + m;
+        }        
+
+        @_System.getLink(getlink_url1 + getlink_url2, "parent.", "", "")          
+        return;
+    }
+
+    // write comment
+    else
+    {
+        if (_System.getSyncValue(cync.ToString(), 1) == null || _System.getSyncValue(cync.ToString(), 2) == null)
+        {
+            @_System.getLink("", "", "동기화코드가 지정되지 않았습니다.", "")
+            return;
+        }
+
+        string[] fdexp = _System.getSyncValue(cync.ToString(), 3).Split(',');
+        
+        if (fdexp[0] != "" && fdexp[1] != "" && _System.getSyncValue(cync.ToString(), 4) != "")
+        {
+            string cyncQue = fdexp[1] + "=" + fdexp[1] + "+1";
+
+            if (fdexp[3] != "")
+            {
+                cyncQue = cyncQue + "," + fdexp[3] + "=getdate()";
+
+                string numadd_sql = "UPDATE " + _System.getSyncValue(cync.ToString(), 4) + " SET " + cyncQue + " WHERE " + fdexp[0] + "=" + _System.getSyncValue(cync.ToString(), 2);
+
+                @_DB.Execute(numadd_sql);
+            }
+        }
+
+        string parent = _System.getSyncValue(cync.ToString(), 1) + _System.getSyncValue(cync.ToString(), 2);
+        string parentmbr = _System.getSyncValue(cync.ToString(), 5);
+
+        var minuid = _DB.GetDbData_S(AppState["table_s_comment"].ToString(), "", "min(uid)");
+
+        if (minuid != null && minuid.ToString() != "")
+        {
+            uid = (Convert.ToInt32(minuid.ToString()) - 1).ToString();
+        }
+        else
+        {
+            uid = "100000000";
+        }
+        
+        string INSERT_COMMENT_SQL = "INSERT INTO " + AppState["table_s_comment"] + " VALUES (" + uid + "," + s + ",'" + parent + "'," + parentmbr + ",'" + display + "','" + hidden + "','" + notice + "','" + name + "','" + nic + "',";
+        INSERT_COMMENT_SQL = INSERT_COMMENT_SQL + mbruid + ",'" + id + "','" + pw + "','" + subject + "','" + content + "','" + html + "',0,0,0,0,0,0,0,'" + date["insert"] + "','','','" + upload + "','" + ip + "','" + agent + "','" + cync + "','','" + adddata + "')";
+        string UPDATE_NUMINFO_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET comment=comment+1 WHERE date='" + today_cut + "' AND site=" + s;
+
+        @_DB.Execute(INSERT_COMMENT_SQL);
+        @_DB.Execute(UPDATE_NUMINFO_SQL);
+
+
+        if (_HS["usescode"].ToString() == "1")
+        {
+            getlink_url1 += "r=" + r + "&";
+        }
+
+        if (c != null && c != "")
+        {
+            getlink_url1 += "c=" + c;
+        }
+        else
+        {
+            getlink_url1 += "m=" + m;
+        }
+
+        Session["wcode"] = null;
+
+        @_System.getLink(getlink_url1 + getlink_url2, "parent.", "", "")
+        return;
+	}
+}

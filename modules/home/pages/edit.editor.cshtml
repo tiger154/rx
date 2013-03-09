@@ -1,0 +1,125 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    
+    var typeset = new Dictionary<string, string>();
+
+    var g = PageData[0];
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _HP = PageData[13];
+    int p = PageData[4];
+    var r = PageData[12];
+
+    string droparea = Request["droparea"];
+    string xtarget = Request["xtarget"];
+    string reply = Request["reply"];
+
+    string xpwd = "";
+    string pwd1 = "";
+    
+    if(xtarget == "MENU" || xtarget == "PAGE") {
+        xpwd = "./pages/imge/";
+        pwd1 = "";
+    }
+    else {
+        xpwd = "./files/_etc/";
+        pwd1 = "etc";
+    }
+}
+
+<div id="editbox">
+
+
+	<form name="writeForm" method="post" onsubmit="return writeCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+
+	<div class="iconbox">
+		<a class="hand" onclick="@g["s"]/?r=@r&m=admin&module=filemanager&front=main&fileupload=Y&iframe=Y&pwd=@xpwd&pwd1=@pwd1');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" />이미지 첨부하기</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a class="hand" onclick="OpenWindow('@g["s"]/?r=@r&system=popup.image&folder=@xpwd&iframe=Y');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" />이미지 불러오기</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('layout');">레이아웃</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('table');">테이블</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('box');">박스</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('char');">특수문자</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('link');">링크</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+
+		<a href="#." onclick="ToolCheck('icon');">아이콘</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('flash');">플래쉬</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('movie');">동영상</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('html');">HTML</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="frames.editFrame.ToolboxShowHide(0);" /><img src="@g["img_core"]/_public/ico_edit.gif" alt="" />편집</a>
+	</div>
+
+	<div>
+	<input type="hidden" name="html" id="editFrameHtml" value="HTML" />
+	<input type="hidden" name="content" id="editFrameContent" value="" />
+	<iframe name="editFrame" id="editFrame" src="" width="100%" height="565" frameborder="0" scrolling="no"></iframe>
+	</div>
+	<br />
+	<div class="btnbox">
+	<input type="button" value=" 창닫기 " class="btngray" onclick="top.close();" />
+
+    @if(droparea!=null && droparea !="") {
+        <input type="submit" value=" 소스적용하기 " class="btnblue" />
+    }
+	</div>
+	</form>
+
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function ToolCheck(compo)
+{
+	frames.editFrame.showCompo();
+	frames.editFrame.EditBox(compo);
+}
+function writeCheck(f)
+{
+	frames.editFrame.getEditCode(f.content,f.html);
+
+	if (f.content.value == '')
+	{
+		alert('내용을 입력해 주세요.       ');
+		frames.editFrame.getEditFocus();
+		return false;
+	}
+
+	opener.getId('@droparea').value = f.content.value;
+	top.close();
+
+	return false;
+}
+function editStart()
+{
+    @if (droparea != null && droparea != "")
+    {
+        @Html.Raw("document.writeForm.content.value = opener.getId('" + droparea + "').value;")
+    }
+	getId('editFrame').src = '?r=@r&m=editor&toolbox=Y&reSize=N';
+	document.title = "편집기";
+	document.body.style.padding = '5px';
+	document.body.style.background = '#333333';
+	top.resizeTo(950,765);
+}
+window.onload = editStart;
+//]]>
+</script>

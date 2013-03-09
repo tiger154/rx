@@ -1,0 +1,360 @@
+﻿@using System.Collections
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var price = Request["price"];
+    var how = Request["how"];
+    var html = Request["html"];
+    var act = Request["act"];
+    var subject = Request["subject"];
+    string content = Request.Unvalidated("content");
+    var comment = Request["comment"];
+    var memo = Request["memo"];
+    var year1 = Request["year1"];
+    var month1 = Request["month1"];
+    var day1 = Request["day1"];
+    var hour1 = Request["hour1"];
+    var min1 = Request["min1"];
+    var all = Request["all"];
+    var _WHERE = Request["_WHERE"];
+    var mbrmembers = Request["mbrmembers"];
+    var pointType = Request["pointType"];
+    var auth = Request["auth"];
+    var sosok = Request["sosok"];
+    var level = Request["level"];
+    var upload = Request["upload"];
+    var mailing = Request["mailing"];
+        
+    @_System.checkAdmin(my["admin"], 0)
+    
+    string send_time = year1 + month1 + day1 + hour1 + min1 + "00";
+    
+    int i = 0;
+    int j = 0;
+
+    ArrayList MEMBERS = new ArrayList();
+
+    if(price != null && price != "")
+    {
+        if(how != "+")
+        {
+            price = "-" + price;
+        }
+    }
+    
+    if (act =="send_paper")
+    {
+        html = "TEXT";    
+    }
+    
+    
+    if (act == "send_email") 
+    {        
+        // no action..
+    }
+    
+    if (all != null && all != "")
+    {
+        string RCD_sql = "SELECT * FROM " + AppState["table_s_mbrdata"] + " " + (_System.stripslashes(_WHERE)).Trim() + " ORDER BY memberuid desc";
+        
+        foreach (var M2 in _DB.Query(RCD_sql))
+        {   
+            dynamic M1 = new Dictionary<string, object>();
+
+            M1 = _DB.getVar(M1, AppState["table_s_mbrid"], "uid=" + M2["memberuid"]);
+            M1 = _DB.getVar(M1, AppState["table_s_mbrdata"], "memberuid=" + M1["uid"]);
+
+            MEMBERS.Add(M1);
+        }        
+    }   
+    else 
+    {         
+        foreach (var val in mbrmembers.Split(','))
+        {
+            dynamic M1 = new Dictionary<string, object>();
+
+            M1 = _DB.getVar(M1, AppState["table_s_mbrid"], "uid=" + val);
+
+            if (_DB.GetDbData_Count(AppState["table_s_mbrdata"].ToString(), "memberuid=" + M1["uid"]) == 0)
+            {
+                continue;
+            }
+
+            M1 = _DB.getVar(M1, AppState["table_s_mbrdata"], "memberuid=" + M1["uid"]);
+            MEMBERS.Add(M1);
+        }
+    }
+    
+    
+    if (act.Substring(0,4) == "dump")
+    {
+        
+        Response.AddHeader("Content-Disposition", string.Format("attachment; filename=members_" + act.Replace("dump_", "") + "_" + date["today"] + ".xls"));
+        Response.ContentType = "application/vnd.ms-excel";
+    
+        @:<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        @:<table border="1">
+            
+        if (act == "dump_alldata")
+        {
+            @:<tr>
+            @:<td>Id</td>
+            @:<td>Name</td>
+            @:<td>Nicname</td>
+            @:<td>Email</td>
+            @:<td>Homepage</td>
+            @:<td>Sex</td>
+            @:<td>Birthday</td>
+            @:<td>Birthtype</td>
+            @:<td>Tel1</td>
+            @:<td>Tel2</td>
+            @:<td>Zipcode</td>
+            @:<td>Address</td>
+            @:<td>Job</td>
+            @:<td>Marrday</td>
+            @:<td>Point</td>
+            @:<td>UsePoint</td>
+            @:<td>Date</td>
+            @:</tr>
+        }
+    }
+
+    foreach (dynamic M in MEMBERS)
+    {   
+        // Member Auth
+        if (act == "tool_auth")
+        {
+            string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET auth='" + auth + "' WHERE memberuid=" + M["memberuid"];
+            @_DB.Execute(UPDATE_MBR_SQL);
+        }
+        // Member Group
+        if (act == "tool_sosok")
+        {
+            if (sosok != M["sosok"].ToString())
+            {
+                string UPDATE_MBRD_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET sosok=" + sosok + " WHERE memberuid=" + M["memberuid"];
+                string UPDATE_MBRG_SQL1 = "UPDATE " + AppState["table_s_mbrgroup"] + " SET num=num-1 WHERE uid=" + M["sosok"];
+                string UPDATE_MBRG_SQL2 = "UPDATE " + AppState["table_s_mbrgroup"] + " SET num=num+1 WHERE uid=" + sosok;
+
+                @_DB.Execute(UPDATE_MBRD_SQL);
+                @_DB.Execute(UPDATE_MBRG_SQL1);
+                @_DB.Execute(UPDATE_MBRG_SQL2);
+            }
+        }
+        // Member Level
+        if (act == "tool_level")
+        {
+            if (level != M["level"].ToString())
+            {
+                string UPDATE_MBRDT_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET level = " + level + " WHERE memberuid=" + M["memberuid"];
+                string UPDATE_MBRLV_SQL1 = "UPDATE " + AppState["table_s_mbrlevel"] + " SET num=num-1 WHERE uid=" + M["level"];
+                string UPDATE_MBRLV_SQL2 = "UPDATE " + AppState["table_s_mbrlevel"] + " SET num=num+1 WHERE uid=" + level;
+                
+                @_DB.Execute(UPDATE_MBRDT_SQL);
+                @_DB.Execute(UPDATE_MBRLV_SQL1);
+                @_DB.Execute(UPDATE_MBRLV_SQL2);
+            }
+        }
+        // Member Delete
+        if (act == "tool_delete")
+        {
+            string DELETE_MBRID_SQL = "DELETE FROM " + AppState["table_s_mbrid"] + " WHERE uid=" + M["memberuid"];
+            string DELETE_MBRDT = "DELETE FROM " + AppState["table_s_mbrdata"] + " WHERE memberuid=" + M["memberuid"];
+            string DELETE_MBRCP_SQL = "DELETE FROM " + AppState["table_s_mbrcomp"] + " WHERE memberuid=" + M["memberuid"];
+            string DELETE_PP_SQL = "DELETE FROM " + AppState["table_s_paper"] + " WHERE my_mbruid=" + M["memberuid"];
+            string DELETE_PT_SQL = "DELETE FROM " + AppState["table_s_point"] + " WHERE my_mbruid=" + M["memberuid"];
+            string DELETE_SCR_SQL = "DELETE FROM " + AppState["table_s_scrap"] + " WHERE mbruid=" + M["memberuid"];
+            string DELETE_SB_SQL = "DELETE FROM " + AppState["table_s_simbol"] + " WHERE mbruid=" + M["memberuid"];
+            string DELETE_FRD_SQL = "DELETE FROM " + AppState["table_s_friend"] + " WHERE my_mbruid=" + M["memberuid"] + " or by_mbruid=" + M["memberuid"];
+            string UPDATE_MBRLV_SQL = "UPDATE "+AppState["table_s_mbrlevel"]+" SET num=num-1 WHERE uid=" + M["level"];
+            string UPDATE_MBRGR_SQL = "UPDATE "+AppState["table_s_mbrgroup"]+" SET num=num-1 WHERE uid=" + M["sosok"];
+                        
+            @_DB.Execute(DELETE_MBRID_SQL);
+            @_DB.Execute(DELETE_MBRDT);
+            @_DB.Execute(DELETE_MBRCP_SQL);
+            @_DB.Execute(DELETE_PP_SQL);
+            @_DB.Execute(DELETE_PT_SQL);
+            @_DB.Execute(DELETE_SCR_SQL);
+            @_DB.Execute(DELETE_SB_SQL);
+            @_DB.Execute(DELETE_FRD_SQL);
+            @_DB.Execute(UPDATE_MBRLV_SQL);
+            @_DB.Execute(UPDATE_MBRGR_SQL);            
+            
+            string photoPath = g["path_root_ps"] + g["path_var"] + "simbol\\" + my["photo"];
+            string outTxtPath = g["path_root_ps"] + g["path_tmp"] + "out\\" + my["id"] + ".txt";
+            
+            if (File.Exists(photoPath)) {
+                File.Delete(photoPath);
+            }
+
+            File.WriteAllText(outTxtPath, date["totime"].ToString(), System.Text.Encoding.UTF8);
+        }
+        // Member Out
+        if (act == "tool_out")
+        {
+            string UPDATE_MBRDT_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET auth=4 WHERE memberuid=" + M["memberuid"];
+            @_DB.Execute(UPDATE_MBRDT_SQL);
+        }
+        // Receive Point
+        if (act == "give_point")
+        {
+            if(pointType == null || pointType == "") 
+            {
+                pointType = "point";
+            }            
+            
+            string UPDATE_MBRDT_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET " + pointType + "=" + pointType + "+" + price +
+                " WHERE memberuid=" + M["memberuid"];
+            string INSERT_PT_SQL = "INSERT INTO " + AppState["table_s_" + pointType] +
+                "(my_mbruid,by_mbruid,price,content,d_regis) VALUES('" + M["memberuid"] + "','0','" + price + "','" + comment + "',getdate())";
+  
+            @_DB.Execute(UPDATE_MBRDT_SQL);
+            @_DB.Execute(INSERT_PT_SQL);
+        }
+        // Sending Paper
+        if (act == "send_paper")
+        {
+            string QKEY = "parent,my_mbruid,by_mbruid,inbox,content,html,upload,d_regis,d_read";
+            string QVAL = "'0','" + M["memberuid"] + "','" + my["uid"] + "','1','" + memo + "','" + html + "','" + upload + "','" + date["insert"] + "',''";
+
+            string INSERT_PP_SQL = "INSERT INTO " + AppState["table_s_paper"] + "(" + QKEY + ") VALUES(" + QVAL + ")";
+            string UPDATE_MBRDT_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET is_paper=1 WHERE memberuid = " + M["memberuid"];
+
+            @_DB.Execute(INSERT_PP_SQL);
+            @_DB.Execute(UPDATE_MBRDT_SQL);
+        }
+
+        // Sending Email
+        if (act == "send_email")
+        {
+            string subjectX = "";
+            string contentX = "";
+
+            if ((mailing != null && mailing != "") && (M["mailing"] == null || M["mailing"] == ""))
+            {
+                continue;
+            }
+
+            subjectX = subject.Replace("{NAME}", M["name"]);
+            subjectX = subjectX.Replace("{NICK}", M["nic"]);
+            subjectX = subjectX.Replace("{ID}", M["id"]);
+            subjectX = subjectX.Replace("{EMAIL}", M["email"]);
+
+            contentX = content.Replace("{NAME}", M["name"]);
+            contentX = contentX.Replace("{NICK}", M["nic"]);
+            contentX = contentX.Replace("{ID}", M["id"]);
+            contentX = contentX.Replace("{EMAIL}", M["email"]);
+
+            if (_System.getSendMail(my["email"], M["email"], subjectX, contentX, html) == false)
+            {
+                string UPDATE_MBRDT_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET smail=1 WHERE memberuid = " + M["memberuid"];
+                @_DB.Execute(UPDATE_MBRDT_SQL);
+
+                j++;
+            }
+
+            i++;
+        }
+
+        // Email Extraction
+        if (act == "dump_email")
+        {
+            @:<tr>
+            @:<td>@M["name"]</td>
+            @:<td>@M["email"]</td>
+            @:<td>'@M["name"]'<R["id"]></td>
+            @:</tr>
+        }
+        // Info Extraction
+        if (act == "dump_tel")
+        {
+            @:<tr>
+            @:<td>@M["name"]</td>
+            @:<td>@M["tel1"]</td>
+            @:<td>@M["tel2"]</td>
+            @:</tr>
+        }
+        // DM Extraction
+        if (act == "dump_address")
+        {
+            @:<tr>
+            @:<td>@M["name"]</td>
+            @:<td>@M["zip"].Substring(0, 3)-@M["zip"].Substring(3, 3)</td>
+            @:<td>@M["addr1"] @M["addr2"]</td>
+            @:</tr>
+        }
+        // All Extraction
+        if (act == "dump_alldata")
+        {
+            @:<tr>
+            @:<td>@M["id"]</td>
+            @:<td>@M["name"]</td>
+            @:<td>@M["nic"]</td>
+            @:<td>@M["email"]</td>
+            @:<td>@M["home"]</td>
+            @:<td>@Html.Raw(_System.isEqual(M["sex"], 1, "남", "여"))</td>
+            @:<td>@M["birth1"]@M["birth2"]
+            @:<td>@Html.Raw(_System.isEqual(M["birthtype"], 1, "음", "양"))</td>
+            @:<td>@M["tel1"]</td>
+            @:<td>@M["tel2"]</td>
+            @:<td>@M["zip"].Substring(0, 3)-@M["zip"].Substring(3, 3)</td>
+            @:<td>@M["addr1"] @M["addr2"]</td>
+            @:<td>@M["job"]</td>
+            @:<td>@M["marr1"]@M["marr2"]</td>
+            @:<td>@M["point"]</td>
+            @:<td>@M["usepoint"]</td>
+            @:<td>@M["d_regis"].Substring(0, 8)</td>
+            @:</tr>
+        }
+
+    }
+
+    if (act.Substring(0, 4) == "dump")
+    {
+        @:</table>
+        return;
+    }
+
+    if (act == "send_email")
+    {
+        @_System.getLink("reload", "parent.", "총 " + i.ToString() + "명중 " + (i - j).ToString() + "명에게 전송되었습니다.", "")
+        return;
+    }
+    else if (act == "send_paper")
+    {
+        @_System.getLink("reload", "parent.", "전송이 완료되었습니다.", "")
+        return;
+    }
+    else
+    {
+        @_System.getLink("reload", "parent.", "", "")
+        return;
+    }
+
+}

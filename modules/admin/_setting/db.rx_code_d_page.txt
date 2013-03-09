@@ -1,0 +1,9 @@
+﻿CREATE TABLE rx_code_d_page ( 
+uid  int  identity(1,1)  NOT NULL , 
+module  nvarchar(100)   NOT NULL , 
+memberuid  nvarchar(100)   NOT NULL , 
+id  nvarchar(100)   NOT NULL , 
+id_value  nvarchar(255)   NOT NULL , 
+step  int   NOT NULL ,
+PRIMARY KEY (uid)
+);

@@ -1,0 +1,167 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    var id = Request["id"];
+    var uid = Request["uid"];
+    var source = Request.Unvalidated("source");
+    var mobile = Request.Unvalidated("mobile");
+    var css = Request.Unvalidated("css");
+    var js = Request.Unvalidated("js");
+    var backgo = Request["backgo"];
+    var iframe = Request["iframe"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    string vfile = g["path_root_ps"] + g["path_page"] + id;
+    string widget_id = id;
+
+    if (type == "menu")
+    {
+        vfile = g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", Convert.ToInt32(uid));
+        widget_id = "menu\\" + String.Format("{0:00000}", Convert.ToInt32(uid));
+    }
+
+    //.cshtml
+    File.WriteAllText(vfile + ".cshtml", source.Trim(), System.Text.Encoding.UTF8);
+
+    //.mobile.cshtml
+    if (mobile != null && mobile.Trim() != "")
+    {
+        File.WriteAllText(vfile + ".mobile.cshtml", mobile.Trim(), System.Text.Encoding.UTF8);
+    }
+    else
+    {
+        if (File.Exists(vfile + ".mobile.cshtml"))
+        {
+            File.Delete(vfile);
+        }
+    }
+
+    //.css
+    if (css != null && css.Trim() != "")
+    {
+        File.WriteAllText(vfile + ".css", css.Trim(), System.Text.Encoding.UTF8);
+    }
+    else
+    {
+        if (File.Exists(vfile + ".css"))
+        {
+            File.Delete(vfile);
+        }
+    }
+
+    //.js
+    if (js != null && js.Trim() != "")
+    {
+        File.WriteAllText(vfile + ".js", js.Trim(), System.Text.Encoding.UTF8);
+    }
+    else
+    {
+        if (File.Exists(vfile + ".js"))
+        {
+            File.Delete(vfile);
+        }
+    }
+
+
+    string cachefile_pc = vfile.Replace(".cshtml", ".cache");
+    string cachefile_mobile = (vfile + ".mobile").Replace(".cshtml", ".cache");
+    
+    if (File.Exists(cachefile_pc))
+    {
+        File.Delete(cachefile_pc);
+    }
+
+    if (File.Exists(cachefile_mobile))
+    {
+        File.Delete(cachefile_mobile);
+    }
+
+    string r_str = "";
+
+    if (r != "" && r != null)
+    {
+        r_str = "r=" + r + "&";
+    }
+
+    if (backgo != null && backgo != "")
+    {
+        if (type == "menu")
+        {
+            string catst = "";
+
+            Session["arr_uid"] = null;
+            @_Menu.getMenuCodeToPath(AppState["table_s_menu"].ToString(), uid, 0)
+ 
+            foreach (string val in Session["arr_uid"].ToString().Split('|'))
+            {
+                if (val == "")
+                {
+                    continue;
+                }
+
+                catst += val.Split(',')[2] + "/";       //id값 저장 string
+            }
+
+            catst = catst.Substring(0, catst.Length - 1);
+
+            if (iframe == "Y")
+            {
+                @_System.getLink(_System.RW("c=" + catst, g["r"], _HS), "parent.parent.", "", "")
+                return;
+            }
+            else
+            {
+                @_System.getLink(_System.RW("c=" + catst, g["r"], _HS), "parent.", "", "")
+                return;
+            }
+        }
+         else
+         {
+             if (iframe == "Y")
+             {
+                @_System.getLink(_System.RW("mod=" + id, g["r"], _HS), "parent.parent.", "", "")
+                 return;
+             }
+             else
+             {
+                            
+                @_System.getLink(_System.RW("mod=" + id, g["r"], _HS), "parent.", "", "")
+                 return;
+             }
+         }
+    }
+    else
+    {
+        @_System.getLink("reload", "parent.", "", "")                                                             
+        return;
+    }                                 
+
+}

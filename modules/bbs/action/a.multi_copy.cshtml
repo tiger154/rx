@@ -1,0 +1,352 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var post_members = Request["post_members"];
+    var inc_comment = Request["inc_comment"];
+    var inc_upload = Request["inc_upload"];
+    var site = Request["site"];
+    var bbsuid = Request["bbsuid"];
+    var type = Request["type"];    
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    dynamic R = null;
+    dynamic B = null;
+
+    string d_regis = "";
+    string str_month = "";
+    string str_today = "";
+    string R_upload = "";
+
+    int gid = 0;
+
+    B = _DB.Get_module_data(AppState["table_" + m + "list"].ToString(), "uid", bid);
+    d_regis = date["totime"].ToString("yyyy-MM-dd HHmmss");
+
+    string[] post_mem = post_members.Split(',');
+
+    foreach (string val in post_mem)
+    {
+        int R_comment = 0;
+        int R_oneline = 0;
+        R = _DB.GetDbData_M(AppState["table_" + m + "data"].ToString(), "uid=" + val);
+
+        if (R == null)
+        {
+            continue;
+        }
+
+        string mingid = _DB.GetDbData_S(AppState["table_bbsdata"].ToString(), "", "min(convert(decimal(10,2),gid))").ToString();
+
+        if (mingid != null && mingid != "")
+        {
+            if (mingid.Contains("."))
+            {
+                mingid = mingid.Split('.')[0];
+            }
+            gid = Convert.ToInt32(mingid) - 1;
+        }
+
+        if (inc_comment != "1")
+        {
+            R_comment = 0;
+            R_oneline = 0;
+        }
+        else
+        {
+            R_comment = R["comment"];
+            R_oneline = R["oneline"];
+        }
+        if (inc_upload != "1")
+        {
+            R_upload = "";
+        }
+        else
+        {
+            R_upload = R["upload"];
+        }
+
+        string month = R["d_regis"].ToString("yyyyMM");
+        string today = R["d_regis"].ToString("yyyyMMdd");
+
+        //게시물복사
+        string QKEY = "site,gid,bbs,bbsid,depth,parentmbr,hidden,display,notice,name,nic,mbruid,id,pw,category,subject,content,html,tag,";
+        QKEY += "hit,down,comment,oneline,trackback,score1,score2,singo,point1,point2,point3,point4,d_regis,d_modify,d_comment,d_trackback,upload,ip,agent,sns,adddata";
+        string QVAL = "'" + R["site"] + "','" + gid + "','" + B["uid"] + "','" + B["id"] + "','" + R["depth"] + "','" + R["parentmbr"] + "','" + R["hidden"] + "','" + R["display"] + "','" + R["notice"] + "','" +
+            _System.addslashes(R["name"]) + "','" + _System.addslashes(R["nic"]) + "','" + R["mbruid"] + "','" + R["id"] + "','" + R["pw"] + "','" + _System.addslashes(R["category"]) + "','" + _System.addslashes(R["subject"]) + "','" +
+            _System.addslashes(R["content"]) + "','" + R["html"] + "','" + _System.addslashes(R["tag"]) + "','" +
+            R["hit"] + "','" + R["down"] + "','" + R_comment + "','" + R_oneline + "','0','" + R["score1"] + "','" + R["score2"] + "','" + R["singo"] + "','" + R["point1"] + "','" + R["point2"] + "','" + R["point3"] + "','" + R["point4"] + "','" +
+            R["d_regis"].ToString("yyyy-MM-dd HH:mm:ss") + "','" + R["d_modify"].ToString("yyyy-MM-dd HH:mm:ss") + "','" + R["d_comment"].ToString("yyyy-MM-dd HH:mm:ss") + "','" + R["d_trackback"].ToString("yyyy-MM-dd HH:mm:ss") + "','" + R["upload"] + "','" + R["ip"] + "','" + R["agent"] + "','" + R["sns"] + "','" + _System.addslashes(R["adddata"]) + "'";
+        string INSERT_DT_SQL = "INSERT INTO " + AppState["table_" + m + "data"] + " (" + QKEY + ") VALUES (" + QVAL + ")";
+        string INSERT_IDX_SQL = "INSERT INTO " + AppState["table_" + m + "idx"] + " (site,notice,bbs,gid) VALUES ('" + R["site"] + "','" + R["notice"] + "','" + B["uid"] + "','" + gid + "')";
+        string UPDATE_LIST_SQL = "UPDATE " + AppState["table_" + m + "list"] + " SET num_r=num_r+1 WHERE uid=" + B["uid"];
+
+        @_DB.Execute(INSERT_DT_SQL);
+        @_DB.Execute(INSERT_IDX_SQL);
+        @_DB.Execute(UPDATE_LIST_SQL);
+
+
+        if (str_month.Contains("[" + month + "]") == false)
+        {
+            if (_DB.GetDbData_Count(AppState["table_" + m + "month"].ToString(), "date='" + month + "' and site='" + R["site"] + "' and bbs='" + B["uid"] + "'") == 0)
+            {
+                string INSERT_M_SQL = "INSERT INTO " + AppState["table_" + m + "month"] + " (date,site,bbs,num) VALUES ('" + month + "','" + R["site"] + "','" + B["uid"] + "','1')";
+                @_DB.Execute(INSERT_M_SQL);
+                str_month += "[" + month + "]";
+            }
+        }
+        else
+        {
+            string UPDATE_M_SQL = "UPDATE " + AppState["table_" + m + "month"] + " SET num=num+1 WHERE date='" + month + "' and site='" + R["site"] + "' and bbs='" + B["uid"] + "'";
+            @_DB.Execute(UPDATE_M_SQL);
+        }
+
+        if (str_today.Contains("[" + today + "]") == false)
+        {
+            if (_DB.GetDbData_Count(AppState["table_" + m + "day"].ToString(), "date=" + today + " and site=1 and bbs=" + B["uid"]) == 0)
+            {
+                string INSERT_D_SQL = "INSERT INTO " + AppState["table_" + m + "day"] + " (date,site,bbs,num) VALUES ('" + today + "','" + R["site"] + "','" + B["uid"] + "','1')";
+                @_DB.Execute(INSERT_D_SQL);
+                str_today += "[" + today + "]";
+            }
+        }
+        else
+        {
+            string UPDATE_D_SQL = "UPDATE " + AppState["table_" + m + "day"] + " SET num=num+1 WHERE date='" + today + "' and site=" + R["site"] + " and bbs=" + B["uid"];
+            @_DB.Execute(UPDATE_D_SQL);
+        }
+
+        string NOWUID = "";
+        string LASTUID = _DB.GetDbData_S(AppState["table_bbsdata"].ToString(), "", "max(uid)").ToString();
+
+        if (LASTUID != "")
+        {
+            NOWUID = LASTUID;
+        }
+        else
+        {
+            NOWUID = uid;
+        }
+
+
+        //댓글복사
+        if (inc_comment == "1")
+        {
+            if (R_comment != 0)
+            {
+                string CCD_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", "parent='" + m + R["uid"] + "'", "uid", "desc", 0, "");
+                foreach (var _C in _DB.Query(CCD_sql))
+                {
+                    string comment_minuid = _DB.GetDbData_S(AppState["table_s_comment"].ToString(), "", "min(uid)").ToString();
+                    int comment_uid = 100000000;
+
+                    if (comment_minuid != null && comment_minuid != "" && Convert.ToInt32(comment_minuid) > 0)
+                    {
+                        comment_uid = Convert.ToInt32(comment_minuid) - 1;
+                    }
+
+                    string comment_cync = "[" + m + "][" + NOWUID + "][uid,comment,oneline,d_comment][" + AppState["table_" + m + "data"] + "][" + _C["parentmbr"] + "][m:" + m + ",bid:" + B["id"] + ",uid:" + NOWUID + "]";
+                    string QKEY_C = "uid,site,parent,parentmbr, display, hidden,notice,name,nic,mbruid,id,pw,subject,content,html,";
+                    QKEY_C += "hit,down,oneline,score1,score2,singo,d_regis,d_modify,d_oneline,upload,ip,agent,cync,sns, adddata";
+                    string QVAL_C = "'" + comment_uid + "','" + _C["site"] + "','" + m + NOWUID + "','" + _C["parentmbr"] + "','" + _C["display"] + "','" + _C["hidden"] + "','" + _C["notice"] + "','" + _System.addslashes(_C["name"]) + "','" + _System.addslashes(_C["nic"]) + "','" +
+                        _C["mbruid"] + "','" + _C["id"] + "','" + _C["pw"] + "','" + _System.addslashes(_C["subject"]) + "','" + _System.addslashes(_C["content"]) + "','" + _C["html"] + "','" +
+                        _C["hit"] + "','" + _C["down"] + "','" + _C["oneline"] + "','" + _C["score1"] + "','" + _C["score2"] + "','" + _C["singo"] + "','" + _C["d_regis"].ToString("yyyy-MM-dd HH:mm:ss") + "','" + _C["d_modify"].ToString("yyyy-MM-dd HH:mm:ss") + "','" + _C["d_oneline"].ToString("yyyy-MM-dd HH:mm:ss") + "','" +
+                        _C["upload"] + "','" + _C["ip"] + "','" + _C["agent"] + "','" + comment_cync + "','" + _C["sns"] + "','" + _System.addslashes(_C["adddata"]) + "'";
+                    string INSERT_CMT_SQL = "INSERT INTO " + AppState["table_s_comment"] + " (" + QKEY_C + ") VALUES (" + QVAL_C + ")";
+                    string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET comment=comment+1 WHERE date='" + _C["d_regis"].ToString("yyyyMMdd") + "'";
+
+                    @_DB.Execute(INSERT_CMT_SQL);
+                    @_DB.Execute(UPDATE_NUM_SQL);
+
+                    if (_C["oneline"] != 0)
+                    {
+                        string ONELINE_sql = "SELECT * FROM " + AppState["table_s_oneline"].ToString() + " WHERE parent='" + _C["uid"] + "'";
+                        foreach (var _O in _DB.Query(ONELINE_sql))
+                        {
+                            string oneline_maxuid = _DB.GetDbData_S(AppState["table_s_oneline"].ToString(), "", "max(uid)").ToString();
+                            int oneline_uid = 1; ;
+
+                            if (oneline_maxuid != null && oneline_maxuid != "")
+                            {
+                                oneline_uid = Convert.ToInt32(oneline_maxuid) + 1;
+                            }
+
+                            string QKEY_O = "uid,site,parent,parentmbr,hidden,name,nic,mbruid,id,content,html,singo,d_regis,d_modify,ip,agent,adddata";
+                            string QVAL_O = "'" + oneline_uid + "','" + _O["site"] + "','" + comment_uid + "','" + _O["parentmbr"] + "','" + _O["hidden"] + "','" + _System.addslashes(_O["name"]) + "','" + _System.addslashes(_O["nic"]) + "','" + _O["mbruid"] + "','" +
+                                _O["id"] + "','" + _System.addslashes(_O["content"]) + "','" + _O["html"] + "','" + _O["singo"] + "','" + _O["d_regis"].ToString("yyyyMMdd HH:mm:ss") + "','" + _O["d_modify"].ToString("yyyyMMdd HH:mm:ss") + "','" + _O["ip"] + "','" + _O["agent"] + "','" +
+                                _System.addslashes(_O["adddata"]) + "'";
+                            string INSERT_OL_SQL = "INSERT INTO " + AppState["table_s_oneline"] + " (" + QKEY_O + ") VALUES (" + QVAL_O + ")";
+                            string UPDATE_NUM_SQL2 = "UPDATE " + AppState["table_s_numinfo"] + " SET oneline=oneline+1 WHERE date='" + _O["d_regis"].ToString("yyyyMMdd") + "' and site='" + _O["site"] + "'";
+
+                            @_DB.Execute(INSERT_OL_SQL);
+                            @_DB.Execute(UPDATE_NUM_SQL2);
+                        }
+                    }
+
+                    if (inc_upload == "1" && _C["upload"] != null && _C["upload"] != "")
+                    {
+                        dynamic cmtU = null;
+
+                        string[] UPFILES = _System.getArrayString(_C["upload"]);
+                        string c_tmpupload = "";
+                        string _content = _C["content"];
+
+                        foreach (string _val in UPFILES)
+                        {
+                            if (_val.Trim() == "")
+                            {
+                                continue;
+                            }
+
+                            cmtU = _DB.GetDbData_M(AppState["table_s_upload"].ToString(), "uid=" + _val);
+
+                            if (cmtU == null)
+                            {
+                                continue;
+                            }
+
+                            string c_tmpname = FormsAuthentication.HashPasswordForStoringInConfigFile(cmtU["tmpname"], "SHA1") + d_regis.Substring(11, 6) + "." + _System.getExt(cmtU["tmpname"]);
+                            string c_thumbna = FormsAuthentication.HashPasswordForStoringInConfigFile(cmtU["thumbname"], "SHA1") + d_regis.Substring(11, 6) + "." + _System.getExt(cmtU["thumbname"]); ;
+                            string c_tmpFile = g["path_root_ps"] + g["path_file"] + cmtU["folder"] + "\\" + cmtU["tmpname"];
+                            string c_saveTmp = g["path_root_ps"] + g["path_file"] + cmtU["folder"] + "\\" + c_tmpname;
+                            string c_thumbFile = g["path_root_ps"] + g["path_file"] + cmtU["folder"] + "\\" + cmtU["thumbname"];
+                            string c_saveThumb = g["path_root_ps"] + g["path_file"] + cmtU["folder"] + "\\" + c_thumbna;
+
+                            File.Copy(c_tmpFile, c_saveTmp);
+
+                            if (_System.getFileType(cmtU["thumbname"]) == 2)
+                            {
+                                File.Copy(c_thumbFile, c_saveThumb);
+                            }
+
+                            string c_upload_mingid = _DB.GetDbData_S(AppState["table_s_upload"].ToString(), "", "min(convert(decimal(10,2),gid))").ToString();
+                            int c_upload_gid = 99999999;
+
+                            if (c_upload_mingid != null && c_upload_mingid != "")
+                            {
+                                if (c_upload_mingid.Contains("."))
+                                {
+                                    c_upload_mingid = c_upload_mingid.Split('.')[0];
+                                }
+                                c_upload_gid = Convert.ToInt32(c_upload_mingid) - 1;
+                            }
+
+                            string U_QKEY = "gid,hidden,tmpcode,site,mbruid,type,ext,fserver,url,folder,name,tmpname,thumbname,size,width,height,caption,down,d_regis,d_update,cync";
+                            string U_QVAL = "'" + c_upload_gid + "','" + cmtU["hidden"] + "','','" + cmtU["site"] + "','" + cmtU["mbruid"] + "','" + cmtU["type"] + "','" + cmtU["ext"] + "','" + cmtU["fserver"] + "','" + cmtU["url"] + "','" + cmtU["folder"] + "',";
+                            U_QVAL += "'" + _System.addslashes(cmtU["name"]) + "','" + c_tmpname + "','" + c_thumbna + "','" + cmtU["size"] + "','" + cmtU["width"] + "','" + cmtU["height"] + "','" + _System.addslashes(cmtU["caption"]) + "',";
+                            U_QVAL += "'" + cmtU["down"] + "','" + cmtU["d_regis"].ToString("yyyyMMdd HH:mm:ss") + "','" + cmtU["d_update"].ToString("yyyyMMdd HH:mm:ss") + "',''";
+                            string INSERT_UP_SQL = "INSERT INTO " + AppState["table_s_upload"].ToString() + " (" + U_QKEY + ") VALUES (" + U_QVAL + ")";
+                            string UPDATE_NUM_SQL2 = "UPDATE " + AppState["table_s_numinfo"].ToString() + " SET upload=upload+1 WHERE date='" + cmtU["d_regis"].ToString("yyyyMMdd") + "' and site=" + cmtU["site"];
+
+                            @_DB.Execute(INSERT_UP_SQL);
+                            @_DB.Execute(UPDATE_NUM_SQL2);
+                        }
+                        string UPDATE_CMT_SQL = "UPDATE " + AppState["table_s_comment"].ToString() + " SET content='" + _System.addslashes(_content) + "',upload='" + c_tmpupload + "' WHERE uid='" + comment_uid + "'";
+                        @_DB.Execute(UPDATE_CMT_SQL);
+                    }
+                }
+            }
+        }
+
+
+        //첨부파일 복사        
+        if (inc_upload == "1" && R_upload != "")
+        {
+            dynamic U = null;
+            string[] UPFILES = _System.getArrayString(R["upload"]);
+            string tmpupload = "";
+            string _content1 = R["content"];
+
+            foreach (string _val in UPFILES)
+            {
+                if (_val.Trim() == "")
+                {
+                    continue;
+                }
+
+                U = _DB.GetDbData_M(AppState["table_s_upload"].ToString(), "uid=" + _val);
+
+                if (U == null)
+                {
+                    continue;
+                }
+
+                string _tmpname = FormsAuthentication.HashPasswordForStoringInConfigFile(U["tmpname"], "SHA1") + d_regis.Substring(11, 6) + "." + _System.getExt(U["tmpname"]);
+                string _thumbna = FormsAuthentication.HashPasswordForStoringInConfigFile(U["thumbname"], "SHA1") + d_regis.Substring(11, 6) + "." + _System.getExt(U["thumbname"]); ;
+                string tmpFile = g["path_root_ps"] + g["path_file"] + U["folder"] + "\\" + U["tmpname"];
+                string saveTmp = g["path_root_ps"] + g["path_file"] + U["folder"] + "\\" + _tmpname;
+                string thumbFile = g["path_root_ps"] + g["path_file"] + U["folder"] + "\\" + U["thumbname"];
+                string saveThumb = g["path_root_ps"] + g["path_file"] + U["folder"] + "\\" + _thumbna;
+
+                File.Copy(tmpFile, saveTmp);
+
+                if (_System.getFileType(U["thumbname"]) == 2)
+                {
+                    File.Copy(thumbFile, saveThumb);
+                }
+
+                string upload_mingid = _DB.GetDbData_S(AppState["table_s_upload"].ToString(), "", "min(convert(decimal(10,2),gid))").ToString();
+                int upload_gid = 99999999;
+
+                if (upload_mingid != null && upload_mingid != "")
+                {
+                    if (upload_mingid.Contains("."))
+                    {
+                        upload_mingid = upload_mingid.Split('.')[0];
+                    }
+                    upload_gid = Convert.ToInt32(upload_mingid) - 1;
+                }
+
+                string U_QKEY = "gid,hidden,tmpcode,site,mbruid,type,ext,fserver,url,folder,name,tmpname,thumbname,size,width,height,caption,down,d_regis,d_update,cync";
+                string U_QVAL = "'" + upload_gid + "','" + U["hidden"] + "','','" + U["site"] + "','" + U["mbruid"] + "','" + U["type"] + "','" + U["ext"] + "','" + U["fserver"] + "','" + U["url"] + "','" + U["folder"] + "',";
+                U_QVAL += "'" + _System.addslashes(U["name"]) + "','" + _tmpname + "','" + _thumbna + "','" + U["size"] + "','" + U["width"] + "','" + U["height"] + "','" + _System.addslashes(U["caption"]) + "',";
+                U_QVAL += "'" + U["down"] + "','" + U["d_regis"].ToString("yyyyMMdd HH:mm:ss") + "','" + U["d_update"].ToString("yyyyMMdd HH:mm:ss") + "',''";
+                string INSERT_UP_SQL = "INSERT INTO " + AppState["table_s_upload"].ToString() + " (" + U_QKEY + ") VALUES (" + U_QVAL + ")";
+                string UPDATE_NUM_SQL2 = "UPDATE " + AppState["table_s_numinfo"].ToString() + " SET upload=upload+1 WHERE date='" + U["d_regis"].ToString("yyyyMMdd") + "' and site=" + U["site"];
+                
+                @_DB.Execute(INSERT_UP_SQL);
+                @_DB.Execute(UPDATE_NUM_SQL2);
+
+                tmpupload += "[" + _DB.GetDbData_S(AppState["table_s_upload"].ToString(), "", "max(uid)").ToString() + "]";
+                _content1 = _content1.Replace(U["tmpname"], _tmpname);
+            }
+
+            string UPDATE_CMT_SQL = "UPDATE " + AppState["table_" + m + "data"].ToString() + " SET content='" + _System.addslashes(_content1) + "',upload='" + tmpupload + "' WHERE uid='" + NOWUID + "'";
+            @_DB.Execute(UPDATE_CMT_SQL);
+        }
+
+        //SESSION
+        Session["BbsPost" + type] = Session["BbsPost" + type].ToString().Replace("[" + R["uid"] + "]", "");        
+    }
+
+    string referer = g["s"] + "/?r=" + r + "&iframe=Y&m=admin&module=" + m + "&front=movecopy&type=" + type;
+    
+    @_System.getLink(referer, "parent.", "실행되었습니다.", "")
+    return;
+}

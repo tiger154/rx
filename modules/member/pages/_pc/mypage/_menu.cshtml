@@ -1,0 +1,124 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    var m = PageData[1];
+
+    dynamic g = PageData[0];
+
+    dynamic d_member = _DB.Get_code("member");  
+    
+    string page = Request["page"];
+    string post_select = "";
+    string comment_select = "";
+    string oneline_select = "";
+    string scrap_select = "";
+    string paper_select = "";
+    string friend_select = "";
+    string point_select = "";
+    string log_select = "";
+    string info_select = "";
+    string pw_select = "";
+    string out_select = "";
+    string simbol_select = "";
+}
+
+<div id="pages_top">
+
+	<div class="title">
+		<div class="xl"><h2><a href="@g["url_reset"]">마이페이지</a></h2></div>
+		<div class="xr">
+		
+			<ul>
+			<li class="leftside"></li>
+            @if(d_member["mytab_post"] == "1") {
+                if(page == "post") {
+                    post_select = "class='selected'";
+		        }
+                <li @Html.Raw(@post_select)><a href="@g["url_reset"]&amp;page=post">게시물</a></li>
+	        }
+            @if(d_member["mytab_comment"] == "1") {
+                if(page == "comment") {
+                    comment_select = "class='selected'";
+		        }
+                <li @Html.Raw(@comment_select)><a href="@g["url_reset"]&amp;page=comment">댓글</a></li>
+	        }
+            @if(d_member["mytab_oneline"] == "1") {
+                if(page == "oneline") {
+                    oneline_select = "class='selected'";
+		        }
+                <li @Html.Raw(@oneline_select)><a href="@g["url_reset"]&amp;page=oneline">한줄의견</a></li>
+	        }            
+            @if(d_member["mytab_simbol"] == "1") {
+                if(page == "simbol") {
+                    simbol_select = "class='selected'";
+		        }
+                <li @Html.Raw(@simbol_select)><a href="@g["url_reset"]&amp;page=simbol">캐릭터</a></li>
+	        }
+            @if(d_member["mytab_scrap"] == "1") {
+                if(page == "scrap") {
+                    scrap_select = "class='selected'";
+		        }
+                <li @Html.Raw(@scrap_select)><a href="@g["url_reset"]&amp;page=scrap">스크랩</a></li>
+	        }
+            @if(d_member["mytab_paper"] == "1") {
+                if(page == "paper") {
+                    paper_select = "class='selected'";
+		        }
+                <li @Html.Raw(@paper_select)><a href="@g["url_reset"]&amp;page=paper">쪽지</a></li>
+	        }
+            @if(d_member["mytab_friend"] == "1") {
+                if(page == "friend") {
+                    friend_select = "class='selected'";
+		        }
+                <li @Html.Raw(@friend_select)><a href="@g["url_reset"]&amp;page=friend">친구</a></li>
+	        }
+            @if(d_member["mytab_point"] == "1") {
+                if(page == "point") {
+                    point_select = "class='selected'";
+		        }
+                <li @Html.Raw(@point_select)><a href="@g["url_reset"]&amp;page=point">포인트</a></li>
+	        }
+            @if(d_member["mytab_log"] == "1") {
+                if(page == "log") {
+                    log_select = "class='selected'";
+		        }
+                <li @Html.Raw(@log_select)><a href="@g["url_reset"]&amp;page=log">접속기록</a></li>
+	        }
+			<li>
+				<div id="morebox" class="morebox">
+					<ul>
+                    @if(d_member["mytab_info"] == "1") {
+                        if(page == "info") {
+                            info_select = "class='selected'";
+		                }
+                        <li @info_select><a href="@g["url_reset"]&amp;page=info">정보수정</a></li>
+	                }
+                    @if(d_member["mytab_pw"] == "1") {
+                        if(page == "pw") {
+                            pw_select = "class='selected'";
+		                }
+                        <li @pw_select><a href="@g["url_reset"]&amp;page=pw">비번변경</a></li>
+	                }
+                    @if(d_member["mytab_out"] == "1") {
+                        if (page == "out")
+                        {
+                            out_select = "class='selected'";
+                        }
+                        <li @out_select><a href="@g["url_reset"]&amp;page=out">회원탈퇴</a></li>
+                    }
+					</ul>
+				</div>
+				<a onclick="morebox('morebox');">회원정보 <img src="@g["img_core"]/_public/ico_arr_01.gif" alt="" /></a>
+			</li>
+			</ul>
+
+		</div>
+		<div class="clear"></div>
+	</div>
+	
+</div>
+

@@ -1,0 +1,59 @@
+﻿@{  
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    string moduleid = Request["moduleid"];
+       
+    @_System.checkAdmin(my["admin"], 0)
+    
+    dynamic R = _DB.GetDbData_M(AppState["table_s_module"].ToString(), "id='" + moduleid + "'");
+    
+    if(R==null) {
+        @_System.getLink("", "", "존재하지 않는 모듈입니다.","");
+                                                     return;
+    }
+    
+    if(R["system"]!=null && R["system"]!="0") {
+        @_System.getLink("", "", "시스템모듈은 삭제할 수 없습니다.","");
+                                                     return;        
+    }
+    
+    
+    string DELETE_MODULE_SQL = "DELETE FROM " + AppState["table_s_module"].ToString() + " WHERE id='" + moduleid + "'";    
+    @_DB.Execute(DELETE_MODULE_SQL);
+        
+    string DROP_MODULE_SQL = "DROP " + AppState["table_s_" + moduleid];
+    @_DB.Execute(DROP_MODULE_SQL);
+
+    /* dbtable.txt 수정 구현해야함
+    string table_db = g["path_root_ps"] + "dbtable.txt";
+    */
+    
+    @_System.delAllDir(g["path_root_ps"] + g["path_module"] + R["id"]);
+    
+}

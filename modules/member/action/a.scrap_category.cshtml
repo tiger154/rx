@@ -1,0 +1,61 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var category = Request["category"];
+    var members = Request["members"];    
+    
+    if (my["uid"] == 0)
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+    
+    category = category.Trim();
+    
+    if (my["admin"] == "1") 
+    {
+        foreach (string val in members.Split(',')) 
+        {
+            string UPDATE_SCRAP_SQL = "UPDATE " + AppState["table_s_scrap"].ToString() + " SET category='" + category + "' WHERE uid=" + val.Trim();
+            @_DB.Execute(UPDATE_SCRAP_SQL);
+        }        
+    }
+    else 
+    {
+        foreach (string val in members.Split(','))
+        {
+            string UPDATE_SCRAP_SQL = "UPDATE " + AppState["table_s_scrap"].ToString() + " SET category='" + category + "' WHERE uid=" + val.Trim() + " and mbruid=" + my["uid"];
+            @_DB.Execute(UPDATE_SCRAP_SQL);
+        }         
+    }
+
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}
+

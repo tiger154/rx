@@ -1,0 +1,197 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var id = Request["id"];
+    var pw1 = Request["pw1"];
+    var name = Request["name"];
+    var email = Request["email"];
+    var sitename = Request["sitename"];
+    var layout = Request["layout"].Replace("/", "\\");
+    var sitelang = Request["sitelang"];
+
+    bool iswpiinstall = false;
+
+    string wpivfile = "./wpi.var.cshtml";
+
+
+    if (File.Exists(wpivfile))
+    {
+        iswpiinstall = true;
+    }
+
+    string mfile = "";
+    string KEY = "";
+    string VAL = "";
+    string INSERT_SQL = "";
+    
+       
+    <!--  DIRECTORY SETTING -->  
+    @_SetDir.initDir()
+    
+    
+    <!--  SITE SETTING -->    
+    string siteid = "home";
+    string QKEY = "gid,id,name,title,titlefix,icon,layout,startpage,m_layout,m_startpage,lang,opend,dtd,nametype,timecal,rewrite,buffer,usescode,headercode,footercode";
+    string QVAL = "'0','" + siteid + "','" + sitename + "','" + sitename + "','0','1.png','" + layout + "',1,'mobile\\main.cshtml','9','" + sitelang + "','1','xhtml_1','nic','0','0','0','0','',''";
+
+    string INSERT_SITE_SQL = "INSERT INTO " + AppState["table_s_site"] + " (" + QKEY + ") VALUES (" + QVAL + ")";
+    @_DB.Execute(INSERT_SITE_SQL);
+    
+    <!--  PAGE SETTING -->
+    
+    var pagesarray = new Dictionary<string, string[]>();
+
+    pagesarray.Add("main", new string[3] { "메인화면", "3", "" });
+    pagesarray.Add("join", new string[3] { "회원가입", "1", "./?m=member&front=join" });
+    pagesarray.Add("login", new string[3] { "로그인", "1", "./?m=member&front=login" });
+    pagesarray.Add("mypage", new string[3] { "마이페이지", "1", "./?m=member&front=mypage" });
+    pagesarray.Add("search", new string[3] { "통합검색", "1", "./?m=search" });
+    pagesarray.Add("agreement", new string[3] { "홈페이지 이용약관", "3", "" });
+    pagesarray.Add("private", new string[3] { "개인정보 취급방침", "3", "" });
+    pagesarray.Add("postrule", new string[3] { "게시물 게재원칙", "3", "" });
+
+    string maincontent = "<iframe src=\"http://docs.kimsq.com/guide/rb/defaultPage_kr.php" + _System.isEqual(iswpiinstall, true, "?wpi=Y", "") + "\" width=\"100%\" height=\"650\" frameborder=\"0\" scrolling=\"no\" allowTransparency=\"true\"></iframe>";
+
+    foreach (string _key in pagesarray.Keys)
+    {
+        string[] _val = pagesarray[_key];
+
+        KEY = "pagetype,ismain,mobile,id,category,name,perm_g,perm_l,layout,joint,hit,d_regis,d_update";
+        VAL = "'" + _val[1] + "','" + _System.isEqual(_key, "main", "1", "0") + "','" + _System.isEqual(_key, "main", "1", "0") + "','" + _key + "','" + "기본페이지" + "','" + _val[0] + "','','0','','" + _val[2]
+            + "','0','" + date["insert"] + "',''";
+        INSERT_SQL = "INSERT INTO " + AppState["table_s_page"] + "(" + KEY + ") VALUES (" + VAL + ")";
+        @_DB.Execute(INSERT_SQL)
+
+        mfile = g["path_root_ps"] + g["path_page"] + _key + ".cshtml";
+        File.WriteAllText(mfile, _System.isEqual(_key, "main", maincontent, _val[0]), System.Text.Encoding.UTF8);
+
+        mfile = g["path_root_ps"] + g["path_page"] + _key + ".widget.cshtml";
+        File.WriteAllText(mfile, "", System.Text.Encoding.UTF8);
+    }    
+    
+    <!--  MOBILE PAGE -->
+    KEY = "pagetype,ismain,mobile,id,category,name,perm_g,perm_l,layout,joint,hit,sosokmenu,d_regis,d_update";
+    VAL = "'3','0','1','main_mobile','모바일페이지','메인화면','','0','','','0','','" + date["insert"] + "',''";
+    INSERT_SQL = "INSERT INTO " + AppState["table_s_page"] + "(" + KEY + ") VALUES (" + VAL + ")";
+    @_DB.Execute(INSERT_SQL)
+
+    string[] mobilemaincontent = 
+    {
+        "@{",
+        "var g = PageData[0];",
+        "}",
+        "<h3 style='border-bottom:#dfdfdf dotted 2px;padding:0 0 10px 0;font-size:13px;'>",
+        "<img src='" + g["img_core"] + "/_public/ico_notice.gif' alt='' style='position:relative;top:2px;left:-2px;' />모바일 웹사이트가 개설되었습니다",
+        "</h3>",
+        "",
+        "<p style='color:#666666;line-height:150%;padding:0 0 0 5px;'>",
+        "손님께서는 모바일기기(@g[\"mobile\"])로 접속하셨습니다.<br />",
+        "이 페이지는 모바일 메인페이지의 전시내용을 변경하거나 편집을 통해 변경할 수 있습니다.<br />",
+        "자세한 것은 킴스큐Rx 모바일 웹사이트 관련 매뉴얼을 참고하세요.",
+        "</p>",
+        "<p style='text-align:right;padding:20px 10px 0 0;font-size:11px;color:#c0c0c0;'>",
+        "Powered by kimsQ<span style='color:#ff0000;font-weight:bold;'>Rx</span>",
+        "</p>"
+    };
+
+    mfile = g["path_root_ps"] + g["path_page"] + "main_mobile.cshtml";
+    File.WriteAllLines(mfile, mobilemaincontent, System.Text.Encoding.UTF8);
+
+    mfile = g["path_root_ps"] + g["path_page"] + "main_mobile.widget.cshtml";
+    File.WriteAllText(mfile, "", System.Text.Encoding.UTF8);           
+
+    
+    <!--  StART PAGE UPDATE -->
+    string startpage = _DB.GetDbData_S(AppState["table_s_page"].ToString(), "id='main'", "uid").ToString();
+    string m_startpage = _DB.GetDbData_S(AppState["table_s_page"].ToString(), "id='main_mobile'", "uid").ToString();
+
+    string UPDATE_START_SQL = "UPDATE " + AppState["table_s_site"] + " SET startpage=" + startpage + ", m_startpage=" + m_startpage + " WHERE gid=0";
+    @_DB.Execute(UPDATE_START_SQL);
+
+    
+    <!--  MEMBER DATA SETTING -->
+    KEY = "site,id,pw";
+    VAL = "'1','" + id + "','" + FormsAuthentication.HashPasswordForStoringInConfigFile(pw1, "SHA1") + "'";
+    INSERT_SQL = "INSERT INTO " + AppState["table_s_mbrid"] + "(" + KEY + ") VALUES (" + VAL + ")";
+    @_DB.Execute(INSERT_SQL)
+
+    string mbruid = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "", "uid").ToString();
+    string startsite = _DB.GetDbData_S(AppState["table_s_site"].ToString(), "", "uid").ToString();
+
+    KEY = "memberuid,site,auth,sosok,level,comp,admin,adm_view,email,name,nic,grade,photo,home,sex,birth1,birth2,birthtype,tel1,tel2,zip,addr0,addr1,addr2,job,marr1,marr2,sms,mailing,smail,point,usepoint,money,cash,num_login,pw_q,pw_a,now_log,last_log,last_pw,is_paper,d_regis,tmpcode,sns,addfield,adm_name";
+    VAL = "'" + mbruid + "','" + startsite + "','1','1','1','0','1','','" + email + "','" + name + "','관리자','','','','0','0','0000','0','','','','','','','','0','0','1','1','0','0','0','0','0','1','킴스큐 설치시에 입력한 회원비밀번호는?','" + pw1 + "','1','" + date["insert"] + "','" + date["insert"] + "','0','" + date["insert"] + "','','','','최고관리자'";
+    INSERT_SQL = "INSERT INTO " + AppState["table_s_mbrdata"] + "(" + KEY + ") VALUES (" + VAL + ")";
+    @_DB.Execute(INSERT_SQL)
+
+
+    string[] sosokset = new string[8] { "A그룹", "B그룹", "C그룹", "D그룹", "E그룹", "F그룹", "G그룹", "H그룹" };
+
+    for (int i = 0; i < sosokset.Length; i++)
+    {
+        INSERT_SQL = "INSERT INTO " + AppState["table_s_mbrgroup"] + " (gid,name,num) VALUES ('" + i + "','" + sosokset[i] + "','" + (i == 0 ? "1" : "0") + "')";
+        @_DB.Execute(INSERT_SQL)
+    }
+
+    for (int i = 1; i < 101; i++)
+    {
+        INSERT_SQL = "INSERT INTO " + AppState["table_s_mbrlevel"] + " (gid,name,num,login,post,comment) VALUES ('" + (i == 20 ? "1" : "0") + "','레벨" + i + "','" + _System.isEqual(i, 0, "1", "0") + "','0','0','0')";
+        @_DB.Execute(INSERT_SQL)
+    }
+
+
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+
+    Cookie_svshop.Value = id + "|" + pw1;
+    Cookie_svshop.Expires = date["totime"].AddDays(30);
+    
+    Response.Cookies.Add(Cookie_svshop);
+
+    Session["mbr_uid"] = mbruid;
+    Session["mbr_pw"] = FormsAuthentication.HashPasswordForStoringInConfigFile(pw1, "SHA1");
+
+    if (!Directory.Exists(g["path_root_ps"] + g["path_module"] + "admin\\var\\users"))
+    {
+        Directory.CreateDirectory(g["path_root_ps"] + g["path_module"] + "admin\\var\\users");
+    }
+
+    File.WriteAllText(g["path_root_ps"] + g["path_module"] + "admin\\var\\users\\" + id + ".widget.cshtml", "", System.Text.Encoding.UTF8);
+
+    if (iswpiinstall)
+    {
+        //File.Delete(wpivfile);
+        @_System.getLink("./", "", "설치가 완료되었습니다. 홈페이지로 이동합니다.", "")
+        return;
+    }
+    else
+    {
+        @_System.getLink("./", "parent.", "설치가 완료되었습니다. 홈페이지로 이동합니다.", "")
+        return;
+    }
+    
+}

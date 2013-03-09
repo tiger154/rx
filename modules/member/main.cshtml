@@ -1,0 +1,216 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var my = PageData[1];
+    var _HM = PageData[2];
+    var _HP = PageData[3];
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var _HS = PageData[11];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    string front = PageData[16];
+    var _m = PageData[17];
+    var get_front2 = PageData[16];      // front 변수를 따로 받는경우 (for url-rewrite)
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var page = Request["page"];
+    var get_front = Request["front"];
+    var mbruid = Request["mbruid"];
+    var _key = Request["_key"];
+    var iframe = Request["iframe"];    
+
+    dynamic d_member = _DB.Get_code("member");
+    dynamic M = _DB.Get_module_data(AppState["table_s_mbrdata"].ToString(), "memberuid", 0);
+    
+    string _front;
+    string _front_url;
+    string _mod_set = "";
+    string g_main;
+
+    if (front == null || front == "")
+    {
+        if (get_front != null && get_front != "")
+        {
+            front = get_front;
+        }
+        else
+        {
+            if (get_front2 != null && get_front2 != "")
+            {
+                front = get_front2;
+            }
+            else
+            {
+                front = "login";
+            }
+        }
+    }
+    
+    if (g["mobile"] != "" && Session["pcmode"] != "Y")
+    {
+        _front = "_mobile\\" + front;
+        _front_url = "_mobile/" + front;
+    }
+    else
+    {
+        _front = "_pc\\" + front;
+        _front_url = "_pc/" + front;
+    }
+
+    if (page == null || page == "")
+    {
+        page = "main";
+    }
+
+    switch (front)
+    {
+        case "join":
+            // 환경값 설정
+
+            if (d_member["join_enable"] == "0")
+            {
+                @_System.getLink("", "", "죄송합니다. 지금은 회원가입을 하실 수 없습니다.", "-1")
+                return;
+            }
+            if (g["mobile"] != "" && Session["pcmode"] != "Y")
+            {
+                if (d_member["join_mobile"] == "0")
+                {
+                    @_System.getLink("", "", "죄송합니다. 회원가입은 PC모드로 접속해야 합니다", "-1")
+                    return;
+                }
+            }
+
+            if (my["uid"] > 0)
+            {
+                @_System.getLink("./", "", "", "")
+                return;
+            }
+
+            if (page == "main")
+            {
+                page = "step1";
+            }
+
+            if (d_member["form_agree"] == "0")
+            {
+                if (page == "step1")
+                {
+                    page = "step2";
+                }
+            }
+            if (d_member["form_jumin"] == "0")
+            {
+                if (page == "step2")
+                {
+                    page = "step3";
+                }
+            }
+   
+            if (_HM["layout"] == "")
+            {
+                _HM["layout"] = d_member["layout_join"];
+            }
+            break;
+            
+            
+            
+        case "login":
+            if (my["uid"] > 0)
+            {                
+                @_System.getLink("./", "", "", "")
+                return;
+            }
+            
+            if (_HM["layout"] == "")
+            {   
+                _HM["layout"] = d_member["layout_join"];
+            }
+            
+            break;
+            
+            
+            
+        case "mypage":
+            if (my["uid"] == 0)
+            {
+                string linkStr = g["s"] + "/?r=" + r + "&mod=login&referer=" + Server.UrlEncode(_System.RW("mod=mypage", g["r"], _HS));
+                @_System.getLink(linkStr, "", "", "")
+                return;
+            }
+           
+            if (_HM["layout"] == "")
+            {
+                _HM["layout"] = d_member["layout_mypage"];
+            }
+            break;
+
+        case "manager":
+            if (my["admin"] != "1" || mbruid == null || mbruid == "")
+            {
+                @_System.getLink("", "", "권한이 없습니다.", "close")
+                return;
+            }
+            M = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", mbruid);
+            break;
+    }
+
+    if (_mod != "" && _mod != null)
+    {
+        _mod_set = "mod=" + _mod;
+    }
+    else
+    {
+        _mod_set = "m=" + m + "&front=" + front;
+    }
+
+    if (iframe != "" && iframe != null)
+    {
+        _mod_set = _mod_set + "&iframe=" + iframe;
+    }
+
+    // global 변수 세팅
+
+    g["url_reset"] = g["s"] + "/?r=" + r + "&" + _mod_set;
+    g["url_page"] = g["url_reset"] + "&page=" + page;
+    g["dir_module_skin"] = g["dir_module"] + "pages\\" + _front + "\\";
+    g["url_module_skin"] = g["url_module"] + "/pages/" + _front_url;
+    g["img_module_skin"] = g["url_module_skin"] + "/image";
+
+    g["dir_module_mode"] = g["dir_module_skin"] + page;
+    g["url_module_mode"] = g["url_module_skin"] + "/" + page;
+
+    // 모듈 메인화면
+    g_main = g["dir_module_mode"] + ".cshtml";
+
+    // 세션 생성.
+    Session["g"] = g;
+    Session["g_main"] = g_main;
+    Session["front"] = front;
+    Session["mod"] = _mod;
+    Session["url_reset"] = g["url_reset"];
+    Session["mbrdata"] = M;
+
+}

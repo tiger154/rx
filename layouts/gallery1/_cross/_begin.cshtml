@@ -1,0 +1,68 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var g = PageData[0];
+    var my = PageData[1];
+    var r = PageData[2];
+    var s = PageData[3];
+    var _HP = PageData[4];
+    var _CA = PageData[5];
+    var _HS = PageData[6];
+    var d_layout = PageData[7];
+    var LAYOUT_ARR = PageData[8];    
+}
+<div class="beginguide">
+	<div class="title">무한한 가능성! 킴스큐Rx 에 오신 것을 환영합니다.</div>
+	<p>
+		이 화면은 킴스큐를 처음 설치하셨거나 이 레이아웃(@_System.getFolderName(g["path_root_ps"] + g["path_layout"] + d_layout["dir"]):@d_layout["dir"])을 처음 사용하시는 경우에 나타납니다.<br />
+		레이아웃 설정페이지에서 셋팅을 하시면 더 이상 이 화면은 나타나지 않게 됩니다.<br />
+		레이아웃 설정방법은 킴스큐Rx 공식사이트(www.kimsq.com)의 사용자매뉴얼을 참고해 주세요.<br /><br />
+		<span class="b">킴스큐를 처음 설치하셨다면 다음의 순서대로 셋팅해 보세요.</span>
+	</p>
+	<div class="olbox">
+	<ol>
+	<li>
+		킴스큐 설치시 최초 5개의 기본레이아웃이 포함되어 있습니다. 이중 만드시려는 웹사이트의 성격에 맞는 레이아웃을 먼저 선택해 주세요. 킴스큐 마켓을 방문하시면 더 다양하고 많은 레이아웃을 구하실 수 있습니다.
+		<i>(상단 관리바 &gt; 사이트 &gt; 레이아웃 설정)</i>
+	</li>
+	<li>
+		레이아웃을 선택하셨다면, 메뉴를 만들어 주세요. 메뉴를 만들때 전시할 내용은 우선 `직접꾸미기` 로 지정한 후 나중에 원하시는 형식으로 변경하여 꾸며주세요.
+		<i>(상단 관리바 &gt; 메뉴)</i>	
+	</li>
+	<li>
+		게시판이 필요할 경우 관리자 페이지에서 게시판을 만들어 주세요. 처음 사용시 설정방식이나 지원하는 기능들이 타 솔루션들과 다를 수 있으므로 이 점 참고하세요.
+		<i>(상단 관리바 &gt; 어드민 &gt; 게시판모듈)</i>
+	</li>
+	<li>
+		위의 3개 과정이 완료되었다면 관리자모드에서 회원관련,게시판,댓글 등의 기본적인 환경설정을 셋팅해 주세요. 이 과정은 처음 사용자일 경우 다소 시간이 걸릴 수도 있으므로 여유를 가지고 셋팅하세요. 환경설정 과정을 생략하시면 킴스큐Rx가 권장하는 기본값으로 셋팅됩니다.
+		<i>(상단 관리바 &gt; 어드민)</i>
+	</li>
+	<li>
+		모든 생성 및 셋팅이 완료되었다면 마지막으로 레이아웃에 대한 설정을 해 주세요. 레이아웃에 따라서 해당 레이아웃의 자체 설정페이지를 제공할 수 있습니다.
+		이 경우 레이아웃 설정페이지에서 원하시는 형식으로 레이아웃을 꾸밀 수 있습니다.
+		(구버젼의 레이아웃이나 일부 레이아웃은 자체 설정페이지를 제공하지 않을 수 있으니 참고하세요.)
+		<i>(레이아웃 자체의 `레이아웃 설정하기` 또는 `설정`)</i>
+	</li>
+	</ol>
+	</div>
+	<p>
+		더 자세한 내용과 관련 정보들은 킴스큐Rx 공식사이트에서 구할 수 있습니다.<br /><br /><br />
+		<span class="b">당신을 응원합니다 - 킴스큐Rx! &reg;</span>
+	</p>
+</div>
+
+<style type="text/css">
+#content .beginguide {}
+#content .beginguide .title {font-size:24px;font-weight:bold;font-family:"malgun gothic";border-bottom:#dfdfdf dotted 3px;padding:0 0 10px 0;margin:0 0 30px 0;}
+#content .beginguide p {line-height:180%;font-size:13px;}
+#content .beginguide ol {color:#333333;}
+#content .beginguide li {padding:5px 0 5px 0;line-height:140%;}
+#content .beginguide li i {display:block;font-style:normal;color:#426EFC;padding-top:2px;}
+#content .beginguide .olbox {background:#efefef;padding:10px 30px 10px 10px;margin:20px 0 20px 0;border-radius:8px 8px 8px 8px;}
+</style>

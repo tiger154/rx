@@ -1,0 +1,273 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var s = PageData[9];
+
+    dynamic g = Session["g"] ;
+    dynamic levelnum = _DB.GetDbData_M(AppState["table_s_mbrlevel"].ToString(), "gid=1");
+    dynamic levelname = _DB.GetDbData_M(AppState["table_s_mbrlevel"].ToString(), "uid="+my["level"]);
+    
+    // 개별 페이지 상단 메뉴부
+    @RenderPage("_menu.cshtml", g, m)
+}
+
+<div id="mypage_main">
+    
+	<div class="photo hand" onclick="goHref('@g["url_reset"]&page=simbol');" title="사진등록">
+    @{
+        if(my["photo"] != "") {
+            <img src='@g["url_root"]/_var/simbol/@my["photo"]' alt='@my["photo"]' />
+        }
+    }        
+    </div>
+	<div class="msg">
+		이 곳은 <span class="b">@my["name"]@Html.Raw("("+ my["nic"]+")님")</span>을 위한 공간입니다.<br />
+		회원님의 활동내역을 실시간으로 확인하실 수 있습니다.<br />
+		<span class="info">
+		회원등급 : @levelname["name"] (@Html.Raw(my["level"] + "/" + levelnum["uid"])) &nbsp; 
+		포인트 : @string.Format("{0:#,0}", Convert.ToInt32(@my["point"])) &nbsp; 
+		가입일 : @my["d_regis"].ToString("yyyy.MM.dd") (@_System.getRemainDate(my["d_regis"].ToString())일전)
+		</span>
+	</div>
+	<div class="line clear"></div>
+    
+	<div class="postbox">
+		<div class="xleft">
+			<h5>내가 등록한 게시물</h5>
+			<ul>
+                @{
+                    string POST_sql = _System.GetQuery(AppState["table_bbsdata"].ToString(), "", "site=" + s + " AND mbruid=" + my["uid"], "gid", "ASC", 0, "10");
+                    int POST_num = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "site=" + s + " AND mbruid=" + my["uid"]);
+
+                    if (POST_num == 0)
+                    {
+            			<li class="none">등록된 게시물이 없습니다.</li>                        
+					}   
+                    else {
+                        foreach(var _R in _DB.Query(POST_sql)) {
+                            string mobile_chk = _System.isMobileConnect(_R["agent"]);     // 모바일 체크
+
+                            <li>
+			                ㆍ<a href="./?m=bbs&amp;bid=@_R["bbsid"]&uid=@_R["uid"]" title="작성일시 : @_R["d_regis"].ToString("yyyy.MM.dd HH:mm") (조회수: @_R["hit"])" onmouseover="qTilePop(this);" onmouseout="qTilePopKill(this);">@_R["subject"]</a>
+
+                            @if(mobile_chk != "") {
+                                <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos1" alt="모바일" title="모바일(@mobile_chk)로 등록되었습니다." />
+                            }	        
+                            @if(_R["content"].IndexOf(".jpg") > -1) {
+    			                <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />                                
+							}
+                            @if(_R["upload"] != "") {
+    			                <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />                          
+							}
+                            @if(_R["hidden"] == "1") {
+    			                <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />                         
+							}
+                            @if(_R["comment"] > 0) {
+                                string oneline_prn = "";
+                                
+                                if(_R["oneline"] > 0) {
+                                    oneline_prn = "+"+_R["oneline"];
+								}
+    			                <span class="comment">@Html.Raw("["+@_R["comment"]+@oneline_prn+"]")</span>                      
+							}
+                            @if(_R["trackback"] > 0) {
+                                <span class="trackback">@Html.Raw("["+@_R["trackback"]+"]")</span>
+                            }
+                            @if(_System.getNew(_R["d_regis"].ToString(), 24) == true) {
+                                <span class="new">new</span>
+                            }
+			                </li>
+			            }
+					}
+                }
+			</ul>
+
+			<h5>내가 등록한 댓글</h5>
+			<ul>
+                @{
+                    string Comm_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", " site=" + s + " AND mbruid=" + my["uid"], "uid", "ASC", 0, "10");
+                    int Comm_num = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), " site=" + s + " AND mbruid=" + my["uid"]);
+
+                    if (Comm_num == 0)
+                    {
+            			<li class="none">등록된 댓글이 없습니다.</li>                        
+					}              
+                    else {
+                        foreach(var _R in _DB.Query(Comm_sql)) {
+                            string mobile_chk = _System.isMobileConnect(_R["agent"]);     // 모바일 체크
+
+                            <li>
+                			ㆍ<a href="@Html.Raw(_System.getCyncURL(_R["cync"], 6, '[', ',', ':')+"&CMT="+_R["uid"]+"#CMT")" title="@_R["d_regis"].ToString("yyyy.MM.dd HH:mm") / 조회 @_R["hit"] / 공감 @_R["score1"] / 비공감 @_R["score2"]" onmouseover="qTilePop(this);" onmouseout="qTilePopKill(this);">@_R["subject"]</a>
+
+                            @if(mobile_chk != "") {
+                                <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos1" alt="모바일" title="모바일(@mobile_chk)로 등록되었습니다." />
+                            }	        
+                            @if(_R["content"].IndexOf(".jpg") > -1) {
+    			                <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />                                
+							}
+                            @if(_R["upload"] != "") {
+    			                <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />                          
+							}
+                            @if(_R["hidden"] == "1") {
+    			                <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />                         
+							}
+                            @if(_R["oneline"] > 0) {
+    			                <span class="comment">@Html.Raw("["+@_R["oneline"]+"]")</span>                      
+							}
+                            @if(_System.getNew(_R["d_regis"].ToString(), 24) == true) {
+                                <span class="new">new</span>
+                            }
+			                </li>
+			            }                        
+					}
+				}
+			</ul>
+
+
+		</div>
+		<div class="xright">
+
+			<h5>내 게시물에 달린 댓글</h5>
+			<ul>
+                @{
+                    string Comm2_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", "site=" + s + " AND parentmbr=" + my["uid"], "uid", "ASC", 0, "10");
+                    int Comm2_num = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "site=" + s + " AND parentmbr=" + my["uid"]);
+
+                    if (Comm2_num == 0)
+                    {
+            			<li class="none">등록된 댓글이 없습니다.</li>                        
+					}              
+                    else {
+                        foreach(var _R in _DB.Query(Comm2_sql)) {
+                            string mobile_chk = _System.isMobileConnect(_R["agent"]);     // 모바일 체크
+                            
+                            <li>
+                            ㆍ<a href="@Html.Raw(_System.getCyncURL(_R["cync"], 6, '[', ',', ':')+"&CMT="+_R["uid"]+"#CMT")" title="@_R[_HS["nametype"]]님 / @_R["d_regis"].ToString("yyyy.MM.dd HH:mm") / 조회 @_R["hit"] / 공감 @_R["score1"]&lt;br /&gt;@_System.getStrCut(Html.Raw(_R["content"]).ToString(), 100, "...")" onmouseover="qTilePop(this);" onmouseout="qTilePopKill(this);">@_R["subject"]</a>
+                                
+                            @if(mobile_chk != "") 
+                            {
+                                <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos1" alt="모바일" title="모바일(@mobile_chk)로 등록되었습니다." />
+                            }	        
+                            @if(_R["content"].IndexOf(".jpg") > -1) 
+                            {
+    			                <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />                                
+							}
+                            @if(_R["upload"] != "") 
+                            {
+    			                <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />                          
+							}
+                            @if(_R["hidden"] == "1") 
+                            {
+    			                <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />                         
+							}
+                            @if(_R["oneline"] > 0) 
+                            {
+    			                <span class="comment">@Html.Raw("["+@_R["oneline"]+"]")</span>                      
+							}
+                            @if(_System.getNew(_R["d_regis"].ToString(), 24)) 
+                            {
+                                <span class="new">new</span>
+                            }
+			                </li>
+                        }
+                    }
+                }
+			</ul>
+
+
+			<h5>내 댓글에 달린 한줄의견</h5>
+			<ul>
+                @{
+                    string One_sql = _System.GetQuery(AppState["table_s_oneline"].ToString(), "", "site=" + s + " AND parentmbr=" + my["uid"], "uid", "DESC", 0, "10");
+                    var One_num = _DB.getDbRows(One_sql);
+
+                    if (One_num == 0)
+                    {
+            			<li class="none">등록된 한줄의견이 없습니다.</li>                        
+                    }
+                    else
+                    {
+                        foreach (var _R in _DB.Query(One_sql))
+                        {
+                            string mobile_chk = _System.isMobileConnect(_R["agent"]);     // 모바일 체크
+                            dynamic _R2 = _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "uid=" + _R["parent"]);
+                            
+                            if(_R2 == null) {
+                                continue;
+                            }
+
+                            <li>
+			                ㆍ<a href="@Html.Raw(_System.getCyncURL(_R2["cync"], 6, '[', ',', ':') + "&CMT=" + _R2["uid"] + "#CMT")" title="@_R[_HS["nametype"]]님 / @_R["d_regis"].ToString("yyyy.MM.dd HH:mm")&lt;br /&gt;@_R["content"]" onmouseover="qTilePop(this);" onmouseout="qTilePopKill(this);">@_R["content"]</a>
+
+                            @if (mobile_chk != "")
+                            {
+                                <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos1" alt="모바일" title="모바일(@mobile_chk)로 등록되었습니다." />
+                            }	        
+                            @if (_System.getNew(_R["d_regis"].ToString(), 24) == true)
+                            {
+                                <span class="new">new</span>
+                            }
+                			</li>
+                        }
+                    }
+                }
+			</ul>
+
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>
+
+
+<div id="qTilePopDiv"></div>
+
+<script type="text/javascript">
+//<![CDATA[
+// list
+function qTilePop(obj)
+{
+    var content ='<div style="width:300px;line-height:150%;font-family:dotum;color:#666666;border:#999999 solid 1px;padding:3px;background:lightyellow;">'+obj.title+'</div>';
+	skn.style.position= 'absolute';
+	skn.style.display = 'block';
+	skn.style.zIndex = '1';
+	itt = obj.title;
+	obj.title = '';
+	skn.innerHTML = content;
+}
+function get_mouse(e) 
+{
+    var x = myagent != 'ie' ? e.pageX : event.x + (document.documentElement.clientLeft || document.body.clientLeft);
+    var y = myagent != 'ie' ? e.pageY : event.y + (document.documentElement.clientTop || document.body.clientTop);
+    skn.style.left = (x - 0) + 'px';
+    skn.style.top  = (y + 20) + 'px';
+}
+function qTilePopKill(obj) 
+{
+	obj.title = itt;
+	itt = '';
+	skn.style.top = '10000';
+	skn.style.display = 'none';
+}
+function submitCheck(f)
+{
+	if (f.a.value == '')
+	{
+		return false;
+	}
+}
+if (myagent != 'ie') document.captureEvents(Event.MOUSEMOVE);
+document.onmousemove = get_mouse;
+
+var skn = getId('qTilePopDiv');
+var itt = '';
+//]]>
+</script>
+

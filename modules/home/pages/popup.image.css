@@ -1,0 +1,17 @@
+#imagebox {width:100%;}
+
+#imagebox .header {height:50px;border-bottom:#000000 solid 1px;background:#343B48;}
+#imagebox .header h1 {float:left;padding:3px 20px 0 20px;margin:0;font-family:"malgun gothic";font-size:26px;color:#ffffff;}
+#imagebox .header .guide {float:left;border-left:#999 dotted 1px;color:#888;font-family:dotum;font-size:11px;line-height:150%;margin:10px 0 0 0;padding:0 0 0 20px;}
+
+#imagebox .line1 {height:1px;background:#1ACAD4;}
+#imagebox .line2 {height:2px;background:#0BA2B4;}
+#imagebox .line3 {height:1px;background:#037F93;}
+
+
+#imagebox .content {height:390px;padding:25px 15px 15px 15px;overflow-y:auto;overflow-x:hidden;}
+#imagebox .content .photo {float:left;padding:2px;margin:0 15px 15px 15px;width:105px;height:80px;background:#ffffff;border:#efefef solid 1px;text-align:center;vertical-align:center;}
+#imagebox .content .none {font-size:15px;font-family:dotum;color:#c0c0c0;text-align:center;padding:150px 0 0 0;}
+#imagebox .content .none img {position:relative;top:1px;}
+
+#imagebox .footer {height:50px;border-top:#dfdfdf solid 1px;text-align:center;padding:10px 0 0 0;}

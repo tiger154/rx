@@ -1,0 +1,18 @@
+.widget_tab01 {padding:0;}
+.widget_tab01 .tab {margin:0;padding:0;border-left:#dfdfdf solid 1px;height:28px;}
+.widget_tab01 .tab li {position:relative;float:left;list-style-type:none;margin:0;padding:0;height:28px;overflow:hidden;background:#efefef;border-top:#dfdfdf solid 1px;border-right:#dfdfdf solid 1px;border-bottom:#dfdfdf solid 1px;}
+.widget_tab01 .tab li a {display:block;padding:10px 10px 10px 10px;text-align:center;cursor:pointer;}
+.widget_tab01 .tab .on {background:#ffffff;border-bottom:#ffffff solid 1px;z-index:2;}
+
+.widget_tab01 .tabpost {background:#ffffff;border:#dfdfdf solid 1px;position:relative;z-index:1;top:1px;padding:15px 10px 0 10px;}
+
+.widget_tab01 .tabpost ul {padding:0;margin:0;}
+.widget_tab01 .tabpost li {list-style-type:none;height:13px;padding:5px 0 5px 0;line-height:140%;}
+.widget_tab01 .tabpost li a {font-family:dotum;font-size:12px;color:#444;}
+.widget_tab01 .tabpost li a:hover {text-decoration:underline;}
+.widget_tab01 .tabpost li .dot {font:normal 10px arial;color:#999;margin-left:-4px;}
+.widget_tab01 .tabpost li .comment {font:normal 11px arial;color:#FC6138;}
+.widget_tab01 .tabpost li .new {font-family:arial;font-size:10px;color:#ff0000;}
+.widget_tab01 .tabpost .more {text-align:right;}
+.widget_tab01 .tabpost .more a {position:relative;top:-5px;font-size:11px;font-family:arial;color:#c0c0c0;}
+.widget_tab01 .tabpost .more a:hover {color:#000000;font-weight:bold;}

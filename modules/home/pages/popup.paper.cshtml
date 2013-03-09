@@ -1,0 +1,237 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    
+    //dynamic g = Session["g"]; 
+
+     
+    var p = PageData[4];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var _m = PageData[1];
+    var m = PageData[3];
+    
+    dynamic g = PageData[0];
+    
+    int NUM = 0;
+    decimal TPG = 0;
+
+    string r = Request["r"];
+    string uid = Request["uid"];
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string sqlque = Request["sqlque"];
+    
+    dynamic R = null;
+    dynamic M = null;
+    dynamic M1 = null;
+ 
+    
+    if (my["uid"] == 0)
+    {
+        @_System.getLink("", "", "권한이 없습니다.", "close")
+        return;
+    }
+    
+    if(sort == null || sort == "") 
+    {
+        sort = "uid";
+    }
+    
+    if(orderby == null || orderby == "") 
+    {
+        orderby = "desc";
+	}        
+ 
+    int recnum = 1;
+    int list_start = (Convert.ToInt32(p)-1) * Convert.ToInt32(recnum);  
+    
+    if (uid != null && uid != "" && uid != "0")
+    {
+        R = _DB.GetDbData_M(AppState["table_s_paper"].ToString(), "uid=" + uid + " and (my_mbruid='" + my["uid"] + "' or by_mbruid='" + my["uid"] + "')");  
+        NUM = 1;
+        TPG = 1;
+    }
+    else {
+        sqlque = "my_mbruid=" + my["uid"] + " and inbox=1";
+        string RCD_sql = _System.GetQuery(AppState["table_s_paper"].ToString(), "", sqlque, sort, orderby, list_start, recnum.ToString());
+        R = _DB.QuerySingle(RCD_sql);
+        NUM = _DB.GetDbData_Count(AppState["table_s_paper"].ToString(), sqlque); 
+        TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum)); 
+    }
+
+    if (R == null)
+    {
+        @_System.getLink("", "", "", "close")
+        return;
+    }
+
+    if (R["by_mbruid"] > 0)
+    {
+        M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + R["by_mbruid"]);
+    }
+
+    if (R["d_read"] == null || R["d_read"].ToString() == "1900-01-01 오전 12:00:00")
+    {
+        string UPDATE_PP_SQL = "UPDATE " + AppState["table_s_paper"] + " SET d_read=getdate() WHERE uid=" + R["uid"];
+        @_DB.Execute(UPDATE_PP_SQL);
+    }
+
+    if (my["is_paper"] == "1")
+    {
+        string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET is_paper=0 WHERE memberuid=" + my["uid"];
+        @_DB.Execute(UPDATE_MBR_SQL);
+    }
+    
+}  
+
+<div id="paperbox">
+
+	<div class="direct">
+        
+            @if (g["mobile"] == "" || Session["pcmode"] == "Y")
+            {
+                <a href="#" onclick="directMsg();">쪽지함 바로가기</a>
+            }
+    </div>
+
+	<div class="line1"></div>
+	<div class="line2"></div>
+	<div class="line3"></div>
+	
+	<div class="wrap">
+		
+        
+        @{
+            
+            if (R["by_mbruid"] == my["uid"])
+            {
+                M1 = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + R["my_mbruid"]);
+            <div class="i1"><span class="b">수신회원 : </span> 
+                @if (M1 != null)
+                {
+                     @Html.Raw(M1["name"] + "(" + M1["nic"] + ")")
+                }
+                else
+                {
+                   @:관리자
+                }
+            </div>
+        
+                
+            <div class="i1"><span class="b">쪽지확인</span> : <span class="date">
+                @if (R["d_read"] != null && R["d_read"].ToString() != "1900-01-01 오전 12:00:00")
+                {
+                    @R["d_read"].ToString();
+                }
+                else
+                {
+                    @:미확인
+                }
+                </span></div>
+            }
+            else
+            {
+            <div class="i1"><span class="b">보낸사람</span> : 
+                @if (M1 != null)
+                {
+                    @Html.Raw(M["name"] + "(" + M["nic"] + ")");
+                }
+                else
+                {
+                    @:관리자
+                }
+            </div>
+        
+            <div class="i1"><span class="b">보낸시간</span> : <span class="date"> @R["d_regis"].ToString() </span></div>
+            }
+
+            //string msgClassString = "";
+            if (g["mobile"] != "" && Session["pcmode"] != "Y")
+            {
+            <div class="msg1 scrollbar01"> @_System.getContents(R["content"], R["html"]) </div>            
+            }
+            else
+            {
+            <div class="msg scrollbar01">@_System.getContents(R["content"], R["html"])</div>
+
+            }
+    }
+        
+        
+        
+		
+		<div class="pagebox01">
+            <script type="text/javascript">getPageLink(5, @p, @TPG, '@g["img_core"]/page/default');</script>
+		</div>
+
+		<div class="footer">
+            @{
+                if (R["my_mbruid"] == my["uid"])
+                {
+                    if (R["by_mbruid"] > 0)
+                    {
+                        <input type="button" value=" 답장 " class="btnblue b" onclick="location.href = '@g["s"]/?r=@r&system=popup.papersend&iframe=Y&uid=@R["uid"]'") />                        
+                    }
+                    if (R["inbox"] == 1)
+                    {
+                        <input type="button" value=" 보관 " class="btngray" onclick="actCheck('paper_save');" />    
+                    }
+                    <input type="button" value=" 삭제 " class="btngray" onclick="actCheck('paper_delete');" />
+                    
+                }                
+            }
+                <input type="button" value=" 닫기 " class="btngray" onclick="top.close();" />
+                            
+                            
+    		</div>
+	</div>
+</div>                            
+                    
+                
+                
+     
+<form name="procForm" action="@g["s"]/" method="post" target="@Html.Raw("_action_frame_" + m)" onsubmit="return submitCheck(this);">
+<input type="hidden" name="m" value="member" />
+<input type="hidden" name="a" value="" />
+<input type="checkbox" name="members" value="@R["uid"]" checked="checked" class="hide" />
+</form>
+    
+    
+<script type="text/javascript">
+//<![CDATA[
+function directMsg()
+{
+	opener.location.href = '@g["s"]/?r=@r&mod=mypage&page=paper';
+	top.close();
+}
+function actCheck(act)
+{
+	if (confirm('정말로 실행하시겠습니까?  '))
+	{
+		var f = document.procForm;
+		f.a.value = act;
+		f.submit();
+	}
+}
+
+@{
+    if (g["mobile"] != "" && Session["pcmode"] != "Y")
+    {        
+        @Html.Raw("top.resizeTo(330,360);\n");
+    }
+    else
+    {
+         @Html.Raw("top.resizeTo(430,430);\n");
+    }
+}
+
+document.title = "쪽지알림";
+//]]>
+</script> 

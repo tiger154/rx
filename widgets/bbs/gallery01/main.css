@@ -1,0 +1,14 @@
+.widget_gallery01 {position:relative;padding:0;}
+.widget_gallery01 h6 {border-bottom:#dfdfdf solid 1px;padding:0 0 9px 0;margin:0 0 25px 0;font-weight:bold;font-family:"gothic","dotum";font-size:13px;color:#384799;}
+.widget_gallery01 h6 a {color:#384799;}
+.widget_gallery01 ul {padding:0;margin:0;}
+.widget_gallery01 li {float:left;margin:0 10px 20px 10px;list-style-type:none;}
+.widget_gallery01 li .thumb {padding:2px;border:#efefef solid 1px;background:#f9f9f9;}
+.widget_gallery01 li p {line-height:130%;padding:5px 0 0 0;height:30px;overflow:hidden;}
+.widget_gallery01 li p a {font-weight:bold;color:#333;}
+.widget_gallery01 li p a:hover {text-decoration:underline;}
+.widget_gallery01 li p .comment {font:normal 11px arial;color:#FC6138;}
+.widget_gallery01 li p .new {font-family:arial;font-size:10px;color:#ff0000;}
+.widget_gallery01 li p .date {display:block;font-family:arial;font-size:10px;color:#999;}
+.widget_gallery01 .more {position:absolute;top:4px;right:1px;font-size:11px;font-family:dotum;color:#c0c0c0;}
+.widget_gallery01 .more:hover {text-decoration:underline;color:#000000;}

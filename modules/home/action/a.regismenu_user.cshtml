@@ -1,0 +1,148 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var joint = Request["joint"];
+    var addinfo = Request["addinfo"];
+    var name = Request["name"];
+    var redirect = Request["redirect"];
+    var vtype = Request["vtype"];
+    var depth = Request["depth"];
+    var parent = Request["parent"];
+    var account = Request["account"];
+    var mobile = Request["mobile"];
+    var hidden = Request["hidden"];
+    var perm_g = Request["perm_g"];
+    var perm_l = Request["perm_l"];
+    var layout = Request["layout"];
+    var puthead = Request["puthead"];
+    var putfoot = Request["putfoot"];
+    var target = Request["target"];
+    var backc = Request["backc"];
+    var codhead = Request.Unvalidated("codhead");
+    var codfoot = Request.Unvalidated("codfoot");
+    var menutype = Request["menutype"];
+    var id = Request["id"];
+    var backgo = Request["backgo"];
+    var reject = Request["reject"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    if (id != null && id != "")
+    {
+        id = id.Trim();
+    }
+    if (mobile == null || mobile == "")
+    {
+        mobile = "0";
+    }
+    if (hidden == null || hidden == "")
+    {
+        hidden = "0";
+    }
+    if (reject == null || reject == "")
+    {
+        reject = "0";
+    }
+    if (joint != null && joint != "")
+    {
+        joint = joint.Replace("&amp;", "&").Trim();
+    }
+    else
+    {
+        joint = "0";
+    }
+
+    if (redirect != "1" && (joint.Contains("&c=")) || joint.Contains("?c="))
+    {
+        @_System.getLink("", "", "연결주소에 사용할 수 없는 파라미터가 있습니다.", "")
+        return;
+    }
+
+    //include_once $g['path_core'].'function/menu.func.php';
+
+    dynamic R = _DB.Get_module_data(AppState["table_s_menu"], "uid", uid);
+
+    if (id != R["id"])
+    {
+        dynamic ISMCODE = _DB.GetDbData_M(AppState["table_s_menu"].ToString(), "id='" + id + "' AND site=" + s);
+        if (ISMCODE != null)
+        {
+            @_System.getLink("", "", "메뉴코드 [" + ISMCODE["id"] + "] 는 다른메뉴 [" + ISMCODE["name"] + "] 에서 사용중입니다.", "")
+            return;
+        }
+    }
+
+    if ((redirect == null || redirect != "1") && menutype == "1")
+    {
+        string[] ctarr = _Menu.getMenuCodeToPath(AppState["table_s_menu"].ToString(), R["uid"], 0);
+        string catcode = "";
+        int ctnum = ctarr.Length;
+
+        for (int i = 0; i < ctnum; i++)
+        {
+            catcode = catcode + ctarr[i][Convert.ToInt32(id)] + "/";
+        }
+        string c = catcode.Substring(0, catcode.Length - 1);
+        joint = joint.Replace("cync=Y", "cync=[" + m + "][c" + R["uid"] + "][,,,][][][c:" + c + "]");
+    }
+
+    string QVAL = "id='" + id + "',menutype='" + menutype + "',mobile='" + mobile + "',hidden='" + hidden + "',reject='" + reject + "',name='" + name + "',target='" + target
+        + "',redirect='" + redirect + "',joint='" + joint + "'";
+    string UPDATE_MENU_SQL = "UPDATE " + AppState["table_s_menu"].ToString() + " SET " + QVAL + " WHERE uid=" + uid;
+    @_DB.Execute(UPDATE_MENU_SQL);
+
+    if (backgo != null && backgo != "")
+    {
+        string catst = "";
+
+        Session["arr_uid"] = null;
+        @_Menu.getMenuCodeToPath(AppState["table_s_menu"].ToString(), uid, 0)
+ 
+        foreach (string val in Session["arr_uid"].ToString().Split('|'))
+        {
+            if (val == "")
+            {
+                continue;
+            }                
+                
+            catst += val.Split(',')[2] + "/";       //id값 저장 string
+        }
+
+        catst = catst.Substring(0, catst.Length - 1);
+
+        @_System.getLink(_System.RW("c=" + catst, g["r"], _HS), "parent.", "", "")
+        return;
+    }
+    else
+    {
+        @_System.getLink("reload", "parent.", "", "")
+        return;
+    }
+}

@@ -1,0 +1,65 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    var pack = Request["pack"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    if (type == "module")
+    {
+        _System.delAllDir(g["path_root_ps"] + g["path_module"] + pack);
+        Directory.Delete(g["path_root_ps"] + g["path_module"] + pack);
+    }
+    else if (type == "layout")
+    {
+        _System.delAllDir(g["path_root_ps"] + g["path_layout"] + pack);
+        Directory.Delete(g["path_root_ps"] + g["path_layout"] + pack);
+    } 
+    else if (type == "widget")
+    {
+        _System.delAllDir(g["path_root_ps"] + g["path_widget"] + (pack.Replace(".\\widgets\\", "")).Replace(".", ""));
+        Directory.Delete(g["path_root_ps"] + g["path_widget"] + (pack.Replace(".\\widgets\\", "")).Replace(".", ""));
+    } 
+    else if (type == "bbstheme")
+    {        
+        _System.delAllDir(g["path_root_ps"] + g["path_module"] + "bbs\\theme\\" + pack);
+        Directory.Delete(g["path_root_ps"] + g["path_module"] + "bbs\\theme\\" + pack);
+    } 
+    
+    if (type == "widget")
+    {
+        @_System.getLink("?m=admin&module=" + m + "&front=pack&type=widget", "parent.","","")
+        return;
+    }
+    else{
+        @_System.getLink("reload", "parent.", "", "")
+        return;
+    }
+}

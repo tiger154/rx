@@ -1,0 +1,1 @@
+﻿CREATE TABLE rx_s_mbrsns (uid  int  identity(1,1)  NOT NULL , memberuid  INT   NOT NULL , st  NVARCHAR(40)   NOT NULL , sf  NVARCHAR(40)   NOT NULL , sm  NVARCHAR(40)   NOT NULL , sy  NVARCHAR(40)   NOT NULL ,PRIMARY KEY (uid));

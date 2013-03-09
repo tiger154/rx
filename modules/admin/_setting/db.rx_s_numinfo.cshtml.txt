@@ -1,0 +1,15 @@
+﻿CREATE TABLE rx_s_numinfo ( 
+uid  int  identity(1,1)  NOT NULL , 
+date  nvarchar(8)   NOT NULL , 
+site  int	DEFAULT 0   NOT NULL , 
+visit  int	DEFAULT 0   NOT NULL , 
+login  int	DEFAULT 0   NOT NULL ,  
+comment  int	DEFAULT 0   NOT NULL ,  
+oneline  int	DEFAULT 0   NOT NULL , 
+rcvtrack  int	DEFAULT 0   NOT NULL , 
+sndtrack  int	DEFAULT 0   NOT NULL , 
+upload  int	DEFAULT 0   NOT NULL , 
+download  int	DEFAULT 0   NOT NULL , 
+mbrjoin  int	DEFAULT 0   NOT NULL , 
+mbrout  int	DEFAULT 0   NOT NULL , 
+PRIMARY KEY (uid));

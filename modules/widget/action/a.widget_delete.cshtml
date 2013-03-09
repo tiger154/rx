@@ -1,0 +1,58 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////  
+    var pwd = Request["pwd"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    if(pwd!=null && pwd!="") {
+        if(pwd.Contains("\\widgets")) {
+            if(pwd.Length >10) {
+                _System.delAllDir(pwd);
+                Directory.Delete(pwd);
+
+                string[] pwd_exp = pwd.Split('\\');
+                int pwd_len = pwd_exp.Length;
+                string pwd_str = "";
+                
+                for(int i=0; i<pwd_len-2; i++) {
+                    pwd_str = pwd_str + pwd_exp[i] + "\\";
+                }
+                
+                @_System.getLink("@g["s"]/?r=home&m=admin&module=widget", "parent.", "", "")
+                return;
+            }
+        }
+    }
+    else
+    {
+        @_System.getLink("", "", "", "")       
+        return;                                 
+    }
+}

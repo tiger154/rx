@@ -1,0 +1,54 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    
+    var my = PageData[0];
+    dynamic g = PageData[1];
+    var s = PageData[2];
+    var m = PageData[4];
+    var r = PageData[7];
+    
+    var uid = Request["uid"];
+    
+    if (my["admin"] != "1")
+    {
+        @_System.getLink("", "", "삭제권한이 없습니다.", "")
+        return;
+    }
+
+    dynamic R = _DB.Get_module_data(AppState["table_s_trackback"], "uid", uid);
+
+    if (R["uid"] == 0)
+    {
+        @_System.getLink(_System.RW("", g["r"], _HS), "", "", "")
+        return;
+    }
+
+
+    string[] cyncArr = _System.getArrayString(Session[m + "cync"]);
+
+    string DELETE_TB_SQL = "DELETE " + AppState["table_s_trackback"] + " WHERE uid=" + R["uid"];
+    @_DB.Execute(DELETE_TB_SQL);
+    
+    if (R["type"] == "1")
+    {
+        string UPDATE_TB_SQL = "UPDATE " + AppState["table_" + cyncArr[0] + "data"] + " SET trackback=trackback-1 WHERE uid=" + cyncArr[1];
+        string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET rcvtrack=rcvtrack-1 WHERE date=" + R["d_regis"].ToString("yyyyMMdd") + " AND  site=" + R["site"];
+
+        @_DB.Execute(UPDATE_TB_SQL);
+        @_DB.Execute(UPDATE_NUM_SQL);
+    }
+    else
+    {
+        string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET sndtrack=sndtrack-1 WHERE date=" + R["d_regis"].ToString("yyyyMMdd") + " AND  site=" + R["site"];
+        
+        @_DB.Execute(UPDATE_NUM_SQL);        
+    }
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;   
+    
+}

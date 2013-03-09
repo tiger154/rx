@@ -1,0 +1,285 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var c = PageData[2];
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var my = PageData[6];    
+    var s = PageData[9];    
+    var r = PageData[12];
+    var _HM = PageData[14];    
+
+    var bid = Request["bid"];
+    var uid = Request["uid"];
+    var reply = Request["reply"];
+    var cat = Request["cat"];
+
+    dynamic g = Session["g"];
+    dynamic R = Session["bbsdata"];
+    dynamic B = Session["bbslist"];
+    dynamic d_theme = Session["bbstheme"];
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    
+    var HTML_set = "";
+    var frame_name = "_action_frame_" + m;    
+    var editframe_set = "";
+    var upStr = "";
+    var edittool_set = "N";
+    var idStr = bid;
+    
+    if (R["bbsid"] != "")
+    {
+        idStr = R["bbsid"];
+    }
+    if (reply == "Y")
+    {
+        upStr = "";
+    }
+
+    if (d_theme["edit_html"] == "" || Convert.ToInt32(d_theme["edit_html"]) > my["level"])        
+    {
+        HTML_set = "TEXT";
+    }
+    else
+    {
+        if (R["html"] != "")
+        {
+            HTML_set = R["html"];
+        }
+        else
+        {
+            HTML_set = "HTML";
+        }
+    }
+
+    if (d_theme["edit_html"] != "" && Convert.ToInt32(d_theme["edit_html"]) <= my["level"] && d_theme["show_edittool2"] == "1")
+    {
+        edittool_set = "Y";
+    }
+    if (reply != "Y")
+    {
+        editframe_set = R["upload"];
+        upStr = R["upload"];
+    }
+}
+
+<div id="bbswrite">
+    <form name="writeForm" method="post" action="@g["s"]/" target="@frame_name" onsubmit="return writeCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="a" value="write" />
+	<input type="hidden" name="c" value="@c" />
+    <input type="hidden" name="cuid" value="@_HM["uid"]" />
+	<input type="hidden" name="m" value="@m" />    
+    <input type="hidden" name="bid" value="@idStr" />
+	<input type="hidden" name="uid" value="@R["uid"]" />
+	<input type="hidden" name="reply" value="@reply" />
+	<input type="hidden" name="nlist" value="@g["bbs_list"]" />
+    <input type="hidden" name="pcode" value="@date["totime"].ToString()" />
+    <input type="hidden" name="upfiles" id="upfilesValue" value="@upStr" />
+
+	<table>
+	@if (my["id"] == "")
+    {
+        <tr>
+	    <td class="td1">작성자명</td>
+	    <td class="td2">
+		<input size="20" type="text" name="name" value="@R["name"]" class="input subject" />
+	    </td>
+	    </tr>
+		    
+        if (R["uid"] == 0 || reply == "Y")
+        {
+            <tr>
+	        <td class="td1">비밀번호</td>
+	        <td class="td2">
+	        <input size="20" type="password" name="pw" value="" class="input subject" />
+
+            @if (R["hidden"] == "1" && reply == "Y")
+            {
+		        <div class="guide">
+                    <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+                    비밀답변은 비번을 수정하지 않아야 원게시자가 열람할 수 있습니다.
+		        </div>
+            }
+            </td>
+            </tr>
+        }
+    }
+
+    @if (B["category"] != "")
+    {
+        string[] _cat_exp = B["category"].Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+        int _catnum = _cat_exp.Count();
+
+        <tr>
+		<td class="td1">카테고리</td>
+		<td class="td2">
+		    <select name="category">
+                <option value="">&nbsp;+ @_cat_exp[0]선택</option>
+                <option value="">-----------------------------------------------------------------------------------------</option>
+
+                @for (int i = 1; i < _catnum; i++)
+                {
+                    string exp_select_1 = "";
+                    if (d_theme["show_catnum"] != "")
+                    {
+                        int expNum = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "site='" + s + "' AND notice=0 AND bbs=" + B["uid"] + " AND category='" + _cat_exp[i] + "'");
+
+                        exp_select_1 = "(" + expNum.ToString() + ")";
+                    }
+                    
+                    <option value="@_cat_exp[i]" @_System.getSltStr(_cat_exp[i], R["category"] + "|" + cat)>ㆍ @_cat_exp[i]@exp_select_1 </option>
+                }
+			</select>
+			
+            @if (my["admin"] == "1")
+            {
+    			<a href="@g["s"]/?r=@r&m=admin&module=@m&uid=@B["uid"]" target="_blank"><img src="@g["img_core"]/_public/btn_add.gif" alt="추가" title="추가" /></a>
+            }
+	
+        </td>
+    	</tr>
+    }
+
+    <tr>
+	<td class="td1">제목</td>
+	<td class="td2">
+		<input type="text" name="subject" value="@Html.Raw(g["subject"])" class="input subject" />
+		<span class="check">
+        @if (my["admin"] == "1")
+        {
+            <input type="checkbox" name="notice" value="1" @_System.getChkStr(R["notice"], 1) />@:공지글
+        }       
+		@if (d_theme["use_hidden"] == "1")
+        {		
+            <input type="checkbox" name="hidden" value="1" @_System.getChkStr(R["hidden"], 1) />@:비밀글
+		}
+        @if (d_theme["use_hidden"] == "2")
+        {
+			<input type="hidden" name="hidden" value="1" />
+        }
+		</span>
+		</td>
+		</tr>
+    </table>
+    
+    <!------ editor setting ------>
+	<div class="editbox">
+    @if (g["mobile"] == "" && d_theme["edit_html"] != "" && Convert.ToInt32(d_theme["edit_html"]) <= my["level"])
+    {
+  		<div class="iconbox">
+        @if (d_theme["perm_photo"] != "" && Convert.ToInt32(d_theme["perm_photo"]) <= my["level"])
+        {
+            <a href="#." onclick="OpenWindow('@g["s"]/?r=@r&m=upload&mod=photo&gparam=upfilesValue|upfilesFrame|editFrame');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" /> @:사진 </a>
+		    <img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+        }
+        @if (d_theme["perm_upload"] != "" && Convert.ToInt32(d_theme["perm_upload"]) <= my["level"])
+        {
+            <a href="#." onclick="OpenWindow('@g["s"]/?r=@r&m=upload&mod=file&gparam=upfilesValue|upfilesFrame');" /><img src="@g["img_core"]/_public/ico_xfile.gif" alt="" /> @:파일 </a>
+            <img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />    
+        }
+                    
+		<a href="#." onclick="ToolCheck('layout');">레이아웃</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('table');">테이블</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('box');">박스</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('char');">특수문자</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('link');">링크</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+
+		<a href="#." onclick="ToolCheck('icon');">아이콘</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('flash');">플래쉬</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('movie');">동영상</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="ToolCheck('html');">HTML</a>
+		<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+		<a href="#." onclick="frames.editFrame.ToolboxShowHide(0);"><img src="@g["img_core"]/_public/ico_edit.gif" alt="" />편집</a>
+        </div>
+    }
+        
+	<div>
+        <input type="hidden" name="html" id="editFrameHtml" value="@HTML_set" />
+        <input type="hidden" name="content" id="editFrameContent" value="@R["content"]" />
+        <iframe name="editFrame" id="editFrame" src="@g["s"]/?r=@r&m=editor&toolbox=@edittool_set" width="100%" height="@d_theme["edit_height"]" frameborder="0" scrolling="no" allowTransparency="true"></iframe>
+	</div>
+		
+    @if ((d_theme["perm_upload"] != "" && Convert.ToInt32(d_theme["perm_upload"]) <= my["level"]) || (d_theme["perm_photo"] != "" && Convert.ToInt32(d_theme["perm_photo"]) <= my["level"]))
+    {		
+        <div>
+        <iframe name="upfilesFrame" id="upfilesFrame" src="@g["s"]/?r=@r&m=upload&mod=list&gparam=upfilesValue|editFrame&code=@editframe_set" width="100%" height="0" frameborder="0" scrolling="no" allowTransparency="true"></iframe>
+		</div>
+    }
+	</div>
+
+    <table>
+	@if (d_theme["show_wtag"] == "1")
+    {
+	    <tr>
+	    <td class="td1">검색태그</td>
+	    <td class="td2">
+		<input size="80" type="text" name="tag" value="@R["tag"]" class="input subject" />
+		<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('bbsTag','block','none');" />
+
+        <div id="bbsTag" class="guide hide">
+            <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+            이 게시물을 가장 잘 표현할 수 있는 단어를 콤마(,)로 구분해서 입력해 주세요.
+		</div>			
+		</td>
+		</tr>
+    }
+    @if (d_theme["show_trackback"] == "1")
+    {
+	    <tr>
+	    <td class="td1">엮을주소</td>
+	    <td class="td2">
+		<input size="80" type="text" name="trackback" value="" class="input subject" />
+		<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('bbsTrackback','block','none');" />
+		<div id="bbsTrackback" class="guide hide">
+			<img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+			이 게시물을 보낼 트랙백주소를 입력해 주세요.
+		</div>				
+		</td>
+		</tr>
+    }
+    
+ 	<tr>
+	<td class="td1"></td>
+	<td class="td2">
+		<div class="after">
+		게시물 등록(수정/답변)후
+            
+        @if (Session["backtype"] == null)
+        {
+            <input type="radio" name="backtype" id="backtype1" value="list" checked="checked" /><label for="backtype1">목록으로 이동</label>    
+        }
+        else
+        {
+            <input type="radio" name="backtype" id="backtype1" value="list"@_System.getChkStr(Session["backtype"], "list") /><label for="backtype1">목록으로 이동</label>    
+        }
+        
+		<input type="radio" name="backtype" id="backtype2" value="view"@_System.getChkStr(Session["backtype"], "view") /><label for="backtype2">본문으로 이동</label>
+		<input type="radio" name="backtype" id="backtype3" value="now"@_System.getChkStr(Session["backtype"], "now") /><label for="backtype3">이 화면 유지</label>
+		</div>
+	</td>
+	</tr>
+    </table>
+
+	<div class="bottombox">
+		<input type="button" value="취소" class="btngray" onclick="history.back();" />
+		<input type="submit" value="확인" class="btnblue" />
+	</div>
+
+	</form>
+</div>

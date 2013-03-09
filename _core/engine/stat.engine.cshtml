@@ -1,0 +1,140 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var m = PageData[1];
+    var s = PageData[2];
+    var my = PageData[3];
+    var iframe = PageData[4];
+    var system = PageData[5];
+    var date = PageData[6];
+    var _keyword = PageData[7];
+    var referer = PageData[8];
+        
+    if (m != "admin" && iframe != "Y" && (system == "" || system == null))
+    {
+        string today_cut = date["year"] + date["month"] +  date["day"];
+        string UserAgent = Request.UserAgent;
+
+        if (UserAgent.Contains("Google") || UserAgent.Contains("Yahoo") || UserAgent.Contains("Naver") || UserAgent.Contains("bot"))
+        {
+            Session["mylog" + s] = AppState["myip"] + "-" + date["totime"].ToString();
+            Session["agent" + s] = UserAgent;
+        }
+
+        if (Session["mylog" + s] != null)
+        {
+            string counter_up = "UPDATE " + AppState["table_s_counter"] + " SET page=page+1 WHERE site=" + s + " AND date='" + today_cut + "'";
+            string where_str = "[name][nic][id][term]";
+            string where = Request["where"];
+
+            @_DB.Execute(counter_up);
+
+            if (_keyword != null && _keyword != "" && where != null && where_str.Contains(where))
+            {
+                if (_DB.GetDbData_Count(AppState["table_s_inkey"].ToString(), "site=" + s + " and date='" + today_cut + "' and keyword='" + _keyword + "'") > 0)
+                {
+                    dynamic _INKEY = _DB.GetDbData_M(AppState["table_s_inkey"].ToString(), "site=" + s + " and date='" + today_cut + "' and keyword='" + _keyword + "'");
+                    string inkey_up = "UPDATE " + AppState["table_s_inkey"] + " SET hit=hit+1 WHERE uid=" + _INKEY["uid"];
+
+                    @_DB.Execute(inkey_up);
+                }
+                else
+                {
+                    string inkey_ins = "INSERT INTO " + AppState["table_s_inkey"] + " (site,date,keyword,hit) VALUES (" + s + ",'" + today_cut + "','" + _keyword + "',1)";
+
+                    @_DB.Execute(inkey_ins);
+                }
+            }
+        }
+        else
+        {
+            string _sengine = _System.getSearchEngine(referer);
+            string _outkeyw = _System.getKeyword(referer);
+            string _browser = _System.getBrowser(UserAgent);
+
+            if (Session["mbr_uid"] == null)
+            {
+                my["uid"] = "0";
+            }
+
+            string _Referer_ins_sql = "INSERT INTO " + AppState["table_s_referer"] + " (site, mbruid, ip, referer, agent, d_regis) VALUES (" + s + "," + my["uid"] + ",'" + AppState["myip"] + "','" + referer + "','" + UserAgent + "',getdate())";
+            @_DB.Execute(_Referer_ins_sql);
+
+            int _REFCNT = _DB.GetDbData_Count(AppState["table_s_referer"].ToString(), "");
+
+            if (_REFCNT > 1000000)
+            {
+                string _REFOVER_sql = _System.GetQuery(AppState["table_s_referer"].ToString(), "", "", "uid", "ASC", (_REFCNT - 1000000), "0");
+
+                foreach (var _REFK in _DB.Query(_REFOVER_sql))
+                {
+                    string del_sql = "DELETE FROM " + AppState["table_s_referer"] + " WHERE uid=" + _REFK["uid"];
+                    @_DB.Execute(del_sql);
+                }
+            }
+
+            if (_outkeyw != "")
+            {       // outside key
+                string _OUTKEY = _DB.GetDbData_S(AppState["table_s_outkey"].ToString(), "site=" + s + " AND date='" + today_cut + "' AND keyword='" + _outkeyw + "'", "uid").ToString();
+                int _OUTKEY_CNT = _DB.GetDbData_Count(AppState["table_s_outkey"].ToString(), "site=" + s + " AND date='" + today_cut + "' AND keyword='" + _outkeyw + "'");
+
+                if (_OUTKEY_CNT > 0 && _OUTKEY != "")
+                {
+                    string out_up_sql = "UPDATE " + AppState["table_s_outkey"] + " SET " + _sengine + "=" + _sengine + "+1,total=total+1 WHERE uid=" + _OUTKEY;
+                    @_DB.Execute(out_up_sql);
+                }
+                else
+                {
+                    string out_ins_sql = "INSERT INTO " + AppState["table_s_outkey"] + " (site,date,keyword," + _sengine + ",total) VALUES (" + s + ",'" + today_cut + "','" + _outkeyw + "',1,1)";
+                    @_DB.Execute(out_ins_sql);
+                }
+            }
+
+            string _ISBROWER = _DB.GetDbData_S(AppState["table_s_browser"].ToString(), "site=" + s + " AND date='" + today_cut + "' AND browser='" + _browser + "'", "uid").ToString();
+            int _ISBROWER_CNT = _DB.GetDbData_Count(AppState["table_s_browser"].ToString(), "site=" + s + " AND date='" + today_cut + "' AND browser='" + _browser + "'");
+
+            if (_ISBROWER_CNT > 0 && _ISBROWER != "")
+            {      // browser
+                string brow_up_sql = "UPDATE " + AppState["table_s_browser"] + " SET hit=hit+1 WHERE uid=" + _ISBROWER;
+                @_DB.Execute(brow_up_sql);
+            }
+            else
+            {
+                string brow_ins_sql = "INSERT INTO " + AppState["table_s_browser"] + " (site,date,browser,hit) VALUES (" + s + ",'" + today_cut + "','" + _browser + "',1)";
+                @_DB.Execute(brow_ins_sql);
+            }
+
+            string _TODAYCNT_sql = "SELECT * FROM " + AppState["table_s_counter"] + " WHERE date='" + today_cut + "' AND site=" + s;
+
+            if (_DB.getDbRows(_TODAYCNT_sql) == 0)
+            {      // counter
+                string counter_ins = "INSERT INTO " + AppState["table_s_counter"] + " (site, date, hit, page) VALUES (" + s + ", '" + today_cut + "', 1, 1)";
+                string numinfo_ins = "INSERT INTO " + AppState["table_s_numinfo"] + " (date, site, visit) VALUES ('" + today_cut + "', " + s + ", 1)";
+
+                @_DB.Execute(counter_ins);
+                @_DB.Execute(numinfo_ins);
+            }
+            else
+            {
+                dynamic _TODAYCNT = _DB.GetDbData_M(AppState["table_s_counter"].ToString(), "date='" + today_cut + "' AND site='" + s + "'");
+
+                string counter_up = "UPDATE " + AppState["table_s_counter"] + " SET hit=hit+1, page=page+1 WHERE uid=" + _TODAYCNT["uid"];
+                string numinfo_up = "UPDATE " + AppState["table_s_numinfo"] + " SET visit=visit+1 WHERE date='" + today_cut + "' AND site=" + s;
+
+                @_DB.Execute(counter_up);
+                @_DB.Execute(numinfo_up);
+            }
+
+            Session["mylog" + s] = AppState["myip"].ToString() + "-" + date["totime"].ToString();
+            Session["agent" + s] = UserAgent;
+        }
+
+    }
+}

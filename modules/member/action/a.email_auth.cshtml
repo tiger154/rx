@@ -1,0 +1,100 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    var tmpuid = Request["tmpuid"];
+    var tmpcode = Request["tmpcode"];    
+    
+    dynamic R = null;
+    dynamic d_member = _DB.Get_code("member");
+
+    string M_uid = "";
+    
+    if (tmpuid == null || tmpuid == "" || tmpuid == "0") 
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+    else if (tmpcode==null || tmpcode==null) 
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+
+    R = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + tmpuid + " and d_regis='" + tmpcode + "'");
+    
+    if(R==null || R["auth"] =="2") 
+    {
+        @_System.getLink(_System.RW("", g["r"], _HS), "", "잘못된 요청입니다.", "") 
+        return;
+    }
+    
+    if(R["auth"] == "1") 
+    {
+        @_System.getLink(_System.RW("", g["r"], _HS), "", "이미 승인된 요청입니다. 로그인해 주세요.", "")
+        return;
+    }
+    
+    if(R["auth"] == "3") 
+    {
+        string UPDATE_MBRDT_SQL = "UPDATE " + AppState["table_s_mbrdata"].ToString() + " SET auth=1 WHERE memberuid=" + R["memberuid"];
+        @_DB.Execute(UPDATE_MBRDT_SQL);
+    }
+    
+    if(d_member["join_email_send"]!=null && d_member["join_email_send"]!="") 
+    {
+        if (d_member["join_email"]!=null && d_member["join_email"]!="") 
+        {
+            M_uid = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "uid=" + R["memberuid"], "uid");
+
+            StreamReader sr = new StreamReader(g["dir_module"] + "doc\\" + type + ".txt");
+
+            string content = "";
+            string line = "";
+
+            while ((line = sr.ReadLine()) != null)
+            {
+                content = content + line;
+            }
+            sr.Close();
+
+            content = content.Replace("{NAME}", R["name"]);
+            content = content.Replace("{NICK}", R["nic"]);
+            content = content.Replace("{ID}", M_uid);
+            content = content.Replace("{EMAIL}", R["email"]);
+
+            //이메일 전송함수 무시!
+            //getSendMail($R['email'].'|'.$R['name'], $d['member']['join_email'].'|'.$_HS['name'], '['.$_HS['name'].']회원가입을 축하드립니다.', $content, 'HTML');               
+        }    
+    }
+
+    
+    @_System.getLink(_System.RW("", g["r"], _HS), "", "인증이 완료되었습니다. 로그인해 주세요.", "")
+    return;
+}

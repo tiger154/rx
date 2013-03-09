@@ -1,0 +1,285 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    dynamic _HS = PageData[1];
+    var wdgvar = PageData[2];
+
+    string swidget = PageData[3];
+    dynamic g = PageData[0];    
+
+    //string swidget = Request["swidget"]; 
+    string r = Request["r"];
+    string option = Request["option"];
+    string isWcode = Request["isWcode"];
+    string dropfield = Request["dropfield"];
+    
+    if (!wdgvar.ContainsKey("bid"))
+    {
+        wdgvar.Add("bid", "");
+    }   
+    if (!wdgvar.ContainsKey("recnum"))
+    {
+        wdgvar.Add("recnum", "5");
+    }
+    if (!wdgvar.ContainsKey("link"))
+    {
+        wdgvar.Add("link", "");
+    }
+    if (!wdgvar.ContainsKey("title"))
+    {
+        wdgvar.Add("title", "최근포스트");
+    }
+    if (!wdgvar.ContainsKey("limit"))
+    {
+        wdgvar.Add("limit", "8");
+    }
+    if (!wdgvar.ContainsKey("sbjcut"))
+    {
+        wdgvar.Add("sbjcut", "");
+    }
+    if (!wdgvar.ContainsKey("bnum"))
+    {
+        wdgvar.Add("bnum", "3");
+    }
+    if (!wdgvar.ContainsKey("gnum"))
+    {
+        wdgvar.Add("gnum", "4");
+    }
+    if (!wdgvar.ContainsKey("disp"))
+    {
+        wdgvar.Add("disp", "");
+    }    
+}
+
+<div id="mjointbox">
+
+	<div class="title">
+		이 위젯(<span class="b">@_System.getFolderName(g["path_root_ps"] + g["path_widget"] + swidget, "name.txt")</span>)을 추가하시겠습니까?
+	</div>
+
+
+
+	<form name="procform" onsubmit="return saveCheck(this);">
+
+
+	<table>
+	<tr>
+	<td class="td1">게시판선택</td>
+	<td class="td2">:</td>
+	<td class="td3">
+		<select name="bbsid" onchange="titleChange(this);">
+		<option value="">&nbsp;+ 전체게시물</option>
+		<option value="">----------------------------------</option>
+        @{
+            string BBSLIST = "SELECT * FROM " + AppState["table_bbslist"] + " ORDER BY gid ASC";
+            foreach (var R in _DB.Query(BBSLIST))
+            {
+                <option value="@R["uid"]^@R["name"]^@_System.RW("m=bbs&bid=" + R["id"], g["r"], _HS)" @_System.getSltStr(wdgvar["bid"], R["uid"])>ㆍ @R["name"] (@R["id"])</option>                       
+            }
+        }
+		</select>	
+	</td>
+	</tr>
+	<tr>
+	<td class="td1">타이틀</td>
+	<td class="td2">:</td>
+	<td class="td3"><input type="text" name="title" value="@wdgvar["title"]" size="36" class="input" /></td></tr>
+	<tr>
+	<td class="td1">링크</td>
+	<td class="td2">:</td>
+	<td class="td3"><input type="text" name="link" value="@wdgvar["link"]" size="36" class="input" /></td>
+	</tr>
+	<tr>
+	<td class="td1"></td>
+	<td class="td2"></td>
+	<td class="td4">
+		링크입력시 more(더보기) 링크가 출력됩니다.<br />
+		메뉴에 연결된 게시판일 경우 <span class="u">메뉴의 링크</span><br />
+		를 입력해 주세요<br />
+	</td>
+	</tr>
+	<tr>
+	<td class="td1">노출개수</td>
+	<td class="td2">:</td>
+	<td class="td3">
+		<select name="limit">
+        @for (int i = 1; i < 21; i++)
+        {
+            <option value="@i" @_System.getSltStr(Convert.ToInt32(wdgvar["limit"]) == i || (wdgvar["limit"] != "" && i == 6), true)>@Html.Raw(i+"개")</option>
+        }
+		</select>
+	</td>
+	</tr>
+	<tr>
+	<td class="td1">제목자르기</td>
+	<td class="td2">:</td>
+	<td class="td3">
+    <input type="text" name="sbjcut" value="@wdgvar["sbjcut"]" size="6" class="input" />자에서 자름(미입력시 자르지 않음)
+    </td>
+	</tr>
+	<tr>
+	<td class="td1">굵은제목수</td>
+	<td class="td2">:</td>
+	<td class="td3">
+		<select name="bnum">
+
+        @for (int i = 0; i < 21; i ++)
+        {
+            <option value="@i" @_System.getSltStr((wdgvar["bnum"] != "" && Convert.ToInt32(wdgvar["bnum"]) == i) || (wdgvar["bnum"] == "" && i == 3), true)>@Html.Raw(i+"개")</option>
+        }
+		</select>
+    </td>
+	</tr>
+	<tr>
+	<td class="td1">구분갯수</td>
+	<td class="td2">:</td>
+	<td class="td3">
+		<select name="gnum">
+        @for (int i = 0; i < 21; i ++)
+        {   
+            <option value="@i" @_System.getSltStr((wdgvar["gnum"] != "" && Convert.ToInt32(wdgvar["gnum"]) == i) || (wdgvar["gnum"] == "" && i == 4), true)>@Html.Raw(i+"개")</option>
+        }
+		</select>
+    </td>
+	</tr>
+	<tr>
+	<td class="td1">날짜</td>
+	<td class="td2">:</td>
+	<td class="td3 shift">
+		<select name="disp">
+        <option value="0" @_System.getSltStr(wdgvar["disp"], 0)>출력안함</option>
+        <option value="1" @_System.getSltStr(wdgvar["disp"], 1)>출력함</option>
+		</select>
+    </td>
+	</tr>
+
+	</table>
+
+	<div class="btnbox">
+	<input type="button" value="미리보기" class="btngray" onclick="imgOrignWin('@g["url_root_host"]/widgets/@swidget.Replace("\\","/")/thumb.jpg');" />
+
+    @{
+        
+        if (isWcode == "Y")
+        {
+            <input type="button" value="위젯코드" class="btnblue" onclick="widgetCode();" />
+        }
+        else
+        {
+            <input type="submit" value="@Html.Raw(_System.isEqual(option != null && option != "", true, "속성변경", "위젯추가"))" class="btnblue" />
+        }
+
+        swidget = swidget.Replace("\\", "/");
+    
+    }
+	</div>
+
+	</form>
+
+
+</div>
+
+<style type="text/css">
+#mjointbox {}
+#mjointbox .title {border-bottom:#dfdfdf dashed 1px;padding:0 0 10px 0;margin:0 0 20px 0;}
+#mjointbox .td1 {padding:0 20px 0 0;letter-spacing:-1px;}
+#mjointbox .td2 {padding:0 15px 0 0;color:#c0c0c0;}
+#mjointbox .td3 {}
+#mjointbox .td4 {padding:10px 0 0 0;color:#999;line-height:150%;}
+#mjointbox .btnbox {text-align:center;padding:20px 0 0 0;margin:20px 0 0 0;border-top:#dfdfdf dashed 1px;}
+</style>
+
+
+<script type="text/javascript">
+//<![CDATA[
+var RX_widgetCode;
+function widgetCode()
+{
+	var f = document.procform;
+	var bbsx = f.bbsid.value.split('^');
+	var widgetName = "@swidget";
+	var widgetInfo = "";
+
+	if(bbsx[0]) widgetInfo = "'bid'=>'"+bbsx[0]+"',";
+	if(f.limit.value) widgetInfo+= "'limit'=>'"+f.limit.value+"',";
+    if(f.limit.value) widgetInfo+= "'sbjcut'=>'"+f.sbjcut.value+"',";
+	if(f.title.value) widgetInfo+= "'title'=>'"+f.title.value+"',";
+	if(f.link.value) widgetInfo+= "'link'=>'"+f.link.value+"',";
+	if(f.link.value) widgetInfo+= "'bnum'=>'"+f.bnum.value+"',";
+	if(f.link.value) widgetInfo+= "'gnum'=>'"+f.gnum.value+"',";
+	if(f.link.value) widgetInfo+= "'disp'=>'"+f.disp.value+"',";
+    
+    RX_widgetCode = "";
+    RX_widgetCode += "@@{ \n";    
+    RX_widgetCode += "@@_System.getWidget(";
+    RX_widgetCode += "\"" + widgetName + "\",\"";    
+    RX_widgetCode += "[bid=>" + bbsx[0] + "]";
+    RX_widgetCode += "[limit=>" + f.limit.value + "]";
+    RX_widgetCode += "[sbjcut=>" + f.sbjcut.value + "]";    
+    RX_widgetCode += "[title=>" + f.title.value + "]";    
+    RX_widgetCode += "[link=>" + f.link.value + "]";    
+    RX_widgetCode += "[bnum=>" + f.bnum.value + "]";    
+    RX_widgetCode += "[gnum=>" + f.gnum.value + "]";    
+    RX_widgetCode += "[disp=>" + f.disp.value + "]";
+    RX_widgetCode += "\") \n";    
+    RX_widgetCode += "@@RenderPage(_System.getWidgetPath(), PageData[0], PageData[5], _System.getWdgvar())\n";
+    RX_widgetCode += "} \n";
+
+	OpenWindow('@g["s"]/?r=@r&system=popup.widgetcode&iframe=Y');
+}
+function titleChange(obj)
+{
+	var f = document.procform;
+	if (obj.value == '')
+	{
+		f.title.value = '최근포스트';
+		f.link.value = '';
+		f.title.focus();
+	}
+	else {
+		var tt = obj.value.split('^');
+		f.title.value = tt[1];
+		f.link.value = tt[2];
+		f.link.focus();
+	}
+}
+function saveCheck(f)
+{
+    @if(option==null || option==""){
+	    @Html.Raw("var i; \n");
+	    @Html.Raw("var n = 0; \n");
+
+        @Html.Raw("for (i=0; i<opener.maxTiles; i++) \n");
+	    @Html.Raw("{ \n");
+        @Html.Raw("if (opener.moveObject[i].style.display=='block') \n");
+		@Html.Raw("{ \n");
+		@Html.Raw("n = i+1; \n");
+        @Html.Raw("} \n");
+        @Html.Raw("} \n");
+    }
+    else{
+    	@Html.Raw("var n = " + dropfield + "; \n");
+    }
+    
+    @if(option==null || option==""){
+        @Html.Raw("opener.createTile('440px','350px','0px','0px'); \n");
+    }
+    
+
+	var bbsx = f.bbsid.value.split('^');
+
+	opener.blocktitle[n] = (bbsx[1]?'최근게시물('+bbsx[1]+')':'최근게시물(전체)');
+	opener.blockarray[n] = "@swidget,bid^" + bbsx[0] + ",limit^"+f.limit.value+",sbjcut^"+f.sbjcut.value+",link^"+f.link.value+",title^"+f.title.value+",bnum^"+f.bnum.value+",gnum^"+f.gnum.value+",disp^"+f.disp.value;
+	opener.getId('wtitle'+n).innerHTML = opener.blocktitle[n];
+	top.close();
+	return false;
+}
+//]]>
+</script>
+

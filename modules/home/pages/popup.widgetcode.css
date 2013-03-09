@@ -1,0 +1,11 @@
+﻿#codebox {width:100%;}
+#codebox .header {height:50px;border-bottom:#000000 solid 1px;background:#343B48;}
+#codebox .header h1 {float:left;padding:3px 20px 0 20px;margin:0;font-family:"malgun gothic";font-size:26px;color:#ffffff;}
+#codebox .header .guide {float:left;border-left:#999 dotted 1px;color:#888;font-family:dotum;font-size:11px;line-height:150%;margin:10px 0 0 0;padding:0 0 0 20px;}
+#codebox .line1 {height:1px;background:#1ACAD4;}
+#codebox .line2 {height:2px;background:#0BA2B4;}
+#codebox .line3 {height:1px;background:#037F93;}
+#codebox .content {}
+#codebox .content textarea {width:99%;height:350px;border:#dfdfdf solid 1px;overflow-x:hidden;overflow-y:auto;padding:5px 0 5px 5px;line-height:150%;color:#000000;font-family:"Courier new",arial,dotum;font-size:9pt;text-align:left;}
+
+#codebox .footer {height:50px;border-top:#dfdfdf solid 1px;text-align:center;padding:10px 0 0 0;background:#efefef;}

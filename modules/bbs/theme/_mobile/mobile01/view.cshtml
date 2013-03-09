@@ -1,0 +1,277 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/    
+    var _m = PageData[1];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+
+    dynamic g = Session["g"];
+    dynamic R = Session["bbsdata"];
+    dynamic d_theme = Session["bbstheme"];
+    dynamic d_bbs = Session["d_bbsenv"];
+    
+    dynamic upload = R["upload"];
+
+    string bid = Request["bid"];  
+    string _tagk;
+    string _tagk_link;
+    var CMT = Request["CMT"];
+    string frame_name = "_action_frame_" + m;
+
+    char[] delimiter = { ',' };
+    string[] strArray = R["tag"].Split(delimiter);
+
+
+    dynamic B = _DB.Get_module_data(AppState["table_" + m + "list"], "uid", R["bbs"]);
+
+    if (d_bbs == null)
+    {
+        d_bbs = _DB.Get_module_data(AppState["table_code_d_bbsenv"], "id", bid);
+    }
+
+    string dspStr = "1";
+    
+    if (R["display"] == "1")
+    {
+        dspStr = "0";
+    }
+    
+}
+
+
+<div id="bbsview">
+
+
+	<div class="viewbox">
+		<div class="icon">
+        
+            @if (g["member_photo"] != null && g["member_photo"] != "")
+            {                
+                <img src="@g["url_root"]/_var/simbol/@g["member_photo"]" alt="" />
+            }
+                
+        </div>
+
+		<div class="subject">
+			<h1>@R["subject"]</h1>
+		</div>
+		<div class="info">
+			<span class="han">@R[_HS["nametype"]]</span> <span class="split">|</span> 
+			@R["d_regis"] <span class="split">|</span> 
+			<span class="han">조회</span> <span class="num">@R["hit"]</span>
+
+            @if (d_theme["show_score1"] != null && d_theme["show_score1"] != "0")
+            {
+                <span class="split">|</span> <span class="han">공감</span> <span class="num">@R["score1"]</span>
+            }
+            @if (d_theme["show_score2"] != null && d_theme["show_score2"] != "0")
+            {
+                <span class="split">|</span> <span class="han">비공감</span> <span class="num">@R["score2"]</span>
+            }
+		</div>
+
+
+		<div id="vContent" class="content">
+        @if (R["html"] == "HTML")
+        {
+            @Html.Raw(R["content"]);
+        }
+        else
+        {
+            @_System.getContents(R["content"], R["html"]);
+        }
+
+        @if (d_theme["show_score1"] == "1" || d_theme["show_score2"] == "1")
+        {
+			<div class="scorebox">
+
+            @if (d_theme["show_score1"] == "1")
+            {
+                <a href="@g["bbs_action"]score&value=good&uid=@R["uid"]" target="@frame_name" onclick="return confirm('정말로 평가하시겠습니까?');"><img src="@g["img_module_skin"]/btn_s_1.gif" alt="공감" /></a>     
+            }
+            
+            @if (d_theme["show_score2"] == "1")
+            {
+                <a href="@g["bbs_action"]score&value=bad&uid=@R["uid"]" target="@frame_name" onclick="return confirm('정말로 평가하시겠습니까?');"><img src="@g["img_module_skin"]/btn_s_2.gif" alt="비공감" /></a> 
+            }
+			</div>            
+        }
+
+
+        @if (R["tag"] != "" && d_theme["show_tag"] == "1")
+        {
+			<div class="tag">
+			<img src="@g["img_core"]/_public/ico_tag.gif" alt="태그" />
+
+            @foreach (var tmp in strArray)
+            {
+                _tagk = tmp.Trim() + ",";
+                _tagk_link = tmp.Trim();
+                    
+    			<a href="@g["bbs_reset"]&where=subject|tag&keyword=@_tagk_link">@_tagk</a>
+            }
+			</div>
+        }
+
+
+    @if (R["upload"] != "")
+    {
+        string[] upArr = R["upload"].Split(']');      
+      
+		        <div class="attach">
+		        <ul>
+
+            @foreach (string _val in upArr)
+            {
+                if (_val.Trim() == "")
+                {
+                    continue;
+                }
+
+                dynamic _u = _DB.Get_module_data(AppState["table_s_upload"].ToString(), "uid", _val.Substring(1, _val.Length - 1));
+
+                /*if (_u["hidden"] == "1")
+                {
+                    continue;
+                }*/
+        
+                        <li>
+                            <a href="@g["s"]/?r=@r&m=upload&a=download&uid=@_u["uid"]" title="@_u["caption"]">@_u["name"]</a>
+                            <span class="size">@Html.Raw("(" + _System.getSizeFormat(_u["size"]) + ")")</span>
+                            <span class="down">@Html.Raw("(" + string.Format("{0:#,0}", Convert.ToInt32(_u["down"])) + ")")</span>
+                        </li>                        
+            }
+		        </ul>
+		        </div>
+    }    
+
+        @if (d_theme["snsping"] != "0")
+        {
+			<div class="snsbox">
+			<img src="@g["img_core"]/_public/sns_t1.gif" alt="twitter" title="게시글을 twitter로 보내기" onclick="snsWin('t');" />
+			<img src="@g["img_core"]/_public/sns_f1.gif" alt="facebook" title="게시글을 facebook으로 보내기" onclick="snsWin('f');" />
+			<img src="@g["img_core"]/_public/sns_m1.gif" alt="me2day" title="게시글을 me2day로 보내기" onclick="snsWin('m');" />
+			<img src="@g["img_core"]/_public/sns_y1.gif" alt="요즘" title="게시글을 요즘으로 보내기" onclick="snsWin('y');" />
+			</div>            
+        }
+        
+		</div>
+	</div>
+
+	<div class="bottom">
+		<span class="btn00"><a href="@g["bbs_modify"]@R["uid"]">수정</a></span>
+        @if (d_theme["use_reply"] == "1")
+        {
+            <span class="btn00"><a href="@g["bbs_reply"]@R["uid"]">답변</a></span>
+        }
+		<span class="btn00"><a href="@g["bbs_delete"]@R["uid"]" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</a></span>            
+		<span class="btn00"><a href="@g["bbs_list"]">목록으로</a></span>
+	</div>
+
+    @if (d_bbs["c_hidden"] != "1")
+    {
+ 	    <div class="comment">
+		    <img src="@g["img_module_skin"]/ico_comment.gif" alt="" class="icon1" />
+		    <a href="#." onclick="commentShow('comment');">댓글 <span id="@Html.Raw("comment_num" + R["uid"])">@R["comment"]</span>개</a>
+
+            @if (_System.getNew(R["d_comment"].ToString(), 24) == true)
+            {
+                <img src="@g["img_core"]/_public/ico_new_01.gif" alt="new" />
+            }
+	    </div>
+
+        
+    <a name="CMT"></a>
+            string srcStr = "";
+
+            if (d_bbs["c_hidden"] != "1")
+            {
+                if ((CMT != null && CMT != "") || d_bbs["c_open"] == "1")
+                {
+                    srcStr = g["s"] + "/?r=" + r + "&m=comment&skin=" + d_bbs["c_mskin"] + "&hidepost=" + dspStr + "&iframe=Y&cync=[" + m + "][" + R["uid"] + "][uid,comment,oneline,d_comment][" + AppState["table_" + m + "data"] + "][" + R["mbruid"] + "][m:" + m + ",bid:" + R["bbsid"] + ",uid:" + R["uid"] + "]&CMT=" + CMT;
+                }
+            }
+    
+    <iframe name="commentFrame" id="commentFrame" src="@srcStr" width="100%" height="0" frameborder="0" scrolling="no" allowTransparency="true"></iframe> 
+    }
+    
+
+</div> 
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+@if (d_theme["snsping"] == "1")
+{
+    @:function snsWin(sns)
+    @:{
+    @:	var snsset = new Array();
+    @:	var enc_tit = "@HttpUtility.UrlEncode(_HS["title"])";
+    @:	var enc_sbj = "@HttpUtility.UrlEncode(R["subject"])";
+    @:	var enc_url = "@HttpUtility.UrlEncode(g["url_root_host"] + (_HS["rewrite"] == "1" ? (_HS["usescode"] != 0 ? "/" + r : "") + "/b/" + R["bbsid"] + "/" + R["uid"] : "/?" + (_HS["usescode"] != 0 ? "r=" + r + "&" : "") + "m=" + m + "&bid=" + R["bbsid"] + "&uid=" + R["uid"]))";
+    @:	var enc_tag = "@R["tag"].Replace(",", " ")";
+
+    @:	snsset['t'] = 'http://mobile.twitter.com/home/?status=' + enc_sbj + '+++' + enc_url;
+    @:	snsset['f'] = 'http://www.facebook.com/sharer.php?u=' + enc_url + '&t=' + enc_sbj;
+    @:	snsset['m'] = 'http://m.me2day.net/posts/new?new_post[body]=' + enc_sbj + '+++["'+enc_tit+'":' + enc_url + '+]&new_post[tags]='+enc_tag;
+    @:	snsset['y'] = 'http://yozm.daum.net/api/popup/prePost?sourceid=' + enc_url + '&prefix=' + enc_sbj;
+    @:	window.open(snsset[sns]);
+    @:}
+}
+
+function commentShow(type)
+{
+	var url;
+	if (type == 'comment')
+	{
+		url = '@g["s"]/?r=@r&m=comment&skin=@d_bbs["c_mskin"]&hidepost=@dspStr&iframe=Y&cync=';
+		url+= '[@m][@R["uid"]]';
+		url+= '[uid,comment,oneline,d_comment]';
+		url+= '[@AppState["table_bbsdata"]][@R["mbruid"]]';
+		url+= '[m:@m,bid:@R["bbsid"],uid:@R["uid"]]';
+		url+= '&CMT=@CMT';
+	}
+
+	frames.commentFrame.location.href = url;
+}
+function setImgSizeSetting()
+{
+
+@if (d_theme["use_autoresize"] == "1")
+{
+@:	var ofs = getOfs(getId('vContent')); 
+@:	getDivWidth(ofs.width,'vContent');
+}
+	getId('vContent').style.fontFamily = getCookie('myFontFamily');
+	getId('vContent').style.fontSize = getCookie('myFontSize');
+}
+window.onload = setImgSizeSetting;
+//]]>
+</script>
+
+
+@{
+    if (d_theme["show_list"] == "1")
+    {
+        @RenderPage("../../../mod\\_list.cshtml", g, B, s, p, g["bbs_recnum"]);
+        @RenderPage("list.cshtml", g, _m, c, m, p, _HS, my, system, d_layout, s, _keyword, _mod, r, _HP, _HM);
+    }
+}

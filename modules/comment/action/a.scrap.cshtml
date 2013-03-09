@@ -1,0 +1,67 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var uid = Request["uid"];
+    
+    if (my["uid"] == 0) 
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;        
+    }    
+
+    int R_count = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "uid=" + uid);
+    
+    if (R_count == 0) 
+    {
+        @_System.getLink("", "", "삭제되었거나 존재하지 않는 댓글입니다.", "")
+        return;
+    }
+    
+    dynamic R = _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "uid="+uid);
+    int mbruid = Convert.ToInt32(my["uid"]);
+    string category = "댓글";
+    string subject = R["subject"];
+    string url = "http://"+Request["HTTP_HOST"]+Request["SCRIPT_NAME"].Replace("index.cshtml", "");
+    url = url + _System.getCyncURL(R["cync"], 6, '[', ',', ':').Replace("./?", "?") + "&CMT="+R["uid"]+"#CMT";
+
+    int scrap_num = _DB.GetDbData_Count(AppState["table_s_scrap"].ToString(), "mbruid="+mbruid+" AND url='"+url+"'");
+
+    if (scrap_num > 0) 
+    {
+        @_System.getLink("", "", "이미 스크랩된 게시물입니다.", "")
+        return;        
+    }
+    
+    string INSERT_SCRAP_SQL = "INSERT INTO " + AppState["table_s_scrap"].ToString() + " (mbruid, category, subject, url, d_regis) VALUES (" + mbruid + ",'" + category + "','" + subject + "','" + url + "', getdate())";
+
+    @_DB.Execute(INSERT_SCRAP_SQL);
+    
+    @_System.getLink("", "", "스크랩 되었습니다.", "")
+    return;        
+}

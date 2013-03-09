@@ -1,0 +1,41 @@
+﻿
+
+#catebody {margin:0 0 30px 0;padding:0 0 30px 0;}
+#category {float:left;width:220px;padding:0 0 0 0;}
+#category .title {height:19px;background:url('./image/bg_top_02.gif') left no-repeat #dfdfdf;background-position:4px 3px;padding:6px 0 0 23px;}
+#category .title .c1 {width:135px;height:18px;position:relative;top:-2px;}
+#category .title .c2 {width:50px;height:18px;position:relative;top:-2px;}
+
+#category .tree {margin:0;padding:10px 0 10px 0;}
+#category .tree ul {margin:0;padding:0;}
+#category .tree li {list-style-type:none;padding:5px 0 5px 5px;}
+#category .tree .name {position:relative;top:0px;color:#111;padding:2px 0 0 0;}
+#category .tree .id {font:normal 11px arial;color:#999;padding:0 0 0 2px;}
+#category .tree .id:hover {color:#ff0000;}
+#category .tree .name:hover {color:#AECD63;}
+#category .tree .on {background:#AECD63;color:#ffffff;padding:2px;}
+#category .tree .on:hover {color:#ffffff;}
+#category .none {height:15px;margin:15px 0 0 0;padding:3px 0 0 25px;background:url('../../../../../_core/image/_public/ico_notice.gif') left no-repeat;background-position:4px 2px;font-family:dotum;font-size:13px;color:#c0c0c0;}
+
+
+#catinfo {margin-left:220px;padding:0 0 0 20px;}
+#catinfo .title {background:#dfdfdf;height:25px;}
+#catinfo .title .xleft {float:left;padding:6px 0 0 23px;font-weight:bold;}
+#catinfo .title .xright {float:right;padding:7px 7px 0 0;}
+#catinfo .title .xright a {font:normal 11px dotum;color:#888;}
+
+#catinfo .td1 {padding:13px 0 7px 15px;width:90px;vertical-align:top;}
+#catinfo .td2 {padding:7px 0 7px 0;}
+#catinfo .td2 .w {width:179px;}
+#catinfo .td2 .sname {width:174px;}
+#catinfo .td2 .sname1 {width:307px;}
+#catinfo .td2 .select1 {width:180px;letter-spacing:-1px;}
+#catinfo .td2 .select2 {width:110px;letter-spacing:-1px;}
+#catinfo .td2 .dn {position:relative;top:4px;}
+#catinfo .td2 .guide {font-size:11px;font-family:dotum;color:#555;line-height:150%;padding:10px 0 0 0;}
+#catinfo .td2 .addr1 {color:#666;line-height:170%;}
+#catinfo .td2 .addr1 .link {font-weight:bold;color:#ff0000;}
+
+#catinfo .notice {padding:15px 0 10px 15px;margin:0 0 20px 0;font-size:11px;font-family:dotum;color:#02B6D6;border-bottom:#dfdfdf dashed 1px;line-height:150%;}
+
+#catinfo .submitbox {margin:20px 0 20px 0;padding:15px 0 0 108px;border-top:#dfdfdf dashed 1px;}

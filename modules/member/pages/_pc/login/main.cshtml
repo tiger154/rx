@@ -1,0 +1,183 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rb (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rb
+    // Since 2011.
+    //
+    *****************************************************************/
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+    Cookie_svshop = Request.Cookies["id_save_Cookie"];
+
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var r = PageData[12];
+    var referer = Request["referer"];
+
+    string cookie_id = "";
+    string cookie_pw = "";
+
+    if (Cookie_svshop != null && Cookie_svshop.Value != null)
+    {
+        if (Cookie_svshop.Value.Contains("|"))
+        {
+            cookie_id = Cookie_svshop.Value.Split('|')[0];
+            cookie_pw = Cookie_svshop.Value.Split('|')[1];
+        }
+        else
+        {
+            cookie_id = Cookie_svshop.Value;
+        }
+    }
+
+    dynamic d_member = _DB.Get_code("member");
+    dynamic g = Session["g"];
+    
+    string frame_name = "_action_frame_" + m;
+  
+    if (my["uid"] != 0) {       // referer 가 없는 상태에서 로그인 된 경우는 메인화면으로 가야함.
+        @_System.getLink("./", "", "", "")
+        return;
+	}
+
+    //////////////////////////////////////////////////////////////////
+    /// System Action
+    //////////////////////////////////////////////////////////////////
+    if (referer == null || referer == "")
+    {
+        referer = Request["HTTP_REFERER"];
+
+        if (referer == null || referer == "")
+        {
+            string referer_slash = "";
+
+            if (!Request["QUERY_STRING"].IsEmpty())
+            {
+                referer_slash = "?";
+            }
+            
+            referer = g["url_root"] + referer_slash + Request["QUERY_STRING"];
+        }
+    }    
+}
+<div id="pages_login">
+
+	<h2>회원 로그인</h2>
+
+	<div class="msg">
+		회원으로 로그인하시면 모든 서비스를 제한없이 이용하실 수 있습니다.<br />
+		아직 아이디가 없으시면 회원으로 가입하세요. <a href="@_System.RW("mod=join", g["r"], _HS)" class="u">회원가입</a>
+	</div>
+
+	<div class="tab">
+		<ul>
+		<li class="selected lside">로그인</li>
+		<li onclick="goHref('@g["url_reset"]&page=idpwsearch');">아이디 찾기</li>
+		<li onclick="goHref('@g["url_reset"]&page=idpwsearch&ftype=pw');">비밀번호 찾기</li>
+		</ul>
+	</div>
+	<div class="agreebox">
+		<form name="loginform" action="@g["s"]/" method="post" onsubmit="return loginCheck(this);">
+        <input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="a" value="login" />
+		<input type="hidden" name="referer" value="@referer" />
+		<input type="hidden" name="usessl" value="@d_member["login_ssl"]" />
+
+		<div class="tblbox">
+		<table>
+			<tr>
+			<td class="key">아이디</td>
+			<td>
+            @{
+                string id_set = "아이디";
+                
+                if(d_member["login_emailid"] == "1")
+                {
+                    id_set = "이메일";
+			    }
+			}
+			<input type="text" name="id" class="input xinput" title="@id_set" value="@cookie_id" />
+			</td>
+			</tr>
+			
+            <tr>
+			<td class="key">비밀번호</td>
+			<td>
+			<input type="password" name="pw" class="input xinput"  title="패스워드" value="@cookie_pw" />
+			</td>
+			</tr>
+            
+			<tr>
+			<td class="key"></td>
+			<td class="xfont">
+			<input type="checkbox" name="idpwsave" value="checked" onclick="remember_idpw(this)" @_System.getChkStr(Cookie_svshop != null && Cookie_svshop.Value != null, true) />@id_set 기억
+			@{
+                if(d_member["login_ssl"] == "1") 
+                {
+			        <input type="checkbox" name="ssl" value="checked" />@:보안로그인(SSL)
+				}
+            }
+			</td>
+			</tr>
+		</table>
+		</div>
+
+		<div class="submitbox">
+			<input type="button" value="취소" class="btngray" onclick="goHref('./');" />
+			<input type="submit" value="로그인" class="btnblue" />
+		</div>
+
+		</form>
+
+        <form name="SSLLoginForm" action="@g["url_root_host"].Replace("http", "https")" method="post" target="@frame_name">
+        <input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="a" value="login" />
+		<input type="hidden" name="referer" value="@referer" />
+		<input type="hidden" name="id" value="" />
+		<input type="hidden" name="pw" value="" />
+		<input type="hidden" name="idpwsave" value="" />
+		</form>
+
+	</div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function loginCheck(f) {
+        if (f.id.value == '') {
+            alert('아이디를 입력해 주세요.');
+            f.id.focus();
+            return false;
+        }
+        if (f.pw.value == '') {
+            alert('비밀번호를 입력해 주세요.');
+            f.pw.focus();
+            return false;
+        }
+        if (f.usessl.value == '1') {
+            if (f.ssl.checked == true) {
+                var fs = document.SSLLoginForm;
+                fs.id.value = f.id.value;
+                fs.pw.value = f.pw.value;
+                if (f.idpwsave.checked == true) fs.idpwsave.value
+                fs.submit();
+                return false;
+            }
+        }
+    }
+    function remember_idpw(ths) {
+        if (ths.checked == true) {
+            if (!confirm('\n\nPC를 여러사람이 사용하는 공공장소에서는 체크하지 마세요.\n\n정말로 아이디를 기억시키겠습니까?\n\n')) {
+                ths.checked = false;
+            }
+        }
+    }
+
+    window.onload = function () {
+        document.loginform.id.focus();
+    }
+//]]>
+</script>

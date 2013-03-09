@@ -1,0 +1,487 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var _HS = PageData[0];
+    var my = PageData[1];
+    var _CA = PageData[2];
+    var s = PageData[3];
+    var d_layout = PageData[4];
+    var g = PageData[5];
+    var keyword = PageData[6];
+    var p = PageData[7];
+    var system = PageData[8];
+    var _m = PageData[9];
+    var c = PageData[10];
+    var m = PageData[11];
+    var _mod = PageData[12];
+    var _keyword = PageData[13];
+    var _HM = PageData[14];
+    var r = PageData[15];
+    var bid = PageData[16];
+    var _HP = PageData[17];
+    var date = PageData[18];
+    var referer = PageData[19];
+
+    dynamic code_layout = _DB.Get_code("layout");
+
+    string _RCD_sql;
+    string menunum = d_layout["menunum"];
+    string frame_name = "_action_frame_" + m;
+
+    int _i = 0;
+    int i = 0;
+    int post_num = 0;
+    int recnum;
+
+
+    // cookie setting
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+    Cookie_svshop = Request.Cookies["id_save_Cookie"];
+
+    string cookie_id = "";
+    string cookie_pw = "";
+
+    if (Cookie_svshop != null && Cookie_svshop.Value != null)
+    {
+        if (Cookie_svshop.Value.Contains("|"))
+        {
+            cookie_id = Cookie_svshop.Value.Split('|')[0];
+            cookie_pw = Cookie_svshop.Value.Split('|')[1];
+        }
+        else
+        {
+            cookie_id = Cookie_svshop.Value;
+        }
+    }
+
+    string r_prn = _System.getRvalue(r);
+
+}
+
+<div id="wrap">
+	<div id="header">
+		<div class="logo">
+			<h1><a href="@_System.RW("", g["r"], _HS)">@_HS["title"]</a></h1>
+		</div>
+		
+        <div class="gnb">
+			<ul>
+			<li><a href="@_System.RW("", g["r"], _HS)">HOME</a></li>
+
+            @if (my["id"] != "")
+            {
+			    <li><a href="@_System.RW("mod=mypage", g["r"], _HS)">마이페이지</a></li>
+			    <li><a href="@g["s"]/?r=@r&mod=mypage&page=info">정보수정</a></li>
+			    <li><a href="@g["s"]/?r=@r&a=logout">로그아웃</a></li>    
+                
+                if (my["admin"] != "")
+                {
+                    <li class="admin">
+                        <a href="@g["s"]/?r=@r&m=admin&module=filemanager&front=main&pwd=@g["path_layout"]@d_layout["dir"]\&type=cshtml&iframe=Y&editmode=Y&file=_main.cshtml" target="_blank">레이아웃환경</a>
+                    </li>
+                }
+            }
+            else
+            {
+			    <li><a href="@_System.RW("mod=mypage", g["r"], _HS)">마이페이지</a></li>
+			    <li><a href="@_System.RW("mod=join", g["r"], _HS)">회원가입</a></li>
+			    <li><a href="@_System.RW("mod=login", g["r"], _HS)">로그인</a></li>    
+            }
+
+			</ul>
+		</div>
+
+        <div class="lnb">
+            <ul>
+                
+            @{
+                <!-- 전체적으로 링크는 RW를 구현하지 않았음. 구현 예정 -->
+                <!-- joint 대신 ?c=로 함 (11.10.21 taiji88) -->
+                <li><a href="@_System.RW("", g["r"], _HS)" class="m1">HOME</a></li>                
+
+                string _MENUS_sql = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND hidden=0 AND depth=1 ORDER BY gid ASC";
+                var _MENUS_Row = _DB.getDbRows(_MENUS_sql);
+
+                foreach (var _M1 in _DB.Query(_MENUS_sql))
+                {
+                    string li_class1_1 = "";
+                    string _MENUS_sql2 = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND parent=" + _M1["uid"] + " AND hidden=0 AND depth=2 ORDER BY gid ASC";   
+
+                    <li onmouseover="showM('@_M1["uid"]');" onmouseout="hideM('@_M1["uid"]');">
+
+                    @if (_M1["isson"] == "1")
+                    {
+                        <div id="@Html.Raw("subMenuBox" + _M1["uid"])">
+                        <dl>
+            
+                        @foreach (var _M2 in _DB.Query(_MENUS_sql2))
+                        {
+                            string li_class2_1 = "";
+
+                            if (_CA[1] == _M2["id"].ToString())
+                            {
+                                li_class2_1 = "class='selected2'";
+                            }
+                            
+                            <dt @li_class2_1><a href="@_System.RW("c=" + _M1["id"] + "/" + _M2["id"], g["r"], _HS)" target="@_M2["target"]">@_M2["name"]</a></dt>
+
+                            if (_M2["isson"] == "1")
+                            {
+                                string _MENUS_sql3 = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND parent=" + _M2["uid"] + " AND hidden=0 AND depth=3 ORDER BY gid ASC";
+
+                                foreach (var _M3 in _DB.Query(_MENUS_sql3))
+                                {
+                                    string li_class3_1 = "";
+
+                                    if (_CA[2] == _M3["id"].ToString())
+                                    {
+                                        li_class3_1 = "class='selected3'";
+                                    }
+
+                                    <dd @li_class3_1><a href="@_System.RW("c=" + _M1["id"] + "/" + _M2["id"] + "/" + _M3["id"], g["r"], _HS)" target="@_M3["target"]">@_M3["name"]</a></dd>
+                                }
+                            }
+                        }
+                        </dl>
+                        </div>
+    
+                        if (_CA[0] == _M1["id"].ToString())
+                        {
+                            li_class1_1 = "class='selected1'";
+                        }
+                    }
+                    
+                    <a href="@Html.Raw("./?" + r_prn + "c=" + _M1["id"])" target="@_M1["target"]" class="@Html.Raw("m1" + li_class1_1)">@_M1["name"]</a>
+                    </li>
+                
+        
+                    _i++;
+
+                    if (_i >= menunum.AsInt())
+                    {
+                        break;
+                    }
+                }
+
+
+                if (_i == 0)
+                {
+                    <li><a href="@g["s"]/?r=@r&system=edit.all&type=menu&makemenu=Y">이 사이트는 아직 메뉴가 등록되지 않았습니다. 메뉴를 등록해주세요</a></li>
+                }
+
+                else if (_i < _MENUS_Row)
+                {
+                    <li onmouseover="showM('0');" onmouseout="hideM('0');">
+                    <div id="subMenuBox0">
+                    <dl>
+            
+                    @foreach (var _M4 in _DB.Query(_MENUS_sql))
+                    {
+                        string li_class1_2 = "";
+                        string _parent = "";
+
+                        if (_CA[0] == _M4["id"].ToString())
+                        {
+                            li_class1_2 = "class='selected2'";
+                            _parent = _M4["uid"].ToString();
+                        }
+
+                        <dt @li_class1_2><a href="@Html.Raw("./?" + r_prn + "c=" + _M4["id"])" target="@_M4["target"]">@_M4["name"]</a></dt>
+                        
+                        if (_M4["isson"] == "1")
+                        {
+                            string _MENUS_sql4 = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND parent=" + _M4["uid"] + " AND hidden=0 AND depth=2 ORDER BY gid ASC";
+
+                            foreach (var _M5 in _DB.Query(_MENUS_sql4))
+                            {
+                                string li_class2_2 = "";
+
+                                if (_CA[1] == _M5["uid"].ToString())
+                                {
+                                    li_class2_2 = "class='selected3'";
+                                }
+
+                                <dd @li_class2_2><a href="@Html.Raw("./?" + r_prn + "c=" + _M5["id"])" target="@_M5["target"]">@_M5["name"]</a></dd>
+                            }
+                        }
+                    }                
+            
+                    </dl>
+                    </div>
+                    <a href="#." class="m1">더보기 <img src="@g["img_layout"]/ico_more.gif" alt="" /></a>
+                    </li>
+                }
+
+
+            }
+
+            </ul>
+        
+            <div class="search">
+            <form action="@g["s"]/">
+            <input type="hidden" name="r" value="@r" />
+            <input type="hidden" name="mod" value="search" />
+            <input type="text" name="keyword" value="@_keyword" class="input" /> 
+            <span><input type="image" src="@g["img_layout"]/btn_search.jpg" /></span>
+            </form>
+            </div>
+        </div>
+        
+        <div class="location">
+        현재위치 : @Html.Raw(g["location"])
+        </div>            
+        
+        <div id="container">
+            @{
+                    //////////////////////////////////////////////////////////
+                    ///// Header Engine Start
+                    //////////////////////////////////////////////////////////
+                @RenderPage("../../" + g["path_core"] + "engine/container_head.engine.cshtml", g, _HM, system)
+            }
+            <div class="snb">
+
+            <!-- Login Plugin -->                
+            <div class="logbox">
+            @{
+                if (my["id"] != "")
+                {
+                    <div class="hello">
+                        <img src="@g["img_core"]/_public/ico_user.gif" alt="" />
+                        <a href="@g["r"]/?mod=mypage"><span class="b">@Html.Raw(my[_HS["nametype"]] + "님")</span> 안녕하세요!</a>
+                    </div>
+                
+                    <div class="info">
+                        ㆍ회원등급 : @my["level"]<br />
+                        ㆍ포인트 : @string.Format("{0:#,0}", my["point"])<br />
+                        ㆍ가입일 : @Html.Raw(my["d_regis"].ToString("yyyy.MM.dd") + " (" + _System.getRemainDate(my["d_regis"].ToString()) + "일전)")<br />
+                    </div>
+                
+                    <div class="rbtm">
+                        <a href="@g["s"]/?r=@r&mod=mypage&page=info">정보변경</a> <span>|</span>
+                        <a href="@g["s"]/?r=@r&mod=mypage&page=simbol">사진변경</a> <span>|</span>
+                        <a href="@g["s"]/?r=@r&a=logout">로그아웃</a>
+                    </div>
+                }
+                else
+                {
+                    <form name="LayoutLogForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return layoutLogCheck(this);">
+                    <input type="hidden" name="r" value="@r" />
+                    <input type="hidden" name="a" value="login" />
+                        
+                    <div>
+                    <input type="text" name="id" value="@cookie_id" class="input" title="아이디" />
+                    <input type="password" name="pw" value="@cookie_pw" class="input" title="패스워드" />
+                    </div>
+                        
+                    <div class="login"><input type="image" src="@g["img_layout"]/btn_login.gif" /></div>
+                    <div class="shift"><input type="checkbox" name="idpwsave" value="checked" onclick="layoutRMBpw(this);" @_System.getChkStr(Cookie_svshop != null && Cookie_svshop.Value != null, true) />아이디/패스워드 기억</div>
+                    </form>
+                
+                    <div class="rbtm">
+                        <a href="@g["r"]/?mod=join" class="b">회원가입</a> <span>|</span>
+                        <a href="@g["r"]/?mod=login&page=idpwsearch">아이디/패스워드찾기</a>
+                    </div>
+                }
+            }
+            </div>
+    		<div class="plugingap"></div>
+
+            <!-- Photo Plugin -->                
+            <div class="photo">
+                <div class="tt">최근사진</div>
+                @{
+                    string caption_prn = "";
+                    string nomargin_prn = "";
+                    string oneline_prn = "";
+
+                    int tmp_i = 0;
+
+                    recnum = (p - 1) * 6;
+
+                    if (recnum > 0)
+                    {
+                        recnum = recnum - 1;
+                    }
+
+                    _RCD_sql = "SELECT TOP 6 * FROM " + AppState["table_s_upload"].ToString() + " WHERE site=" + s + " AND type='2' AND ext='jpg' ORDER BY gid ASC";
+
+                    foreach (var _R in _DB.Query(_RCD_sql))
+                    {
+                        i++;
+
+                        if (i == 1 || i == 4)
+                        {
+                            nomargin_prn = " nomargin";
+                        }
+
+                        if (_R["caption"] != "")
+                        {
+                            caption_prn = _R["caption"];
+                        }
+                        else
+                        {
+                            caption_prn = _R["name"];
+                        }
+
+                        <div class="@Html.Raw("pic" + nomargin_prn)">
+                            @*<a href="@_System.getCyncURL(_R["cync"], 6, '[', ',', ':').Replace("./?", g["s"] + "/?r=" + r + "&")"><img src="@_R["url"].Replace('\\', '/')@_R["folder"].Replace('\\', '/')/@_R["tmpname"]" alt="" title="@caption_prn" /></a>*@
+                            
+                            <a href=""><img src="@_R["url"].Replace('\\', '/')@_R["folder"].Replace('\\', '/')/@_R["tmpname"]" alt="" title="@caption_prn" /></a>
+                        </div>
+
+                        nomargin_prn = "";
+                        caption_prn = "";
+                    }
+
+
+                    if (i < 6)
+                    {
+                        tmp_i = 6 - i;
+
+                        while (tmp_i > 0)
+                        {
+                            tmp_i = tmp_i - 1;
+                            i = i + 1;
+
+                            if (i == 1 || i == 4)
+                            {
+                                nomargin_prn = " nomargin";
+                            }
+                
+                            <div class="@Html.Raw("pic" + nomargin_prn)">
+                                <img src="@g["img_core"]/blank.gif" alt="" />
+                            </div>
+                
+                            nomargin_prn = "";
+                        }
+                    }
+                }
+  
+                <div class="clear"></div>
+            </div>            
+    		<div class="plugingap"></div>
+            
+            <!-- post Plugin -->              
+            <div class="post">
+                <div class="tt">최근게시물</div>
+                @{
+                    recnum = (p - 1) * 5;
+
+                    if (recnum > 0)
+                    {
+                        recnum = recnum - 1;
+                    }
+
+                    _RCD_sql = "SELECT TOP " + code_layout["postnum"] + " * FROM " + AppState["table_bbsdata"] + " WHERE site=" + s + " AND display='1' ORDER BY gid ASC";
+
+                    foreach (var _R in _DB.Query(_RCD_sql))
+                    {
+                        post_num++;
+                            
+                        <li>
+                        <a href="@g["s"]/?r=@r&m=bbs&bid=@_R["bbsid"]&uid=@_R["uid"]" title="@_R[_HS["nametype"]]님">@_System.getStrCut(_R.subject, 12, "...")</a>
+                            
+                        @if (_R["comment"] > 0)
+                        {
+                            if (_R["oneline"] > 0)
+                            {
+                                oneline_prn = "+" + _R["oneline"];
+                            }
+
+                            <span class="comment">@Html.Raw("[" + _R["comment"] + oneline_prn + "]")</span>
+                        }
+                        
+                        @if (_R.trackback > 0)
+                        {
+                            <span class="trackback">@Html.Raw("[" + _R["trackback"] + "]")</span>
+                        }          
+                        
+                        </li>
+                        oneline_prn = "";
+                    }
+
+                    if (post_num == 0)
+                    {
+                        <li class="none">등록된 게시물이 없습니다.</li>
+                    }
+                }            
+            </div>
+    		<div class="plugingap"></div>
+
+            <!-- counter Plugin -->         
+            @{
+                string total_sum = _DB.GetDbData_S(AppState["table_s_counter"].ToString(), "site=" + s, "sum(hit)").ToString();
+                string yesterday_sum = _DB.GetDbData_S(AppState["table_s_counter"].ToString(), "site=" + s + " and date='" + date["totime"].AddDays(-1).ToString("yyyyMMdd") + "'", "sum(hit)").ToString();
+                string today_sum = _DB.GetDbData_S(AppState["table_s_counter"].ToString(), "site=" + s + " and date='" + date["totime"].ToString("yyyyMMdd") + "'", "sum(hit)").ToString();
+
+                if (total_sum == null)
+                {
+                    total_sum = "0";
+                }
+
+                if (yesterday_sum == null)
+                {
+                    yesterday_sum = "0";
+                }
+
+                if (today_sum == null)
+                {
+                    today_sum = "0";
+                }
+            }
+            
+            <div class="counter"></div>
+    		<div class="plugingap"></div>
+
+            <!-- rss Plugin -->         
+            <div class="rss">
+                <img src="@g["img_core"]/_public/btn_rss_gray.gif" alt="rss" />
+                <a href="@g["s"]/?r=@r&m=bbs&mod=rss&type=rss2" target="_blank">RSS 2.0</a> |
+                <a href="@g["s"]/?r=@r&m=bbs&mod=rss&type=atom" target="_blank">ATOM 0.3</a>
+            </div>
+                
+        </div>
+        
+        <div id="content">
+        @{
+                //////////////////////////////////////////////////////////
+                ///// Main engine Start
+                //////////////////////////////////////////////////////////
+                
+            @RenderPage("../../" + g["path_core"] + "engine/content.engine.cshtml", g, system, _m, c, m, p, _HS, my, d_layout, s, _keyword, _mod, r, bid, _HP, _HM, date, referer)
+            
+        }
+        </div>
+
+        <div class="clear"></div>
+    </div>
+
+    @{
+            //////////////////////////////////////////////////////////
+            ///// Footer engine Start
+            //////////////////////////////////////////////////////////
+        @RenderPage("../../" + g["path_core"] + "engine/container_foot.engine.cshtml", g, _HM, system)
+    }
+
+</div>
+
+<div id="footer">
+    <div>
+    <a href="@_System.RW("mod=agreement", g["r"], _HS)">홈페이지 이용약관</a> <span class="split">|</span>
+    <a href="@_System.RW("mod=private", g["r"], _HS)">개인정보 취급방침</a> <span class="split">|</span>
+    <a href="@_System.RW("mod=postrule", g["r"], _HS)">게시물 게재원칙</a> <span class="split">|</span>
+    <a href="http://validator.w3.org/check?url=referer" target="_blank" title="W3C XHTML 1.0 VALIDATION">XHTML 1.0 VALIDATION</a>
+    </div>
+    <address>
+    Copyrights © @date["totime"].Year @Request["HTTP_HOST"] All Rights Reserved. Powered by redblock (Excute Time)
+    </address>
+</div>
+
+
+        

@@ -1,0 +1,26 @@
+﻿#uplist .upfilebox {}
+#uplist .thumbbox {float:left;margin:0 2px 0 0;padding:2px;border-left:#e0e0e0 solid 1px;border-right:#e0e0e0 solid 1px;border-bottom:#e0e0e0 solid 1px;background:#f9f9f9;}
+#uplist .thumbimg {width:95px;height:72px;background:url('./image/q.gif') center center no-repeat;}
+#uplist .upfilelist {margin-left:100px;padding:3px 5px 7px 5px;border-left:#e0e0e0 solid 1px;border-right:#e0e0e0 solid 1px;border-bottom:#e0e0e0 solid 1px;}
+
+#uplist ul {position:relative;z-index:10000;padding:0;margin:0;height:66px;overflow:auto;overflow-x:hidden;}
+#uplist li {list-style-type:none;padding:1px 0 1px 5px;font-size:11px;font-family:dotum;}
+#uplist li:hover {background:#efefef;}
+#uplist li input {display:none;}
+#uplist li a {color:#222;padding:5px;}
+#uplist li a:hover {color:#ff0000;}
+#uplist li .name {position:relative;z-index:1;display:inline-block;}
+#uplist li .ext {position:relative;top:3px;cursor:move;}
+#uplist li .size {font-size:11px;font-family:arial;color:#999;padding:0 0 0 4px;}
+#uplist li .delicon {position:absolute;display:block;width:98%;text-align:right;}
+#uplist li .delicon .xdel {padding:5px;border:#dfdfdf solid 1px;position:relative;left:5px;background:#ffffff;z-index:2;}
+#uplist li .delicon .xdel:hover {background:#000000;}
+#uplist li .delicon .eye {border:#dfdfdf solid 1px;position:relative;z-index:2;}
+#uplist li .delicon .drag {padding:1px 2px 1px 2px;border:#dfdfdf solid 1px;position:relative;left:5px;cursor:move;z-index:2;}
+
+#uplist .caption {background:#f9f9f9;padding:8px 0 8px 9px;color:#666;border-left:#e0e0e0 solid 1px;border-right:#e0e0e0 solid 1px;border-bottom:#e0e0e0 solid 1px;display:none;}
+#uplist .caption table {width:100%;border-spacing:0px;border-collapse:collapse;}
+#uplist .caption .x1 {width:200px;}
+#uplist .caption .x1 .input {width:120px;}
+#uplist .caption .x2 .input {width:100%;}
+#uplist .caption .x3 {width:100px;text-align:right;padding:0 10px 0 0;}

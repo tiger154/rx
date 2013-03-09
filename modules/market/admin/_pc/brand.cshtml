@@ -1,0 +1,47 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+
+    dynamic d_market = _DB.Get_code(module);
+
+    string frame_name = "_action_frame_" + m;    
+    
+    if (d_market["url"] != "")
+    {
+        <div style="padding:20px;text-align:center;border:#dfdfdf solid 5px;width:720px;font-size:13px;">
+        현재 RX마켓 준비중입니다.
+        </div> 
+        /*<iframe id="marketFrame" src="@d_market["url"]&iframe=Y&page=brandlist" width="720" height="500" frameborder="0" scrolling="no" allowTransparency="true"></iframe>*/
+    }
+    else
+    {
+        <div style="padding:20px;text-align:center;border:#dfdfdf solid 5px;width:720px;font-size:13px;">
+        <a href="@g["s"]/?r=@r&m=@m&module=@module&front=config">마켓 접속주소를 등록해 주세요.</a>
+        </div>       
+    }
+}

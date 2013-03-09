@@ -1,0 +1,1 @@
+﻿CREATE TABLE rx_s_mobile ( uid  int  identity(1,1)  NOT NULL , usemobile  tinyint   NOT NULL , startsite  int   NOT NULL , startdomain  nvarchar(50)   NOT NULL ,PRIMARY KEY (uid));

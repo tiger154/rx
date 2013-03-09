@@ -1,0 +1,9 @@
+﻿CREATE TABLE rx_s_referer ( 
+uid  int  identity(1,1)  NOT NULL , 
+site  int   NOT NULL , 
+mbruid  int   NOT NULL , 
+ip  nvarchar(30)   NOT NULL , 
+referer  ntext   , 
+agent  nvarchar(255)   NOT NULL , 
+d_regis  datetime   ,
+PRIMARY KEY (uid));

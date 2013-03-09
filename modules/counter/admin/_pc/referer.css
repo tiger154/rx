@@ -1,0 +1,32 @@
+
+.sbox {padding:0 0 15px 0;}
+.sbox .btngray {margin:0;height:17px;}
+.sbox .btnblue {margin:0;height:17px;}
+.sbox .account {width:192px;}
+.sbox .input {margin:0 0 0 10px;height:14px;}
+.sbox .input:focus {border:#dfdfdf solid 1px;}
+.sbox div {padding:10px 0 0 0;}
+
+
+table {width:100%;_width:99.6%;margin:0;border-bottom:#efefef solid 1px;padding:0;border-spacing:1px;border-collapse:separate;}
+table thead {height:25px;}
+table thead th {text-align:center;height:25px;border-bottom:#dfdfdf solid 1px;background:#efefef;font-size:11px;font-family:dotum;color:#666;}
+
+table td {text-align:center;}
+table .gapline {height:10px;}
+table .sbjtd td {border-bottom:#c0c0c0 dashed 1px;height:30px;color:#888;font:11px dotum;}
+table .rooptd0 td {padding:2px 0 2px 0;}
+table .rooptd1 td {padding:2px 0 2px 0;background:#f9f9f9;}
+
+
+table .number {font-size:11px;font-family:arial;color:#c0c0c0;}
+table .etc {font:bold 11px arial;}
+table .agent {font: 11px arial;}
+table .agent img {position:relative;top:3px;}
+table .name {font: 11px dotum;}
+
+
+.pagebox01 {width:99%;text-align:left;padding:15px 0 15px 0;}
+.prebox {}
+.nodata {text-align:center;padding:35px 0 35px 0;font-size:12px;font-family:dotum;color:#999;border-bottom:#dfdfdf dashed 1px;}
+.nodata img {position:relative;top:2px;}

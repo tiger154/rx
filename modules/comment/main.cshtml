@@ -1,0 +1,421 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var my = PageData[1];
+    var _HM = PageData[2];
+    var _HP = PageData[3];
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var _HS = PageData[11];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    var front = PageData[16];
+    var _m = PageData[17];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var cync = Request["cync"];
+    var CMT = Request["CMT"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var type = Request["type"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var _keyword = Request["_keyword"];
+    var iframe = Request["iframe"];
+    var pw = Request["pw"];
+    
+    dynamic R = _DB.Get_module_data(AppState["table_s_comment"].ToString(), "uid", 0);    
+    dynamic d_comment = _DB.Get_code("comment");
+    dynamic member = null;
+    dynamic OCD = "";
+    dynamic NCD = "";
+    dynamic RCD = "";
+    //dynamic d_upload = "";
+
+    string mod = "main";
+    string cment_reset = "./?";
+    string skin_set = "";
+    string g_main;
+    string mobile_chk = "";
+    string edit_tool_set = "N";
+    string html_set = "HTML";
+    string type_set = "wrbox";
+    string height_set = d_comment["edit_height"];
+    string upload_set = "";
+    string filterUrl = "";
+    string TCD_sql = "";
+    string PCD_sql = "";
+
+    int NUM = 0;
+    int NUM_N = 0;
+    int NUM_O = 0;
+    int list_start = 0;
+
+    Session["module_" + m + "_view"] = "";
+    Session["isSECRETCHECK"] = true;
+
+
+    g["main"] = "";
+    g["c"] = "";
+    g["r"] = "";
+    g["m"] = "";
+    g["skin"] = "";
+    g["iframe"] = "";
+    g["p"] = "";
+    g["sort"] = "";
+    g["orderby"] = "";
+    g["recnum"] = "";
+    g["where"] = "";
+    g["keyword"] = "";
+    g["_keyword"] = "";
+    g["nametype"] = "";
+    g["edit_tool"] = "";
+    g["html_set"] = "";
+    g["type_set"] = "";
+    g["upload_set"] = "";
+    g["mem_photo"] = "";
+
+    /***************************************************/
+    if (uid == null)
+    {
+        uid = "";
+    }
+
+    if (c == null)
+    {
+        c = "";
+    }
+
+    if (where == null)
+    {
+        where = "";
+    }
+
+    if (keyword == null)
+    {
+        keyword = "";
+    }
+    if (_keyword == null)
+    {
+        _keyword = "";
+    }
+    /****************************************************/
+
+    if (cync != "" && cync != null)
+    {
+        Session[m + "cync"] = cync;
+    }
+    if (Session[m + "cync"] == null)
+    {
+        @_System.getLink("./", "parent.", "동기화코드가 지정되지 않았습니다.", "")
+        return;
+    }
+
+    string[] cyncArr = _System.getArrayString(Session[m + "cync"]);
+
+    if (CMT != null && CMT != "" && CMT != "0")
+    {
+        uid = CMT;
+    }
+
+    if (uid != null && uid != "" && uid != "0")
+    {
+        R = _DB.Get_module_data(AppState["table_s_comment"].ToString(), "uid", uid);
+
+        if (R["uid"] == 0)
+        {
+            string bid_set = "";
+
+            if (bid != null && bid != "")
+            {
+                bid_set = "&bid=" + bid;
+            }        
+            
+            @_System.getLink(g["s"] + "/?r=" + r + "&m=" + m + bid_set, "", "존재하지 않는 댓글입니다.", "")
+            return;
+        }
+
+        Session["isSECRETCHECK"] = true;
+
+        mobile_chk = _System.isMobileConnect(R["agent"]);     // mobile check
+
+        if (R["hidden"] == "1")
+        {
+            Session["isSECRETCHECK"] = false;
+
+            if (my["admin"] == "1" || (my["id"] != null && my["id"] != "" && my["id"] == R["id"]) || Session["module_" + m + "_view"].ToString().Contains("[" + R["uid"] + "]"))
+            {
+                Session["isSECRETCHECK"] = true;
+            }
+            else
+            {
+                if (pw != null && pw != "")
+                {
+                    if (R["pw"] != FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1"))
+                    {
+                        @_System.getLink("", "", "비밀번호가 일치하지 않습니다.", "-1")
+                        return;
+                    }
+                    Session["isSECRETCHECK"] = true;
+                }
+            }
+        }
+
+        if (type == "modify")
+        {
+            if (my["id"] == null || my["id"] == "" || (my["id"] != R["id"] && my["admin"] != "1"))
+            {
+                if (pw == null || pw == "")
+                {
+                    @_System.getLink("", "", "비밀번호를 입력해 주세요.", "-1")
+                    return;
+                }
+                else
+                {
+                    if (R["pw"] != FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1"))
+                    {
+                        @_System.getLink("", "", "비밀번호가 일치하지 않습니다.", "-1")
+                        return;                        
+					}
+				}
+			}
+		}
+        
+        // upload data cync setting
+        if (R["upload"] != "") 
+        {
+            string tmp_uplaod = ""; 
+
+            foreach (var _val in _System.getArrayString(R["upload"])) 
+            {
+                dynamic U = _DB.Get_module_data(AppState["table_s_upload"].ToString(), "uid", _val);
+                //d_upload = U;
+                
+                if (U["uid"] != 0) 
+                {
+                    tmp_uplaod = R["upload"].Replace("[" + _val + "]", "");                    
+                }
+                else
+                {
+                    tmp_uplaod += "[" + _val + "]";
+                }
+
+                if (U["cync"] == null || U["cync"] == "") 
+                {                    
+                    string _CYNC = 
+                        "'[" + m + "][" + R["uid"] + "][uid,down][" + AppState["table_s_comment"] + "][" + R["mbruid"] + "][" + cyncArr[5] + ",CMT:" + R["uid"] + "#CMT]'";
+                    
+                    string _CYNC_UPDATE_SQL = "UPDATE "+AppState["table_s_upload"]+" SET cync="+_CYNC+" WHERE uid="+U["uid"];
+                    @_DB.Execute(_CYNC_UPDATE_SQL);
+                }
+            }
+            
+            if (R["upload"] != tmp_uplaod)
+            {
+                string UPDATE_CMT_SQL = "UPDATE " + AppState["table_s_comment"] + " SET upload='" + R["upload"] + "' WHERE uid=" + R["uid"];
+                @_DB.Execute(UPDATE_CMT_SQL);
+            }
+		}
+
+        if (Convert.ToBoolean(Session["isSECRETCHECK"]) && !Session["module_" + m + "_view"].ToString().Contains("[" + R["uid"] + "]")) 
+        {
+            string UPDATE_COMHIT_SQL = "UPDATE " + AppState["table_s_comment"] + " SET hit=hit+1 WHERE uid=" + R["uid"];            
+            @_DB.Execute(UPDATE_COMHIT_SQL);
+            
+	    	Session["module_" + m + "_view"] += "[" + R["uid"] + "]";
+        }
+
+        if (R["mbruid"] > 0) 
+        {       // member info            
+            member = _DB.Get_module_data(AppState["table_s_mbrdata"].ToString(), "memberuid", R["mbruid"]);
+            g["mem_photo"] = member["photo"];            
+        }
+
+        if (R["oneline"] > 0) 
+        {            
+            TCD_sql = _System.GetQuery(AppState["table_s_oneline"].ToString(), "", "parent='" + R["uid"] + "'", "uid", d_comment["orderby2"], 0, "");
+            NUM_O = _DB.GetDbData_Count(AppState["table_s_oneline"].ToString(), "parent='" + R["uid"] + "'");
+            OCD = _DB.Query(TCD_sql);
+        }
+    }
+
+    mod = "main";
+
+    if (sort == "" || sort == null)
+    {
+        sort = "uid";
+    }
+    if (orderby == "" || orderby == null)
+    {
+        orderby = d_comment["orderby1"];
+    }
+    if (recnum == null || recnum == "" || recnum == "0" || Convert.ToInt32(recnum) >= 200)
+    {
+        recnum = d_comment["recnum"];
+    }
+
+    string cmentque = " AND parent='" + cyncArr[0] + cyncArr[1] + "'";
+    list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum); 
+    
+    PCD_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", "notice='1'" + cmentque, sort, orderby, 0, "");        // notice post SQL
+    TCD_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", "notice='0'" + cmentque, sort, orderby, list_start, recnum);        // post SQL
+    NUM = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "notice='0'" + cmentque);     // post count    
+    NUM_N = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "notice='1'" + cmentque);     // notice post count    
+    NCD = _DB.Query(PCD_sql);        // notice post
+    RCD = _DB.Query(TCD_sql);        // post            
+
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));    // total page count        
+        
+    if (R["html"] != "") 
+    {
+        html_set = R["html"];
+    }
+        
+    if (type == "modify") 
+    {
+        type_set = "mdbox";
+        upload_set = R["upload"];
+    }
+
+    if (R["upload"] != "")
+    {
+        edit_tool_set = "Y";
+        height_set = (Convert.ToInt32(height_set) + 400).ToString();
+    }
+
+    // skin setting
+    if (g["mobile"] != "" && Session["pcmode"] != "Y")
+    {
+        if (skin != null && skin != "")
+        {
+            skin_set = skin;
+        }
+        else
+        {
+            skin_set = d_comment["skin_mobile"];
+        }
+    }
+    else
+    {
+        if (skin != null && skin != "")
+        {
+            skin_set = skin;
+        }
+        else
+        {
+            skin_set = d_comment["skin_main"];
+        }
+    }
+            
+    // cment_reset variable setting
+    filterUrl = _System.getLinkFilter("skin|iframe", skin_set + "|" + iframe);    
+
+    if (_HS["usescode"].ToString() == "1") 
+    {
+        cment_reset += "r=" + r + "&";
+    }
+
+    if (c != "" && c != null) 
+    {
+        cment_reset += "c=" + c;
+	}
+    else 
+    {
+        cment_reset += "m=" + m;
+	}
+
+    cment_reset += filterUrl;     
+
+
+    // global variables
+
+    g["uid"] = uid;
+    g["c"] = c;
+    g["r"] = r;
+    g["m"] = m;
+    g["skin"] = skin_set;
+    g["iframe"] = iframe;
+    g["p"] = p.ToString();
+    g["sort"] = sort;
+    g["orderby"] = orderby;
+    g["recnum"] = recnum;    
+    g["where"] = where;
+    g["keyword"] = keyword;
+    g["_keyword"] = _keyword;
+    g["nametype"] = _HS["nametype"];
+    
+    g["html_set"] = html_set;
+    g["type_set"] = type_set;
+    g["upload_set"] = upload_set;
+    g["height_set"] = height_set;
+    g["edit_tool"] = edit_tool_set;    
+    
+    g["mobile_chk"] = mobile_chk;
+    g["TPG"] = TPG.ToString();   
+    
+    g["NUM"] = NUM.ToString();
+    g["NUM_N"] = NUM_N.ToString();
+    g["NUM_O"] = NUM_O.ToString();
+
+    g["cment_reset"] = cment_reset;
+    g["cment_list"] = cment_reset + _System.getLinkFilter("p|sort|orderby|recnum|where|keyword", p + "|" + sort + "|" + orderby + "|" + recnum + "|" + where + "|" + keyword);
+    g["cment_view"] = g["cment_list"] + "&uid=";  
+    g["cment_modify"] = g["cment_list"] + "&type=modify&uid=";  
+    g["cment_action"] = g["cment_list"] + "&a=";  
+    g["cment_delete"] = g["cment_action"] + "delete&uid=";
+    g["cment_odelete"] = g["cment_action"] + "oneline_delete&uid=";
+    
+    g["dir_module_skin"] = g["dir_module"] + "theme\\" + skin_set + "\\";    
+    g["url_module_skin"] = g["url_module"] + "/theme/" + skin_set + "/";    
+    g["img_module_skin"] = g["url_module_skin"] + "/image";
+
+    g["dir_module_mode"] = g["dir_module_skin"] + mod;    
+    g["url_module_mode"] = g["url_module_skin"] + "/" + mod;      
+    
+    // module main
+    if (g["main"] == null || g["main"] == "") 
+    {
+        g_main = g["dir_module_mode"] + ".cshtml";        
+	}
+    else 
+    {
+        g_main = g["main"];
+	}
+    
+    // session setting    
+    Session["g"] = g;
+    Session["member"] = member;
+    Session["my"] = my;
+    Session["_HS"] = _HS;
+    Session["g_main"] = g_main;
+    Session["OCD"] = OCD;
+    Session["NCD"] = NCD;
+    Session["RCD"] = RCD;
+    Session["commentdata"] = R;
+    //Session["d_upload"] = d_upload;
+
+}

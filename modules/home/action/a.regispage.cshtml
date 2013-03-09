@@ -1,0 +1,245 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var id = Request["id"];
+    var uid = Request["uid"];
+    var category = Request["category"];
+    var name = Request["name"];
+    var joint = Request["joint"];
+    var orign_id = Request["orign_id"];
+    var cachetime = Request["cachetime"];
+    var pagetype = Request["pagetype"];
+    var ismain = Request["ismain"];
+    var mobile = Request["mobile"];
+    var perm_g = Request["perm_g"];
+    var perm_l = Request["perm_l"];
+    var layout = Request["layout"];
+    var sosokmenu = Request["sosokmenu"];
+    var backgo = Request["backgo"];
+    var backc = Request["backc"];
+    
+    @_System.checkAdmin(my["admin"], 0)        // 관리자 체크          
+
+    string filePath = g["path_root_ps"] + g["path_page"] + id;
+                                               
+    Session["g"] = g;
+    
+    if(id!=null){                                                                 
+        id = id.Trim();
+    }
+    if(category!=null){
+        category = category.Trim();
+    }
+    if(name!=null){
+        name =  name.Trim();
+    }
+    if(joint!=null){
+        joint = joint.Replace("&amp;","&").Trim();
+    }
+    if(ismain=="" || ismain==null){
+        ismain = "0";
+    }
+    if(mobile=="" || mobile==null){
+        mobile = "0";
+    }
+    if(perm_l=="" || perm_l==null){
+        perm_l = "0";
+    }
+
+    int hit = 0;
+      
+    dynamic R = null;
+
+    if(joint.Contains("&c=")==true || joint.Contains("?c=")==true){
+        @_System.getLink("","","연결주소에 사용할 수 없는 파라미터가 있습니다.","")
+        return;
+    }
+    if(orign_id!=null && orign_id!=""){
+        if(orign_id!=id){
+            R = _DB.GetDbData_M(AppState["table_s_page"].ToString(), "id='" +  id + "'");
+            if(R!=null){
+                @_System.getLink("","","동일한 아이디의 페이지가 존재합니다.","")
+                return;
+            }
+        }
+    }
+    else{        
+        R = _DB.GetDbData_M(AppState["table_s_page"].ToString(), "id='" +  id + "'");
+        if(R!=null){
+            @_System.getLink("","","동일한 아이디의 페이지가 존재합니다.","")
+            return;
+        }
+    }
+
+    if (uid != null && uid != "" && uid != "0")
+    {
+
+        /**************************************** DB 수정 ****************************************/
+
+        if (pagetype == "1")
+        {
+            joint = joint.Replace("cync=Y", "cync=[" + m + "][p" + uid + "][,,,][][][mod:" + id + "]");
+        }
+
+        string QVAL = "pagetype='" + pagetype + "',ismain='" + ismain + "',mobile='" + mobile + "',id='" + id + "',category='" + category + "',name='" + name + "',perm_g='"
+            + perm_g + "',perm_l='" + perm_l + "',layout='" + layout + "',joint='" + joint + "',sosokmenu='" + sosokmenu + "',d_update=getdate()";
+        string UPDATE_PAGE_SQL = "UPDATE " + AppState["table_s_page"] + " SET " + QVAL + " WHERE uid =" + uid;
+
+        @_DB.Execute(UPDATE_PAGE_SQL);
+
+        if (_HS["startpage"] == null || _HS["startpage"] == 0)
+        {
+            if (ismain == "1")
+            {
+                string UPDATE_SITE_SQL = "UPDATE " + AppState["table_s_site"] + " SET startpage=" + uid + " WHERE uid =" + s;
+                @_DB.Execute(UPDATE_SITE_SQL);
+            }
+        }
+
+        /**************************************** file 수정 ****************************************/
+
+        if (orign_id != id)
+        {   
+            FileInfo mfile1 = new FileInfo(g["path_root_ps"] + g["path_page"] + orign_id + ".cshtml");
+            string mfile2 = g["path_root_ps"] + g["path_page"] + id + ".cshtml";
+
+            if (mfile1.Exists)
+            {
+                mfile1.MoveTo(mfile2);
+            }
+
+            FileInfo _mfile1 = new FileInfo(g["path_root_ps"] + g["path_page"] + orign_id + ".widget.cshtml");
+            string _mfile2 = g["path_root_ps"] + g["path_page"] + id + ".widget.cshtml";
+
+            if (_mfile1.Exists)
+            {
+                _mfile1.MoveTo(_mfile2);
+            }
+
+            File.Delete(g["path_root_ps"] + g["path_page"] + orign_id + ".txt");
+        }
+
+        if (cachetime != null && cachetime != "")
+        {
+            File.WriteAllText(filePath + ".txt", cachetime.Trim(), System.Text.Encoding.UTF8);
+        }
+        else
+        {
+            if (File.Exists(g["path_root_ps"] + g["path_page"] + id + ".txt"))
+            {
+                File.Delete(g["path_root_ps"] + g["path_page"] + id + ".txt");
+            }
+        }
+
+
+        /**************************************** Link ****************************************/
+
+        if (backgo != null && backgo != "")
+        {
+            @_System.getLink(_System.RW("mod=" + id, g["r"], _HS), "parent.", "", "")
+            return;
+        }
+        else
+        {
+            @_System.getLink("reload", "parent.", "", "")
+            return;
+        }
+    }
+
+
+
+    else
+    {
+
+        /**************************************** DB 데이터 삽입 ****************************************/
+
+        string QKEY = "pagetype,ismain,mobile,id,category,name,perm_g,perm_l,layout,joint,hit,sosokmenu,d_regis,d_update";
+
+        string QVAL = "'" + pagetype + "','" + ismain + "','" + mobile + "','" + id + "','" + category + "','" + name + "','" + perm_g + "','" + perm_l + "','" + layout + "','"
+            + joint + "','" + hit + "','" + sosokmenu + "','" + date["insert"] + "','" + null + "'";
+
+        string INSERT_PAGE_SQL = "INSERT INTO " + AppState["table_s_page"].ToString() + " (" + QKEY + ") VALUES (" + QVAL + ")";
+
+        @_DB.Execute(INSERT_PAGE_SQL);
+
+        int lastpage = _DB.GetDbData_Count(AppState["table_s_page"].ToString(), "");
+
+        if (pagetype == "1")
+        {
+            joint = joint.Replace("cync=Y", "cync=[" + m + "][p" + lastpage + "][,,,][][][mod:" + id + "]");
+            string UPDATE_PAGE_SQL = "UPDATE " + AppState["table_s_page"] + " SET joint='" + joint + "' WHERE uid =" + lastpage;
+            @_DB.Execute(UPDATE_PAGE_SQL);
+        }
+
+        if (_HS["startpage"] == null || _HS["startpage"] == 0)
+        {
+            if (ismain == "1")
+            {
+                string UPDATE_SITE_SQL = "UPDATE " + AppState["table_s_site"] + " SET startpage=" + lastpage + " WHERE uid =" + s;
+                @_DB.Execute(UPDATE_SITE_SQL);
+            }
+        }
+
+        /**************************************** file 생성 ****************************************/
+        
+        if (!File.Exists(filePath + ".cshtml"))
+        {
+            File.WriteAllText(filePath + ".cshtml", "", System.Text.Encoding.UTF8);
+        }
+
+        if (!File.Exists(filePath + ".widget.cshtml"))
+        {
+            File.WriteAllText(filePath + ".widget.cshtml", "", System.Text.Encoding.UTF8);
+        }
+
+        if (cachetime != null && cachetime != "")
+        {
+            File.WriteAllText(filePath + ".txt", cachetime.Trim(), System.Text.Encoding.UTF8);
+        }
+
+        /**************************************** Link ****************************************/
+
+        if (backc == "user")
+        {
+            string[] typeset = new string[3] { "module", "widget", "source" };
+            @_System.getLink(g["s"] + "/?r=" + r + "&system=edit.page&_page=" + lastpage + "&type=" + typeset[Convert.ToInt32(pagetype)], "paretn.", "", "")
+            return;
+        }
+        else if (backc == "add")
+        {
+            @_System.getLink(g["s"] + "/?r=" + r + "&system=edit.all&type=page", "parent.", "", "")
+            return;
+        }
+        else
+        {
+            @_System.getLink("reload", "parent.", "", "")
+            return;
+        }
+    }    
+}

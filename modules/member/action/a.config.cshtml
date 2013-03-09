@@ -1,0 +1,87 @@
+﻿@*{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var job = Request["job"];
+    var pw_question = Request["pw_question"];
+    var _join_menu = Request["_join_menu"];
+    var addFieldMembers = Request["addFieldMembers"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    string mfile = "";
+    string getId_sql = "SELECT id FROM " + AppState["table_code_d_module"] + " WHERE module='member'";
+
+    foreach (var mem in _DB.Query(getId_sql))
+    {
+        string UPDATE_CODE_SQL = "UPDATE " + AppState["table_code_d_module"] + " SET id_value='" + Request[mem["id"]] + "' WHERE module='member' AND id='" + mem["id"] + "'";
+        @_DB.Execute(UPDATE_CODE_SQL);
+    }
+
+    if (_join_menu == "2")
+    {
+        mfile = g["path_root_ps"] + g["path_module"] + m + "\\var\\job.txt";
+        File.WriteAllText(mfile, _System.stripslashes(job).Trim(), System.Text.Encoding.UTF8);
+
+        mfile = g["path_root_ps"] + g["path_module"] + m + "\\var\\pw_question.txt";
+        File.WriteAllText(mfile, _System.stripslashes(pw_question).Trim(), System.Text.Encoding.UTF8);
+    }
+
+    if (_join_menu == "3")
+    {
+        mfile = g["path_root_ps"] + g["path_module"] + m + "\\var\\add_field.txt";
+        string tmp_string_sum = "";
+
+        foreach (var val in addFieldMembers.Split(','))
+        {
+            string tmp_name = Request["add_name_" + val];
+            string tmp_type = Request["add_type_" + val];
+            string tmp_value = Request["add_value_" + val];
+            string tmp_size = Request["add_size_" + val];
+            string tmp_pilsu = Request["add_pilsu_" + val];
+            string tmp_hidden = Request["add_hidden_" + val];
+
+            tmp_string_sum += val + "|" + tmp_name + "|" + tmp_type + "|" + tmp_value + "|" + tmp_size + "|" + tmp_pilsu + "|" + tmp_hidden + "\n";
+            File.WriteAllText(mfile, _System.stripslashes(tmp_string_sum).Trim(), System.Text.Encoding.UTF8);
+        }
+
+        if (Request["add_name"] != "" && Request["add_name"] != null)
+        {
+            dynamic date = _System.GetVDate(0);
+
+            tmp_string_sum += date["PROC"] + "|" + Request["add_name"] + "|" + Request["add_type"] + "|" + Request["add_value"] + "|" + Request["add_size"] + "|" + Request["add_pilsu"] + "|" + Request["add_hidden"] + "\n";
+        }
+
+        File.WriteAllText(mfile, _System.stripslashes(tmp_string_sum).Trim(), System.Text.Encoding.UTF8);
+    }
+
+    Session["_join_menu"] = _join_menu;
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}*@

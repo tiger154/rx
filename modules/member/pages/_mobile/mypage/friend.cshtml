@@ -1,0 +1,332 @@
+﻿@{
+    /*****************************************************************
+    //
+    //// Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var _m = PageData[1];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    
+    var _NUM = new Dictionary<string, int>();
+    
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    dynamic d_member =  _DB.Get_code("member");
+
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string recnum = Request["recnum"];
+    string where = Request["where"];
+    string keyword = Request["keyword"];
+    string front = Request["front"];
+    string page = Request["page"];
+    string type = Request["type"];
+    string iframe = Request["iframe"];
+    string skin = Request["skin"];
+    string uid = Request["uid"];
+    string category = Request["category"];
+    
+    string sqlque = "";
+
+    decimal TPG = 0;
+
+    if (sort == null || sort == "")
+    {
+        sort = "uid";
+    }
+    if (orderby == null || orderby == "")
+    {
+        orderby = "desc";
+    }
+    if (recnum == null || recnum == "" || recnum == "0" || Convert.ToInt32(recnum) >= 200)
+    {
+        recnum = "20";
+    }
+
+    if ( type == null || type == "")
+    {
+        type= "follower";
+    }
+    
+    if (type == "follower")
+    {
+        sqlque = "by_mbruid=" + my["uid"];
+        if (category != null && category != "")
+        {
+            sqlque += " AND category='" + category + "'";
+        }
+    }
+    else if (type == "following")
+    {
+        sqlque = "my_mbruid=" + my["uid"];
+    }
+    else
+    {
+        sqlque = "my_mbruid" + my["uid"] + " AND rel=1";
+    }    
+    
+    if (where != null && where != "" && keyword != null && keyword != "")
+    {
+        string where_set = "(";
+
+        char[] delimiter = { '|' };
+        string[] strArray = where.Split(delimiter);
+        int str_int = 0;
+
+        sqlque = sqlque + " AND ";
+
+        foreach (var tmp in strArray)
+        {
+            if (str_int > 0)
+            {
+                where_set = where_set + " OR ";
+            }
+
+            where_set = where_set + tmp + " LIKE '%" + keyword + "%'";
+            str_int++;
+        }
+        where_set = where_set + ")";
+        sqlque = sqlque + where_set;
+    }
+
+
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+    int NUM = _DB.GetDbData_Count(AppState["table_s_friend"].ToString(), sqlque);
+
+    string RCD_sql = _System.GetQuery(AppState["table_s_friend"].ToString(), "", sqlque, sort, orderby, list_start, recnum);
+
+    TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+    
+    _NUM.Add("follower", _DB.GetDbData_Count(AppState["table_s_friend"].ToString(), "by_mbruid=" + my["uid"]));
+    _NUM.Add("following", _DB.GetDbData_Count(AppState["table_s_friend"].ToString(), "my_mbruid=" + my["uid"]));
+    _NUM.Add("friend", _DB.GetDbData_Count(AppState["table_s_friend"].ToString(), "my_mbruid=" + my["uid"] + " AND rel=1"));
+    
+    @RenderPage("_menu.cshtml", g, m)
+}
+
+<div id="friendlist">
+
+	<div class="info">
+
+		<div class="article">
+			<a href="@g["url_page"]&type=friend" @Html.Raw(_System.isEqual(type, "friend", "class=\b\b", ""))>맞팔</a><span class="num">(@_NUM["friend"])</span></span> <span>|</span>
+			<a href="@g["url_page"]&type=follower" @Html.Raw(_System.isEqual(type, "follower", "class=\b\b", ""))>팔로워</a><span class="num">(@_NUM["follower"])</span> <span>|</span>
+			<a href="@g["url_page"]&type=following" @Html.Raw(_System.isEqual(type, "following", "class=\b\b", ""))>팔로잉</a><span class="num">(@_NUM["following"])
+		</div>
+		<div class="category">
+
+        @if (type != "follower")
+        {
+            var _CATS_sql = "SELECT category FROM " + AppState["table_s_friend"] + " WHERE my_mbruid=" +  my["uid"] + " AND category<>'' GROUP BY category";
+            
+			<select onchange="goHref('@g["url_page"]&type=@type&category='+this.value);">
+			<option value="">&nbsp;+ 전체</option>
+			<option value="">-------------</option>
+
+            @foreach (var _R in _DB.Query(_CATS_sql))
+            {
+                <option value="@_R["category"]" @_System.getSltStr(_R["category"], category)>ㆍ @_R["category"]</option>
+            }
+
+			</select>            
+        }
+        
+		</div>
+		<div class="clear"></div>
+	</div>
+
+	<form name="procForm" action="@g["s"]/" method="post" target="_action_frame_@(m)" onsubmit="return submitCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@m" />
+	<input type="hidden" name="front" value="@front" />
+	<input type="hidden" name="a" value="" />
+	<input type="hidden" name="type" value="@type" />
+
+	<table summary="친구 리스트입니다.">
+	<caption>친구</caption> 
+	<colgroup> 
+	<col width="30"> 
+	<col> 
+	<col width="60"> 
+	<col width="70"> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" class="hand" alt="" onclick="chkFlag('members');" /></th>
+	<th scope="col">이름</th>
+	<th scope="col">관계</th>
+	<th scope="col" class="side2">날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @foreach (var R in _DB.Query(RCD_sql))
+    {
+        dynamic M = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", _System.isEqual(type, "follower", R["my_mbruid"].ToString(), R["by_mbruid"].ToString()));
+        dynamic M1 = _DB.Get_module_data(AppState["table_s_mbrid"], "uid", M["memberuid"]);
+        
+	    <tr>
+	    <td>
+	    <input type="checkbox" name="members" value="@R["uid"]" />
+	    <input type="hidden" id="members_@(R["uid"])" value="@Html.Raw(_System.isEqual(d_member["login_emailid"], 1, M["email"], M1["id"]))" />
+	    </td>
+	    <td class="sbj">
+		    <a class="hand" onclick="OpenWindow('@g["s"]/?r=@r&system=popup.papersend&iframe=Y&id=@Html.Raw(_System.isEqual(d_member["login_emailid"], 1, M["email"], M1["id"]))');">@M[_HS["nametype"]] (@Html.Raw(_System.isEqual(d_member["login_emailid"], 1, M["email"], M1["id"])))</a>
+
+		    @if (_System.getNew(R["d_regis"].ToString(), 24))
+            {
+                <span class="new">new</span>
+            }
+            
+	    </td>
+	    <td class="cat">@Html.Raw(_System.isEqual(R["rel"], 1, "맞팔", _System.isEqual(type, "follower", "팔로워", "팔로잉")))</td>
+	    <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	    </tr> 
+    }
+
+    @if (NUM == 0)
+    {
+	    <tr>
+	    <td><input type="checkbox" disabled="disabled" /></td>
+	    <td colspan="2" class="sbj1">
+        
+        @if (type == "friend")
+        {
+            @:등록된 맞팔친구가 없습니다.
+        }
+        else if (type == "follower")
+        {
+            @:팔로워가 없습니다.
+        }
+        else
+        {
+            @:팔로잉중인 회원이 없습니다.
+        }
+
+	    </td>
+	    <td>@date["totime"].ToString("yyyy.MM.dd")</td>
+	    </tr> 
+    }    
+
+	</tbody>
+	</table>
+	
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>
+
+
+    @if (type != "follower")
+    {
+        <input type="button" value="언팔로우" class="btngray" onclick="actCheck('friend_unfollow');" />    
+    }
+    else
+    {
+        <input type="button" value="맞팔맺기" class="btngray" onclick="actCheck('friend_follow');" />    
+    }
+	
+	<input type="button" value="쪽지" class="btngray" onclick="actCheck('friend_paper');" />
+	</form>
+	&nbsp;&nbsp;
+	</form>
+
+	<form name="addForm" action="@g["s"]/" method="post" target="_action_frame_@(m)" onsubmit="return addFriend(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@m" />
+	<input type="hidden" name="front" value="@front" />
+	<input type="hidden" name="a" value="friend_add" />
+
+	<input type="text" name="friend" id="fCategory" value="" class="input none" title="회원@(_System.isEqual(d_member["login_emailid"], 1, "이메일을", "아이디를")) 입력해주세요. 여러명에게 요청하려면 콤마(,)로 구분해서 입력해 주세요." />
+	<input type="submit" value="친구요청(팔로잉)" class="btnblue" />
+	</form>
+
+
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function submitCheck(f)
+{
+	if (f.a.value == '')
+	{
+		return false;
+	}
+}
+function addFriend(f)
+{
+	if (getId('fCategory').style.display == 'inline')
+	{
+		if (f.friend.value == '')
+		{
+			alert('요청하려는 회원 @(_System.isEqual(d_member["login_emailid"], 1, "이메일을", "아이디를")) 입력해 주세요.   ');
+			f.friend.focus();
+			return false;
+		}
+		return confirm('정말로 요청하시겠습니까?   ');
+	}
+	else {
+		getId('fCategory').style.display = 'inline';
+		f.friend.focus();
+		return false;
+	}
+}
+function actCheck(act)
+{
+	var f = document.procForm;
+    var l = document.getElementsByName('members');
+    var n = l.length;
+	var j = 0;
+    var i;
+	var s = '';
+
+    for (i = 0; i < n; i++)
+	{
+		if(l[i].checked == true)
+		{
+			j++;
+			s += getId('members_'+l[i].value).value + ',';
+		}
+	}
+
+	if (act == 'friend_paper')
+	{
+		if (!j)
+		{
+			alert('선택된 회원이 없습니다.      ');
+			return false;
+		}
+
+		OpenWindow('@g["s"]/?r=@r&system=popup.papersend&iframe=Y&id='+s);
+	}
+	else {
+
+		if (!j)
+		{
+			alert('선택된 회원이 없습니다.      ');
+			return false;
+		}
+		
+		if(confirm('정말로 실행하시겠습니까?    '))
+		{
+			f.a.value = act;
+			f.submit();
+		}
+	}
+}
+//]]>
+</script>
+

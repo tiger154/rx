@@ -1,0 +1,158 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var g = PageData[0];
+    var my = PageData[1];
+    var r = PageData[2];
+    var s = PageData[3];
+    var _HP = PageData[4];
+    var _CA = PageData[5];
+    var _HS = PageData[6];
+    var d_layout = PageData[7];
+    var LAYOUT_ARR = PageData[8];
+    var c = PageData[9];
+    var _HM = PageData[10];
+    var system = PageData[11];
+
+    string _themeConfig = Request["_themeConfig"];
+    string _keyword = Request["_keyword"];
+    string _shortcut = Request["_shortcut"];
+    string cat = Request["cat"];
+    string l_bg = "";
+    string keyword_prn = "";
+
+    char[] delimiter = { ',' };
+
+    int _i = 0;
+}
+
+<div id="header">
+	<div class="topbox"@Html.Raw("topbox" + d_layout["_titlebg"])>
+		<div class="wrap">
+			<div class="logo">
+				@Html.Raw(_System.getLayoutLogo(LAYOUT_ARR, d_layout, g, _HS))
+			</div>
+			<div class="clear"></div>
+			<div class="logoside">
+				@if(LAYOUT_ARR["shortcut"] != "")
+                {
+                    string[] strArray = LAYOUT_ARR["shortcut"].Split(delimiter);
+                    
+                    <ul id="_layout_shortcut_">
+                    @foreach(string _val in strArray)
+                    {
+                        string short_class = "";
+                        string short_color = d_layout["_shortcut_color"];
+                        
+                        if(_shortcut == _val)
+                        {
+                            short_class = "class='on'";
+                            short_color = d_layout["_shortcut_color1"];
+                        }
+                        
+                        <li @Html.Raw(short_class)@d_layout["_shortcut_bg"]><a href="@g["s"]/?r=@r&amp;_shortcut=@Server.UrlEncode(_val)"@short_color>@_val</a></li>
+                    }
+                    </ul>
+                }
+			</div>
+			<div class="search">
+				<div id="_layout_memberlink_" class="member">
+					<img src="@g["img_core"]/blank.gif" width="1" height="20" alt="" />
+                    @if(my["uid"] > 0)
+                    {
+                        if(my["admin"] == "1")
+                        {
+        					<a href="@g["s"]/?r=@r&amp;_themeConfig=detail&amp;prelayout=@d_layout["dir"]/zone" class="admin">설정</a> @("|")  
+                        }
+                        
+                        <a href="@_System.RW("mod=mypage", g["r"], _HS)"@d_layout["_memberlink_color"]>나의계정</a> @("|") 
+                        <a href="@g["s"]/?r=@r&a=logout"@d_layout["_memberlink_color"]>로그아웃</a>
+    
+                        if(LAYOUT_ARR["sns_use"] == "1")
+                        {
+                            <a href="#." onclick="getLayerBox('@g["s"]/?r=@r&m=social&page=account&iframe=Y','소셜계정',600,650,event,false,'l');"@d_layout["_memberlink_color"]><img src="@g["img_layout"]/sns.png" alt="" title="소셜계정" /> SNS</a>
+                        }
+                    }
+                    else
+                    {
+                        <a href="@_System.RW("mod=join", g["r"], _HS)"@d_layout["_memberlink_color"]>회원가입</a> @("|") 
+                        <a href="@_System.RW("mod=login", g["r"], _HS)"@d_layout["_memberlink_color"]>로그인</a>
+        
+                        if(LAYOUT_ARR["sns_use"] == "1")
+                        {
+                        <a href="#." onclick="getLayerBox('@g["s"]/?r=@r&m=social&page=login&iframe=Y','소셜 로그인',350,300,event,false,'l');"@d_layout["_memberlink_color"]><img src="@g["img_layout"]/sns.png" alt="" title="소셜 로그인" /> SNS</a>
+                        }		
+                    }
+				</div>
+
+				<form action="@g["s"]/">
+				<input type="hidden" name="r" value="@r" />
+				<input type="hidden" name="mod" value="search" />
+                @if(_keyword != "")
+                {
+                    keyword_prn = "done";
+                }
+				<input type="text" name="keyword" class="keyword @keyword_prn" value="@_keyword" />
+				<input type="image" src="@g["img_layout"]/btn_search.gif" class="sbtn" alt="search" />
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="btmbox">
+		<div class="wrap">
+			<div class="title">
+			@if(_themeConfig != "" && _themeConfig != null)
+            {
+                <h2>레이아웃 설정</h2>
+            }
+            else
+            {
+                <h2>@d_layout["subtitle"]</h2>                    
+            }
+            </div>
+            <div class="tabmenu">
+            @if(LAYOUT_ARR["category"] != "")
+            {
+                string cat_class = "";
+                string[] _category = LAYOUT_ARR["category"].Split(delimiter);
+                
+                if(cat == "" || cat == null)
+                {
+                    cat_class = "class='on'";
+                }
+                <ul>
+                <li @Html.Raw(cat_class)><a href="@g["s"]/?r=@r&amp;c=@c">All</a></li>
+                
+                @foreach(string _val in _category)
+                {
+                    string cat_class2 = "";
+                    
+                    if(cat == _val)
+                    {
+                        cat_class2 = "class='on'";
+                    }
+                    
+                    <li @Html.Raw(cat_class2)><a href="@g["s"]/?r=@r&amp;c=@c&amp;cat=@Server.UrlEncode(_val)">@_val</a></li>
+                }
+                </ul>                    
+            }
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>
+</div>
+
+<div id="container">
+	<div class="wrap">
+    @{
+        //////////////////////////////////////////////////////////
+        ///// Header File Rendering
+        //////////////////////////////////////////////////////////        
+        @RenderPage("../../../" + g["path_core"] + "engine/container_head.engine.cshtml", g, _HM, system)
+    }

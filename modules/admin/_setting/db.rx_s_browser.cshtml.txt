@@ -1,0 +1,8 @@
+﻿CREATE TABLE rx_s_browser ( 
+uid  int  identity(1,1)  NOT NULL , 
+site  int   NOT NULL , 
+date  nvarchar(8)   NOT NULL , 
+browser  nvarchar(10)   NOT NULL , 
+hit  int   NOT NULL ,
+PRIMARY KEY (uid)
+);

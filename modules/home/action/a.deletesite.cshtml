@@ -1,0 +1,76 @@
+﻿@{  
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var parent = Request["parent"];
+    var account = Request["account"];
+    var backc = Request["backc"];
+    var uid = Request["uid"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+                                       
+    dynamic R = _DB.Get_module_data(AppState["table_s_site"], "uid", account);
+    
+    if (R["uid"] != 0)
+    {
+        //string DELETE_START_SQL = "DELETE FROM " + AppState["table_s_start"] + " WHERE site=" + R["uid"];
+        string DELETE_SITE_SQL = "DELETE FROM " + AppState["table_s_site"] + " WHERE uid=" + R["uid"];
+        //@_DB.Execute(DELETE_START_SQL);
+        @_DB.Execute(DELETE_SITE_SQL);
+        
+        
+        string _MENUS_sql = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + R["uid"] + " ORDER BY gid asc";
+        foreach(var _M in _DB.Query(_MENUS_sql)){
+            string _xfile = g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", Convert.ToInt32(_M["uid"]));
+
+            File.Delete(_xfile + ".cshtml");
+            File.Delete(_xfile + ".widget.cshtml");
+            File.Delete(_xfile + ".mobile.cshtml");
+            File.Delete(_xfile + ".css");
+            File.Delete(_xfile + ".js");
+            File.Delete(_xfile + ".header.cshtml");
+            File.Delete(_xfile + ".footer.cshtml")
+                ;
+            File.Delete(_xfile + ".txt");
+            File.Delete(_xfile + ".cache");
+            File.Delete(_xfile + ".widget.cache");
+            File.Delete(_xfile + ".mobile.cache");
+
+            File.Delete(g["path_root_ps"] + g["path_var"] + "menu\\" + _M["imghead"]);
+            File.Delete(g["path_root_ps"] + g["path_var"] + "menu\\" + _M["imgfoot"]);
+        }
+
+        string DELETE_MENU_SQL = "DELETE FROM " + AppState["table_s_menu"] + " WHERE site=" + R["uid"];
+        @_DB.Execute(DELETE_MENU_SQL);
+
+        //File.Delete(g["path_root_ps"] + g["path_var"] + "sitecshtml\\" + account + ".cshtml");
+    }
+    
+    @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=" + m, "parent.","","")
+    return;
+}

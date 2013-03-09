@@ -1,0 +1,60 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var agentlist = Request["agentlist"];
+    var usemobile = Request["usemobile"];
+    var startsite = Request["startsite"];
+    var startdomain = Request["startdomain"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    agentlist = agentlist.Trim();
+    
+    string QKEY = "usemobile,startsite,startdomain";
+    string QVAL = "'" + usemobile + "','" + startsite + "','" + startdomain + "'"; 
+    
+    string DELETE_MB_SQL = "DELETE FROM " + AppState["table_s_mobile"].ToString();
+    string INSERT_MB_SQL = "INSERT INTO " + AppState["table_s_mobile"].ToString() + " (" + QKEY + ") VALUES (" + QVAL + ")";
+    
+    @_DB.Execute(DELETE_MB_SQL);
+    @_DB.Execute(INSERT_MB_SQL);
+        
+    
+    string mfile = g["path_root_ps"] + g["path_var"] + "mobile.agent.txt";
+    
+    FileStream fs = new FileStream(mfile, FileMode.Append, FileAccess.Write, FileShare.Write);
+    fs.Close();
+    StreamWriter sw = new StreamWriter(mfile);
+    sw.WriteLine(agentlist);
+    sw.Close();   
+    
+    @_System.getLink("reload","parent.","","")
+    return;
+        
+}

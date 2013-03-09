@@ -1,0 +1,61 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var uid = Request["uid"];
+
+    if (my["uid"] == 0) 
+    {
+        @_System.getLink("", "", "로그인해 주세요.", "")
+        return;
+    }
+
+    dynamic R = _DB.Get_module_data(AppState["table_s_oneline"], "uid", uid);
+
+    if (R["uid"] == 0)
+    {
+        @_System.getLink("", "", "존재하지 않는 한줄의견입니다.", "")
+        return;
+    }
+
+    if (Session["module_" + m + "_osingo"] == null || !Session["module_" + m + "_osingo"].Contains("[" + R["uid"].ToString() + "]"))
+    {
+        string UPDATE_ONELINE_SQL = "UPDATE " + AppState["table_s_oneline"] + " SET singo=singo+1 WHERE uid=" + R["uid"];
+        @_DB.Execute(UPDATE_ONELINE_SQL);
+        
+        Session["module_" + m + "_osingo"] += "[" + R["uid"] + "]";
+        
+        @_System.getLink("", "", "신고처리 되었습니다.", "")
+        return;
+    }
+    else
+    {
+        @_System.getLink("", "", "이미 신고하신 한줄의견입니다.", "")
+        return;
+    }
+}

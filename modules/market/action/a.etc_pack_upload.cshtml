@@ -1,0 +1,85 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uploadedFile = Request.Files[0];
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    string folder = Directory.GetCurrentDirectory() + "\\";
+    string tmpname = Path.GetTempFileName();
+    string realname = Path.GetFileName(uploadedFile.FileName);     //파일명 가져오기           
+    string fileExt = (_System.getExt(realname)).ToLower();              //확장자명
+    string extPath = g["path_root_ps"]+g["path_tmp"]+"app";
+    string extPath1 = extPath+"\\";
+    string saveFile = extPath1 + date["totime"].ToString("yyMMdd_HHmmss") + ".zip";     
+
+    if (uploadedFile.ContentLength > 0)
+    {
+	    if (realname.Substring(0,7) != "rx_etc_")
+	    {
+		    @_System.getLink("","","기타자료 패키지가 아닙니다.","");
+	    }
+	    if (fileExt != "zip")
+	    {
+		    @_System.getLink("","","패키지는 반드시 zip압축 포맷이어야 합니다.","");
+	    }
+        uploadedFile.SaveAs(saveFile);
+
+        _System.Unzip(saveFile, saveFile.Substring(0, saveFile.Length - fileExt.Length));
+                
+        string opendir = Directory.GetDirectories(extPath1)[0] + "\\";
+        foreach(string dir in Directory.GetDirectories(opendir)){
+            string dir_name = dir.Substring(opendir.Length, dir.Length - opendir.Length);
+            @_System.getLink("", "", folder+dir_name, "");
+                                
+            if (dir_name != "." && dir_name != "..")
+            {
+                if (Directory.Exists(dir))
+                {
+                    if (Directory.Exists(folder + dir_name))
+                    {
+                        _System.delAllDir(folder + dir_name);
+                    }
+                    Directory.CreateDirectory(folder + dir_name);
+                    _System.DirCopy(dir, folder + dir_name);
+                }
+                else
+                {
+                    if (!Directory.Exists(folder))
+                    {
+                        Directory.CreateDirectory(folder + dir_name);
+                    }
+                    _System.DirCopy(dir, folder + dir_name);
+                }
+            }
+        }
+        _System.delAllDir(extPath);
+    }
+    @_System.getLink("reload", "parent.", "자료가 정상적으로 등록되었습니다.", "");
+}

@@ -1,0 +1,94 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var g = PageData[0];
+    var r = PageData[1];
+    var d_layout = PageData[2];
+
+    string tdir = g["path_root_ps"] + g["path_layout"] + d_layout["dir"] + "\\_pages";
+
+    int _i = 0;
+
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);   
+}
+
+<div class="guide">
+<span class="b">이 레이아웃에서 사용되고 있는 전용페이지를 확인 할 수 있습니다.</span><br /><br />
+킴스큐는 자체적으로 페이지추가 기능을 제공하고 있습니다.<br />
+그러나 종종 레이아웃 자체에서 간단히 파일만 추가해서 페이지를 구성할 필요가 생깁니다.<br />
+이런 경우 레이아웃내에 페이지용 파일을 업로드하면 간단히 페이지를 추가할 수 있습니다.<br />
+</div>
+
+<table class="pagetable">
+<thead>
+<tr>
+<th>페이지 파일</th>
+<th>CSS</th>
+<th>보기</th>
+</tr>
+<tbody>
+@{
+    foreach (string tpl in Directory.GetFiles(tdir))
+    {
+        string f_name = tpl.Substring(tdir.Length + 1, tpl.Length - tdir.Length - 1);         // 파일명 구하기
+        string _pagecss = "";
+        
+        if(!f_name.Contains(".cshtml"))
+        {
+            continue;
+        }
+        
+        _pagecss = f_name.Replace(".cshtml", ".css");
+        FileInfo fInfo = new FileInfo(tdir + "\\" + f_name);
+
+        <tr>
+        <td class="p1">
+            <img src="@g["img_core"]/file/small/php.gif" alt="" />
+            <a href="@g["s"]/?r=@r&amp;m=admin&amp;module=filemanager&amp;front=main&amp;iframe=Y&amp;pwd=@Server.UrlEncode(tdir + "\\")&amp;editmode=Y&amp;file=@f_name" target="_blank">@f_name</a>
+            <i>(@_System.getSizeFormat(fInfo.Length))</i>
+        </td>
+        <td class="p2">
+        @if(File.Exists(tdir + "\\" + _pagecss))
+        {
+            FileInfo fInfo_css = new FileInfo(tdir + "\\" + _pagecss);
+            
+            <img src="@g["img_core"]/file/small/css.gif" alt="" />
+            <a href="@g["s"]/?r=@r&amp;m=admin&amp;module=filemanager&amp;front=main&amp;iframe=Y&amp;pwd=@Server.UrlEncode(tdir + "\\")&amp;editmode=Y&amp;file=@_pagecss" target="_blank">@_pagecss</a>
+            <i>(@_System.getSizeFormat(fInfo_css.Length))</i>
+        }
+        else
+        {
+            <i>없음</i>                            
+        }
+        </td>
+        <td class="p3"><a href="@g["s"]/?r=@r&amp;_themePage=@f_name.Replace(".cshtml", "")" target="_blank" class="btnGray01 plusBlue hand"><i><s>페이지보기</s></i></a></td>
+        </tr>    
+    
+        _i++;
+    }
+}
+
+@if(_i == 0)
+{
+    <tr>
+    <td colspan="3" class="none">페이지 파일이 없습니다.</td>
+    </tr>
+}
+
+</tbody>
+</table>
+
+
+
+<div class="more">
+파일을 추가/제거하기 위해서는 <a href="@g["s"]/?r=@r&amp;m=admin&amp;module=filemanager&amp;front=main&amp;iframe=Y&amp;pwd=@Server.UrlEncode(tdir + "\\")" target="_blank" class="u">파일메니져</a>나 FTP를 이용하셔야 합니다.<br />
+서브 레이아웃을 지정하여 페이지를 열려면 링크주소에 <span class="b">&amp;prelayout=@d_layout["dir"]/레이아웃파일명(확장자제외)</span> 을 붙여주세요.
+</div>
+<br />    
+    

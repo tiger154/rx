@@ -1,0 +1,109 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    dynamic g = PageData[0];
+    
+    string _m = PageData[1];
+    string c = PageData[2];
+    string m = PageData[3];
+    string zip1 = Request["zip1"];
+    string zip2 = Request["zip2"];
+    string addr1 = Request["addr1"];
+    string focusfield = Request["focusfield"];
+    string action = Request["action"];
+    string zipkey = Request["zipkey"];
+    string _zipkey = zipkey;
+    
+    int see = 0;
+    
+    Session["iframe"] = null;
+}
+
+<div id="zipbox">
+	<div class="title"></div>
+	<div class="ment">
+		ㆍ찾고자하는 주소의 동(읍/면/리)을 입력하세요.<br />
+		예) 서초동, 오창읍, 비암리<br />
+	</div>
+    
+	<div class="searchform">
+
+		<form name="frmsearch" action="@g["s"]/" method="post">
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="action" value="search" />
+		<input type="hidden" name="zip1" value="@zip1" />
+		<input type="hidden" name="zip2" value="@zip2" />
+		<input type="hidden" name="addr1" value="@addr1" />
+		<input type="hidden" name="focusfield" value="@focusfield" />
+            
+		<span>지역명 :</span> 
+		<input type="text" value="@_zipkey" name="zipkey" class="input" />
+		<input type="submit" value=" 검색 " class="btnblue btn" />
+
+		</form>
+
+	</div>
+    
+    <div class="resultbox">
+@{
+   
+    if(action == "search" && zipkey != null) {
+        string zipfile = g["path_root_ps"]+g["dir_module"]+"\\zipcode.txt";
+        Array userData = null;
+        userData = File.ReadAllLines(zipfile);
+        
+        <table>
+        @foreach (string dataLine in userData) {
+            if(dataLine.IndexOf(zipkey) >= 0) {
+                string zip_1 = dataLine.Substring(0,3);
+                string zip_2 = dataLine.Substring(4,3);
+                string addr_txt = dataLine.Substring(8);
+                
+                <tr>
+                <td class="td1">@zip_1-@zip_2</td>
+                <td class="td2"><a href="javascript:zip_copy('@zip_1','@zip_2','@addr_txt')">@addr_txt</a></td>
+                </tr>
+            
+                see = 1;
+			}
+        }
+        @if(see == 0) {
+			<tr>
+			<td class="none">찾으시는 지역이 검색되지 않았습니다.</td>
+			</tr>
+		}
+        </table>
+	}
+}
+	</div>
+
+	<div class="bottom">
+		<input type="button" value=" 창닫기 " class="btngray" onclick="top.close();" />
+	</div>
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function zip_copy(zip1,zip2,addr)
+{
+    @{
+        if(focusfield != "") {
+        	@Html.Raw("opener.document.getElementById('"+ zip1 +"').value = zip1;\n");
+	        @Html.Raw("opener.document.getElementById('"+ zip2 +"').value = zip2;\n");
+	        @Html.Raw("opener.document.getElementById('"+ addr1 +"').value = addr;\n");
+	        @Html.Raw("opener.document.getElementById('"+ focusfield +"').focus();\n");          
+		}
+	}
+
+	top.close();
+}
+top.resizeTo(440,550);
+document.title = "우편번호검색";
+document.frmsearch.zipkey.focus();
+//]]>
+</script>

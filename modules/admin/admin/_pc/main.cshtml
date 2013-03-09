@@ -1,0 +1,413 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    
+    var d_page_widget_name = new Dictionary<string, string>();
+    var d_page_widget_size = new Dictionary<string, string>();
+    var d_page_widget_prop = new Dictionary<string, string>();
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    
+    string frame_name = "_action_frame_" + m;
+    string d_widget_name_sql = "SELECT * FROM " + AppState["table_code_d_page"].ToString() + " WHERE module='widget' and memberuid='" + m + "' and id='name'";
+    string d_widget_size_sql = "SELECT * FROM " + AppState["table_code_d_page"].ToString() + " WHERE module='widget' and memberuid='" + m + "' and id='size'";
+    string d_widget_prop_sql = "SELECT * FROM " + AppState["table_code_d_page"].ToString() + " WHERE module='widget' and memberuid='" + m + "' and id='prop'";
+    string mainheight = _DB.GetDbData_S(AppState["table_code_d_page"].ToString(), "module='widget' AND memberuid='" + m + "' AND id='mainheight'", "id_value").ToString();
+
+    int cnt = _DB.GetDbData_Count(AppState["table_code_d_page"].ToString(), "module='widget' AND memberuid='" + m + "' and id='name'");    //admin 페이지에 생성된 위젯 갯수    
+    
+    foreach (var DW in _DB.Query(d_widget_name_sql))
+    {
+        d_page_widget_name.Add(DW["step"].ToString(), DW["id_value"]);
+    }
+    foreach (var DW in _DB.Query(d_widget_size_sql))
+    {
+        d_page_widget_size.Add(DW["step"].ToString(), DW["id_value"]);
+    }
+    foreach (var DW in _DB.Query(d_widget_prop_sql))
+    {
+        d_page_widget_prop.Add(DW["step"].ToString(), DW["id_value"]);
+    }
+    
+    if (mainheight == "") 
+    {
+        mainheight = "700";
+    }
+    
+    //Session["widget_id"] = m;
+}
+
+
+<div id="deskbox">
+
+@{     
+    if (type == "editmode")
+    {        
+
+	<div id="pages_widget">
+    
+		<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return makeMap(this);">
+        <input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="widgetwrite" />
+		<input type="hidden" name="escapevar" value="" />
+
+		<div class="tt">
+			<img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+			데스크 꾸미기
+
+			<input type="button" value="위젯추가" class="btnblue" onclick="getWidget(-1);" />
+			<input type="submit" value="저장하기" class="btnblue" />
+			<span class="height">
+			(데스크 높이
+			<input type="text" name="mainheight" id="mainheight" value="@mainheight" size="5" class="input" />px)
+			</span>
+
+			<span id="saveresult" class="result">
+			위젯이 저장되었습니다.
+			</span>
+		</div>
+
+		</form>
+
+		<div id="workSpace" class="posrel"></div>
+
+	</div>
+    
+    
+	<script type="text/javascript">
+	//<![CDATA[
+
+	var isIE = document.all;
+	var isNN = !document.all&&getId;
+	var isHot = false;
+	var maxTiles = 20;
+	var MovableItem;
+	var moveObject = new Array(maxTiles);
+	var blocktitle = new Array(maxTiles);
+	var blockarray = new Array(maxTiles);
+	var scrollAmt  = new Array();
+
+	function layoutWidth(obj)
+	{
+		var f = document.procForm;
+		if (obj.value != '')
+		{
+			f.mainwidth.value = obj.value;
+			getId('workSpace').style.width = obj.value;
+		}
+	}
+	function startMove(e)
+	{
+		if (!MovableItem) return;
+		canvas = isIE ? "BODY" : "HTML";
+			activeItem=isIE ? event.srcElement : e.target;  
+			offsetx=isIE ? event.clientX : e.clientX;
+			offsety=isIE ? event.clientY : e.clientY;
+			lastX=parseInt(MovableItem.style.left);
+			lastY=parseInt(MovableItem.style.top);
+			lastW=parseInt(MovableItem.style.width);
+			lastH=parseInt(MovableItem.style.height);
+		if (offsetx+scrollAmt[0]>=(MovableItem.parentNode.offsetLeft+parseInt(MovableItem.style.left)+(MovableItem.offsetWidth*0.95)) || offsety+scrollAmt[1]>=(MovableItem.parentNode.offsetTop+parseInt(MovableItem.style.top)+(MovableItem.offsetHeight*0.95)) ){edge=true;MovableItem.style.cursor='se-resize';} else{edge=false;MovableItem.style.cursor='move';}
+		moveEnabled=true;
+		document.onmousemove=moveIt;
+	}
+	function widgetMove(obj, X, Y)
+	{
+	   scrollAmt = puGetScrollXY();
+	   if (X+scrollAmt[0]>=(obj.parentNode.offsetLeft+parseInt(obj.style.left)+(obj.offsetWidth*0.95)) || Y+scrollAmt[1]>=(obj.parentNode.offsetTop+parseInt(obj.style.top)+(obj.offsetHeight*0.95)) ) {obj.style.cursor='se-resize';} else{obj.style.cursor='move';}
+	}
+	function moveIt(e)
+	{
+		if (!moveEnabled||!MovableItem) return;
+
+		getWHTL();
+
+		var w = isIE ? event.clientX-offsetx +lastW : e.clientX-offsetx+lastW;
+		var h = isIE ? event.clientY-offsety +lastH : e.clientY-offsety+lastH;
+		var x = isIE ? lastX+event.clientX-offsetx : lastX+e.clientX-offsetx;
+		var y = isIE ? lastY+event.clientY-offsety : lastY+e.clientY-offsety;
+
+
+		if (edge)
+		{
+			MovableItem.style.width = w+'px'; 
+			MovableItem.style.height = h+'px'; 
+			return false;
+		}
+		else
+		{
+			MovableItem.style.top = y+'px';
+			MovableItem.style.left = x+'px';
+			return false;
+		}
+	}
+
+	function puGetScrollXY()
+	{
+		var scrollXamt = 0, scrollYamt = 0;
+		if( typeof( window.pageYOffset ) == 'number' )
+		{
+			scrollYamt = window.pageYOffset;
+			scrollXamt = window.pageXOffset;
+		} 
+		else if( document.body && ( document.body.scrollLeft || document.body.scrollTop ) ) 
+		{
+			scrollYamt = document.body.scrollTop;
+			scrollXamt = document.body.scrollLeft;
+		} 
+		else if( document.documentElement && ( document.documentElement.scrollLeft || document.documentElement.scrollTop ) ) 
+		{
+			scrollYamt = document.documentElement.scrollTop;
+			scrollXamt = document.documentElement.scrollLeft;
+		}
+		return [ scrollXamt, scrollYamt ];
+	}
+	function createTile(w,h,t,l)
+	{
+		var i;
+		for (i=0; i<maxTiles; i++)
+		{
+			if (moveObject[i].style.display == 'none')
+			{
+				moveObject[i].style.display = 'block';
+				moveObject[i].style.width = w;
+				moveObject[i].style.height = h;
+				moveObject[i].style.top = t;
+				moveObject[i].style.left = l;
+				
+				MovableItem = moveObject[i];
+				getWHTL();
+				return;
+			}
+		}
+	}
+	function poplayer(topObject)
+	{
+		if (!topObject) return;
+		for (var i=0; i<moveObject.length; i++)
+		{
+			moveObject[i].style.border = '#C5D7EF solid 1px';
+			if (moveObject[i].style.zIndex > topObject.style.zIndex-1 && moveObject[i]!=topObject)
+			{
+				moveObject[i].style.zIndex = moveObject[i].style.zIndex-1;
+			}
+		}
+		
+		topObject.style.zIndex = moveObject.length-1;
+		topObject.style.border = '#1A62BA solid 1px';
+	}
+	function getWHTL()
+	{
+		var i;
+		var w = parseInt(MovableItem.offsetWidth);
+		var h = parseInt(MovableItem.offsetHeight);
+		var t = parseInt(MovableItem.style.top);
+		var l = parseInt(MovableItem.style.left);
+
+		getId('whtl'+MovableItem.id.replace('popup','')).innerHTML = 'W : <input type="text" id="whtl'+MovableItem.id.replace('popup','')+'_w" value="'+(w)+'" size="4" class="input" title="폭" onkeypress="widgetAply(\''+MovableItem.id.replace('popup','')+'\',event)" /> / '+ 'H : <input type="text" id="whtl'+MovableItem.id.replace('popup','')+'_h" value="'+(h)+'" size="4" class="input" title="높이" onkeypress="widgetAply(\''+MovableItem.id.replace('popup','')+'\',event)" /> / '+ 'T : <input type="text" id="whtl'+MovableItem.id.replace('popup','')+'_t" value="'+(t)+'" size="4" class="input" title="상단" onkeypress="widgetAply(\''+MovableItem.id.replace('popup','')+'\',event)" /> / '+ 'L : <input type="text" id="whtl'+MovableItem.id.replace('popup','')+'_l" value="'+(l)+'" size="4" class="input" title="좌측" onkeypress="widgetAply(\''+MovableItem.id.replace('popup','')+'\',event)" /> ' + '<input type="button" value="적용" class="btngray" style="height:20px;position:relative;top:1px;" onclick="widgetAply(\''+MovableItem.id.replace('popup','')+'\',event)" />';
+	}
+	function widgetAply(layer,e)
+	{
+		var keycode = event.keyCode ? event.keyCode : e.which;
+		
+		if (keycode == 13 || keycode == undefined)
+		{
+			var w = getId('whtl'+layer+'_w').value;
+			var h = getId('whtl'+layer+'_h').value;
+			var t = getId('whtl'+layer+'_t').value;
+			var l = getId('whtl'+layer+'_l').value;
+
+			moveObject[layer].style.width = parseInt(w)-2;
+			moveObject[layer].style.height = parseInt(h)-2;
+			moveObject[layer].style.top = t;
+			moveObject[layer].style.left = l;
+		}
+	}
+	function makeWorkspace()
+	{
+		var i;
+		var workspace='';
+		var widgetvar;
+
+		for (i=0; i<maxTiles; i++)
+		{
+			widgetvar=blockarray[i].split(',');
+			workspace=workspace+'<div id=popup'+i+' style="'+
+			' z-Index:'+i+';display:none;position:absolute;left:0px;top:0px;filter:alpha(opacity=70);opacity:0.7;background:#ffffff url(\'@g["img_module_admin"]/widget/btn_resize.gif\') bottom right no-repeat;border:#C5D7EF solid 1px;"'+
+			' onSelectStart="return false;"'+
+			' onmousedown="MovableItem=this;poplayer(this);return false;"'+
+			' onMouseover="isHot=true;"'+
+			' onMousemove="widgetMove(this,event.clientX,event.clientY);" '+
+			' onMouseout="isHot=false;" ondblclick="getWidget('+i+');">'+
+
+			' <div style="height:20px;border-bottom:#C5D7EF;background:#D4E6FC;color:#224499;font-weight:bold;padding:8px 10px 0 10px;">'+
+			' <div style="float:left;cursor:move;"><img src="@g["img_module_admin"]/widget/btn_move.gif" alt="" title="이동" /> <span id="wtitle'+i+'" style="position:relative;top:-1px;">'+blocktitle[i]+'</span></div>'+
+			' <div style="text-align:right;">'+
+			' <img src="@g["img_module_admin"]/widget/btn_conf.gif" alt="" title="속성" class="hand" onclick="getWidget('+i+');" />'+
+			' <img src="@g["img_module_admin"]/widget/btn_del.gif" alt="" title="삭제" class="hand" onclick="delWidget('+i+');" />'+
+			' </div>'+
+			' <div style="clear:both;"></div>'+
+			' </div>'+
+			' <div id="whtl'+i+'" style="font-size:12px;font-family:arial;color:#555;padding:7px 0 0 10px;width:100%;height:100%;background:url(\'@g["img_module_admin"]/widget/widget/thumb_small.gif\') center center no-repeat;"></div>'+
+			'</div>';
+		}
+		getId('workSpace').innerHTML = workspace;
+	}
+	function getWidget(i)
+	{        
+		var n = i < 0 ? 0 : i;
+		var g = i < 0 ? '' : blockarray[i];
+
+		//window.open('./?system=popup.widget&iframe=Y&dropfield='+n+'&option='+g.replace(/&/g,'[!]'),'widgetWin','left=0,top=0,width=100px,height=100px,statusbar=no,scrollbars=no,toolbar=no');
+		window.open('./?system=popup.widget&iframe=Y&dropfield=' + n + '&option=' + g, 'widgetWin', 'left=0,top=0,width=100px,height=100px,statusbar=no,scrollbars=no,toolbar=no');
+	}
+	function delWidget(i)
+	{
+		if (!moveObject[i]) return;
+		if (confirm('정말로 삭제하시겠습니까? '))
+		{
+			moveObject[i].style.display = "none";
+			blocktitle[i] = '';
+			blockarray[i] = '';
+		}
+	}
+	function makeMap(f)
+	{
+        getId('saveresult').style.display = 'inline';
+		var i;
+		var validMap = false;
+		var mapSource = '\n\n';
+        
+		for (i=0; i<maxTiles; i++)
+		{        
+			if (moveObject[i].style.display=='block')
+			{         
+
+			    mapSource=mapSource+ 
+
+                blocktitle[i] + '%' + 
+                (moveObject[i].offsetWidth-2)+'px|'+(moveObject[i].offsetHeight-2)+'px|'+parseInt(moveObject[i].style.top)+'px|'+parseInt(moveObject[i].style.left)+'px' + '%' + 
+                blockarray[i] + '*';
+        
+				//'d_page_widget_name[' + i + '] = "'+blocktitle[i]+'";\n'+
+				//'d_page_widget_size[' + i + '] = "'+(moveObject[i].offsetWidth-2)+'px|'+(moveObject[i].offsetHeight-2)+'px|'+parseInt(moveObject[i].style.top)+'px|'+parseInt(moveObject[i].style.left)+'px";\n'+
+				//'d_page_widget_prop[' + i + '] = "'+blockarray[i]+'";*\n\n';
+
+                validMap = true;			  
+            }
+        }           
+		f.escapevar.value = mapSource;
+	}        
+
+	window.onload = function()
+	{
+		var i;
+		document.onmousedown = startMove;
+		document.onmouseup = Function("moveEnabled=false;MovableItem=''");
+
+
+    @{
+        int i = 0;
+        foreach (string key in d_page_widget_name.Keys) {
+            @Html.Raw("blocktitle[" + i + "] = \"" + d_page_widget_name[key] + "\";")
+            i++;
+        }
+
+        i = 0;
+        foreach (string key in d_page_widget_prop.Keys) {
+            @Html.Raw("blockarray[" + i + "] = \"" + d_page_widget_prop[key] + "\";");
+            i++;
+        }
+    }
+		for(i=0;i<maxTiles;i++)
+		{
+			if (!blocktitle[i]) blocktitle[i] = '';
+			if (!blockarray[i]) blockarray[i] = '';
+		}
+
+		makeWorkspace();
+
+		for(i=0;i<maxTiles;i++) moveObject[i] = getId('popup'+i);
+
+
+    @{
+        string[,] _size = new string[cnt, 4];
+
+        i = 0;
+
+        foreach (string key in d_page_widget_size.Keys)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                _size[i, j] = d_page_widget_size[key].Split('|')[j];
+            }            
+            @:createTile("@_size[i, 0]","@_size[i, 1]","@_size[i, 2]","@_size[i, 3]");
+            i++;
+        }    
+    }
+        
+		getId('workSpace').style.height = getId('mainheight').value + 'px';
+	}
+	//]]>
+	</script>
+
+
+    }
+    else
+    {
+        if (cnt > 0)
+        {
+    	    <div class="widgetposition">
+            
+	        @RenderPage("../../../../" + g["path_core"] + "engine\\widget.engine.cshtml", g, _HS)
+    	    </div>
+        }
+        else
+        {
+            string master_nametype = "";
+
+            if (_HS["nametype"] == "nic")
+            {
+                master_nametype = my["nic"];
+            }
+            else if (_HS["nametype"] == "name")
+            {
+                master_nametype = my["name"];
+            }            
+            
+    	    <div class="none">
+	    	<img src="@g["img_core"]/_public/ico_notice.gif" alt="" class="notice" />
+		    데스크가 비어있습니다. @(my[_HS["nametype"]])님의 전용 관리데스크를 꾸며보세요.
+		    <a href="@g["adm_href"]&type=editmode"><img src="@g["img_core"]/_public/btn_edit_small.gif" alt="꾸미기" /></a>
+	        </div>
+        }
+    }
+}
+
+</div>
+

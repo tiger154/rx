@@ -1,0 +1,212 @@
+﻿@{
+    /*****************************************************************
+    //
+    //// Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var _m = PageData[1];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string recnum = Request["recnum"];
+    string where = Request["where"];
+    string keyword = Request["keyword"];
+    string front = Request["front"];
+    string page = Request["page"];
+    string type = Request["type"];
+    string iframe = Request["iframe"];
+    string skin = Request["skin"];
+    string category = Request["category"];
+    string sqlque = "";
+    string frame_name = "_action_frame_"+m;
+    
+    decimal TPG = 0;
+    
+  
+    if(sort == null || sort == "") {
+        sort = "uid";
+    }
+    if(orderby == null || orderby == "") {
+        orderby = "desc";
+	}        
+    if(recnum == null || recnum == "" || Convert.ToInt32(recnum) >= 200) {
+        recnum = "20";
+	}
+
+	sqlque = "mbruid=" + my["uid"];
+
+    if (category != null && category != "")
+    {
+        sqlque += " AND category='" + category + "'";
+    }
+    
+    if (where != null && where != "" && keyword != null && keyword != "")
+    {
+        string where_set = "(";
+
+        char[] delimiter = { '|' };
+        string[] strArray = where.Split(delimiter);
+        int str_int = 0;
+
+        sqlque = sqlque + " AND ";
+
+        foreach (var tmp in strArray)
+        {
+            if (str_int > 0)
+            {
+                where_set = where_set + " OR ";
+            }
+
+            where_set = where_set + tmp + " LIKE '%" + keyword + "%'";
+            str_int++;
+        }
+        where_set = where_set + ")";
+        sqlque = sqlque + where_set;
+    }
+
+    int list_start = (Convert.ToInt32(p)-1) * Convert.ToInt32(recnum);      // 페이지별 리스트 개수
+    int NUM = _DB.GetDbData_Count(AppState["table_s_scrap"].ToString(), sqlque);
+
+
+    string RCD_sql = _System.GetQuery(AppState["table_s_scrap"].ToString(), "", sqlque, sort, orderby, list_start, recnum);
+    string _CATS_sql = "SELECT category FROM " + AppState["table_s_scrap"] + " WHERE mbruid=" + my["uid"] + " AND category<>'' GROUP BY category";
+    
+    TPG = @_System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));     // 총 페이지수
+    
+    @RenderPage("_menu.cshtml", g, m);                // 개별 페이지 상단 메뉴부
+}
+
+<div id="scraplist">
+
+	<div class="info">
+
+		<div class="article">
+			@string.Format("{0:#,0}", NUM)개(@p/@TPG 페이지)
+		</div>
+		<div class="category">
+
+			<select onchange="goHref('@g["url_page"]&category='+this.value);">
+			<option value="">&nbsp;+ 전체</option>
+			<option value="">-------------</option>
+
+            @foreach (var _R in _DB.Query(_CATS_sql))
+            {
+                <option value="@_R["category"]" @_System.getSltStr(_R["category"], category)>ㆍ @_R["category"]</option>    
+            }
+
+			</select>
+
+		</div>
+		<div class="clear"></div>
+	</div>
+
+	<form name="procForm" action="@g["s"]/" method="post" target="_action_frame_@(m)" onsubmit="return submitCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@m" />
+	<input type="hidden" name="front" value="@front" />
+	<input type="hidden" name="a" value="" />
+
+	<table summary="스크랩 리스트입니다.">
+	<caption>스크랩</caption> 
+	<colgroup> 
+	<col width="30"> 
+	<col> 
+	<col width="70"> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" class="hand" alt="" onclick="chkFlag('members');" /></th>
+	<th scope="col">제목</th>
+	<th scope="col" class="side2">날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @foreach (var R in _DB.Query(RCD_sql))
+    {
+        <tr>
+	    <td><input type="checkbox" name="members" value="<@R["uid"]" /></td>
+	    <td class="sbj">
+		    <a href="@R["url"]">@R["subject"]</a>
+		    @if (_System.getNew(R["d_regis"].ToString(), 24))
+            {
+                <span class="new">new</span>
+            }
+	    </td>
+	    <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	    </tr> 
+    }
+
+    @if (NUM == 0)
+    {   
+	    <tr>
+	    <td class="cat">-</td>
+	    <td class="sbj1">스크랩자료가 없습니다.</td>
+	    <td>@date["totime"].ToString("yyyy.MM.dd")</td>
+	    </tr>
+    }
+
+	</tbody>
+	</table>
+	
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>
+
+	<input type="button" value="삭제" class="btngray" onclick="actCheck('scrap_delete');" />
+
+	</form>
+	
+
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function submitCheck(f) {
+        if (f.a.value == '') {
+            return false;
+        }
+    }
+    function actCheck(act) {
+        var f = document.procForm;
+        var l = document.getElementsByName('members');
+        var n = l.length;
+        var j = 0;
+        var i;
+
+        for (i = 0; i < n; i++) {
+            if (l[i].checked == true) {
+                j++;
+            }
+        }
+        if (!j) {
+            alert('선택된 항목이 없습니다.      ');
+            return false;
+        }
+
+        if (confirm('정말로 실행하시겠습니까?    ')) {
+            f.a.value = act;
+            f.submit();
+        }
+    }
+//]]>
+</script>
+
+

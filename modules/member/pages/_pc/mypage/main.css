@@ -1,0 +1,24 @@
+﻿#mypage_main {}
+
+#mypage_main .photo {float:left;width:50px;height:50px;margin:3px 0 20px 20px;background:url('../../../../../_var/simbol/0.gif') center center no-repeat;}
+#mypage_main .msg {height:60px;padding:0 0 25px 20px;margin:0 0 0 70px;color:#1C5B8C;font-family:dotum;line-height:150%;}
+#mypage_main .msg .info {font-size:11px;font-family:dotum;color:#093877;}
+#mypage_main .line {border-top:#dfdfdf dashed 1px;}
+
+#mypage_main h5 {margin:0;padding:0 0 7px 0;font-weight:normal;font-size:14px;font-family:gothic,dotum;color:#111111;border-bottom:#dfdfdf solid 1px;}
+#mypage_main ul {padding:0;margin:20px 0 30px 0;height:250px;overflow:auto;}
+#mypage_main li {list-style-type:none;height:15px;letter-spacing:-1px;overflow:hidden;margin:9px 0 9px 0;}
+
+#mypage_main li .new {font:normal 10px arial;color:#ff0000;}
+#mypage_main li .comment {font:normal 11px arial;color:#FC6138;}
+#mypage_main li .trackback {font:normal 11px arial;color:#02ACD6;}
+#mypage_main li .imgpos {margin-bottom:-1px;}
+#mypage_main li .imgpos1 {margin-bottom:-1px;}
+#mypage_main li a {color:#666666;}
+#mypage_main li a:hover {text-decoration:underline;}
+
+
+#mypage_main .postbox {}
+#mypage_main .postbox .xleft {float:left;width:47%;border-right:#dfdfdf dashed 1px;padding:30px 10px 0 0;}
+#mypage_main .postbox .xright {margin-left:50%;padding:30px 0 0 0;}
+#mypage_main .none {color:#c0c0c0;}

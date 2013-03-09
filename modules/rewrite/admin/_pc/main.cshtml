@@ -1,0 +1,76 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    
+    string frame_name = "_action_frame_" + m;    
+    string mfile = g["path_root_ps"] + "Web.config";
+    string rwStr = "";
+    
+    using (StreamReader sr = new StreamReader(mfile, System.Text.Encoding.UTF8, true))
+    {
+        rwStr = sr.ReadToEnd();
+    }
+}
+
+<div id="rewritebox">
+
+	<form name="procForm" action="@g["s"]/" method="post" target="_action_frame_@(m)" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="rewrite" />
+
+	<div class="title">
+		URL Rewrite 설정 <b><font color="#ff0000">(Web.config 파일은 시스템의 중요파일이니 신중하게 수정바랍니다.)</font></b>
+	</div>
+
+	<div class="area">
+		<textarea name="rewrite">@Html.Raw(rwStr)</textarea>
+	</div>
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function saveCheck(f) {
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+//]]>
+</script>
+
+
+
+

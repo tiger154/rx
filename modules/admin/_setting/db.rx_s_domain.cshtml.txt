@@ -1,0 +1,10 @@
+﻿CREATE TABLE rx_s_domain ( 
+uid  int  identity(1,1)  NOT NULL , 
+gid  int   NOT NULL , 
+isson  nvarchar(2)   NOT NULL , 
+parent  int   NOT NULL , 
+depth  tinyint   NOT NULL , 
+name  nvarchar(100)   NOT NULL , 
+site  int   NOT NULL ,
+PRIMARY KEY (uid)
+);

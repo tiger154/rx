@@ -1,0 +1,104 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    string uid = Request["uid"];
+    string name = Request["name"];
+    string hidden = Request["hidden"];
+    string term0 = Request["term0"];
+    string content = Request.Unvalidated("content");
+    string html = Request["html"];
+    string upload = Request["upload"];
+    string center = Request["center"];
+    string ptop = Request["ptop"];
+    string pleft = Request["pleft"];
+    string width = Request["width"];
+    string height = Request["height"];
+    string scroll = Request["scroll"];
+    string type = Request["type"];
+    string dispage = Request["dispage"];
+    string year1 = Request["year1"];
+    string month1 = _System.DateSet(Request["month1"]);
+    string day1 = _System.DateSet(Request["day1"]);
+    string hour1 = _System.DateSet(Request["hour1"]);
+    string min1 = _System.DateSet(Request["min1"]);
+    string year2 = Request["year2"];
+    string month2 = _System.DateSet(Request["month2"]);
+    string day2 = _System.DateSet(Request["day2"]);
+    string hour2 = _System.DateSet(Request["hour2"]);
+    string min2 = _System.DateSet(Request["min2"]);
+   
+    @_System.checkAdmin(my["admin"], 0)
+
+//    DateTime term1 = Convert.ToDateTime(year1+ "." + month1 + "." + day1+ " " + hour1+ ":" + min1 + ":00");
+//    DateTime term2 = Convert.ToDateTime(year2 + "." + month2 + "." + day2 + " " + hour2 + ":" + min2 + ":00");
+    string term1 = year1+ "." + month1 + "." + day1+ " " + hour1+ ":" + min1 + ":00";
+    string term2 = year2 + "." + month2 + "." + day2 + " " + hour2 + ":" + min2 + ":00";
+
+    name = _System.Strip_tags(name).Trim();
+    
+    if(scroll == null) {
+        scroll = "0";
+    }
+    if(term0 == null) {
+        term0 = "0";
+    }
+    if(center == null) {
+        center = "0";
+    }
+    if(hidden == null) {
+        hidden = "0";
+    }
+
+    if (uid != null && uid != "")
+    {
+        string QVAL = "hidden='" + hidden + "',term0='" + term0 + "',term1='"+term1+"',term2='"+term2+"',name='" + name + "',content='" + content + "',html='" + html + "',upload='" + upload + "',center='" + center + "',";
+        QVAL = QVAL + "ptop='" + ptop + "',pleft='" + pleft + "',width='" + width + "',height='" + height + "',scroll='" + scroll + "',type='" + type + "',dispage='"+dispage+"'";
+
+        string UPDATE_POPUP_SQL = "UPDATE " + AppState["table_s_popup"].ToString() + " SET " + QVAL + " WHERE uid=" + uid;
+        @_DB.Execute(UPDATE_POPUP_SQL);
+    }
+    else
+    {        
+        //string QKEY = "hidden,term0,term1,term2,name,content,html,upload,center,ptop,pleft,width,height,scroll,type,dispage";       
+        //string QVAL = "'"+hidden+"','"+term0+"','"+term1+"','"+term2+"','"+name+"','"+content+"','"+html+"','"+upload+"','"+center+"','"+ptop+"','"+pleft+"','"+width+"','"+height+"','"+scroll+"','"+type+"','"+dispage+"'";
+
+        string QKEY = "hidden,term0,term1,term2,name,content,html,upload,center,ptop,pleft,width,height,scroll,type,dispage";
+        //string QVAL = "'" + hidden + "','" + term0 + "','" + date["insert"] + "','" + date["insert"] + "','" + name + "','" + content + "','" + html + "','" + upload + "','" + center + "','" + ptop + "','" + pleft + "','" + width + "','" + height + "','" + scroll + "','" + type + "','" + dispage + "'";
+        string QVAL = "'" + hidden + "','" + term0 + "','" + term1 + "','" + term2 + "','" + name + "','" + content + "','" + html + "','" + upload + "','" + center + "','" + ptop + "','" + pleft + "','" + width + "','" + height + "','" + scroll + "','" + type + "','" + dispage + "'";
+
+        string INSERT_POPUP_SQL = "INSERT INTO " + AppState["table_s_popup"].ToString() + " (" + QKEY + ") VALUES (" + QVAL + ")";
+        
+        @_DB.Execute(INSERT_POPUP_SQL);
+    }
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+    
+}

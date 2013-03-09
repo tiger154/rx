@@ -1,0 +1,177 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    
+    dynamic d_search = _DB.Get_code("search");
+    
+    string frame_name = "_action_frame_" + m;
+}
+
+<div id="searchbox">
+
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="config" />
+
+	<div class="title">
+		통합검색 설정
+	</div>
+
+	<table>
+		<tr>
+			<td class="td1">검색요소</td>
+			<td class="td2 shift">
+				<input type="checkbox" name="s_bbs" value="1"@_System.getChkStr(d_search["s_bbs"] , 1) />게시판<br />
+				<input type="checkbox" name="s_comment" value="1"@_System.getChkStr(d_search["s_comment"] , 1) />댓글<br />
+				<input type="checkbox" name="s_image" value="1"@_System.getChkStr(d_search["s_image"] , 1) />이미지<br />
+				<input type="checkbox" name="s_upload" value="1"@_System.getChkStr(d_search["s_upload"] , 1) />첨부파일<br />
+				<input type="checkbox" name="s_search" value="1"@_System.getChkStr(d_search["s_search"] , 1) />외부검색<br />
+				<div class="guide">
+				통합검색에서 제외할 요소는 체크를 해제해 주세요.
+				</div>
+			</td>
+		</tr>
+
+
+		<tr>
+			<td class="td1">검색결과수</td>
+			<td class="td2">
+				통합검색시 <input type="text" name="s_num1" size="5" value="@d_search["s_num1"]" class="input" />개<br />
+				세부검색시 <input type="text" name="s_num2" size="5" value="@d_search["s_num2"]" class="input" />개
+			</td>
+		</tr>
+
+		<tr>
+			<td class="td1">검색범위</td>
+			<td class="td2">
+				<select name="s_term">                
+				<option value="360"@_System.getSltStr(d_search["s_term"], 360)>전체</option>
+				<option value="36"@_System.getSltStr(d_search["s_term"], 36)>최근 3년</option>
+				<option value="24"@_System.getSltStr(d_search["s_term"], 24)>최근 2년</option>
+				<option value="12"@_System.getSltStr(d_search["s_term"], 12)>최근 1년</option>
+				<option value="6"@_System.getSltStr(d_search["s_term"], 6)>최근 6개월</option>
+				<option value="3"@_System.getSltStr(d_search["s_term"], 3)>최근 3개월</option>
+				<option value="1"@_System.getSltStr(d_search["s_term"], 1)>최근 한달</option>
+				</select>
+
+				<div class="guide">
+				검색양에 따라 처리속도가 느려질 수 있습니다.<br />
+				적절한 기간을 지정해 주세요.
+				</div>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="td1">외부검색 리스트</td>
+			<td class="td2">
+				<textarea name="s_searchlist" class="scrollbar01">
+
+                @{
+                    string searchset = g["path_root_ps"] + g["path_var"] + "search.list.txt";
+                    using (StreamReader sr = new StreamReader(searchset, System.Text.Encoding.UTF8, true)) 
+                    { 
+                        @Html.Raw(sr.ReadToEnd())
+                    }               
+                }
+                </textarea>
+				<div class="guide">
+				검색엔진명과 검색URL을 콤마(,)로 구분해서 등록해 주세요.<br />
+				외부검색을 이용해 검색어를 선택된 검색엔진으로 연결해 줍니다.
+				</div>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="td1">레이아웃</td>
+			<td class="td2">
+				<select name="layout" class="select1">
+				<option value="">&nbsp;+ 사이트 대표레이아웃</option>
+                @{
+                    string dirs = g["path_root_ps"] + g["path_layout"];
+                    
+                    foreach (string tpl in Directory.GetDirectories(dirs))
+                    {
+                        string tpl_name = tpl.Substring(dirs.Length, tpl.Length - dirs.Length);
+                        
+                        if (tpl_name == "." || tpl_name == ".." || tpl_name == "_blank" || File.Exists(tpl))
+                        {
+                            continue;
+                        }
+                        <option value="">--------------------------------</option>
+                        foreach (string tpl1 in Directory.GetFiles(tpl))
+                        {
+                            string lay_name = tpl1.Substring(tpl.Length+1, tpl1.Length - tpl.Length-1);
+                            if (!lay_name.Contains(".cshtml") || lay_name == "_main.cshtml")
+                            {
+                                continue;
+                            }                                                       
+                            <option value="@tpl_name\@lay_name"@_System.getSltStr(d_search["layout"], tpl_name + "\\" + lay_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@lay_name.Replace(".cshtml", ""))</option>
+                        }
+                    }
+                }
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">소속메뉴</td>
+			<td class="td2">
+				<select name="sosokmenu" class="select1">
+				<option value="">&nbsp;+ 사용안함</option>
+				<option value="">--------------------------------</option>
+                @{
+                    string cat = d_search["sosokmenu"];
+                    @_Menu.getMenuShowSelect("", AppState["table_s_menu"].ToString(), 0, 0, 0, 0, "", "", g, cat)
+                }
+				</select>
+			</td>
+		</tr>
+	</table>
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function saveCheck(f) {
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+//]]>
+</script>
+
+
+
+

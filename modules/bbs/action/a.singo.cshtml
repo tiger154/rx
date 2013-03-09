@@ -1,0 +1,177 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var p = Request["p"];
+    var cat = Request["cat"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var type = Request["type"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];    
+    var skin = Request["skin"];
+    var iframe = Request["iframe"];
+    var history = Request["history"];
+    
+    string today_cut = date["year"] + date["month"] + date["day"];
+    string backUrl = "";
+    string filterUrl = "";
+    
+    if (my["uid"] == 0) 
+    {
+        @_System.getLink("", "", "로그인해 주세요.", "")
+        return;
+    }
+    
+    int R_count = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "uid=" + uid);
+    
+    if (R_count == 0) 
+    {
+        @_System.getLink("", "", "삭제되었거나 존재하지 않는 게시물입니다.", "")
+        return;
+    }
+
+    dynamic d_bbs = _DB.Get_code("bbs");
+    
+    dynamic R = _DB.GetDbData_M(AppState["table_bbsdata"].ToString(), "uid="+uid);
+    int B = _DB.GetDbData_Count(AppState["table_bbslist"].ToString(), "uid="+R["bbs"]);
+
+    if (B == 0) 
+    {
+        @_System.getLink("", "", "존재하지 않는 게시판입니다.", "")
+        return;        
+    }
+    
+    if (d_bbs["singo_del"] != "0" && Convert.ToInt32(d_bbs["singo_del_num"]) <= R["singo"]) 
+    {                                                    // 신고개수가 초과하고 신고시 삭제기능이 on 이면 관련 DB 삭제.
+        if (d_bbs["singo_del_act"] == "1") 
+        {
+		    //댓글삭제
+		    if (R["comment"] > 0) 
+            {
+    			string CCD_sql = "SELECT * FROM "+AppState["table_s_comment"]+" WHERE parent='"+m+R["uid"]+"' ORDER BY uid ASC";
+
+	    		foreach (var _C in _DB.Query(CCD_sql)) 
+                {
+				    if (_C["upload"] != "") 
+                    {
+                        // 업로드 처리부 진행중
+				    }
+                    
+				    if (_C["oneline"] > 0) 
+                    {
+					    string _ONELINE_sql = "SELECT * FROM "+AppState["table_s_comment"]+" WHERE parent="+_C["uid"];
+					    
+                        foreach (var _O in _DB.Query(_ONELINE_sql)) 
+                        {
+                            string _O_regis = _O["d_regis"].ToString().Substring(0,4) + _O["d_regis"].ToString().Substring(5,2) + _O["d_regis"].ToString().Substring(8,2);
+                            
+                            string UPDATE_NUMINFO_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET oneline=oneline-1 WHERE date='" + _O_regis + "' AND site=" + _O["site"];
+                            @_DB.Execute(UPDATE_NUMINFO_SQL);
+					    }					    
+                        string DELETE_OL_SQL = "DELETE FROM " + AppState["table_s_oneline"] + " WHERE parent=" + _C["uid"];
+                        @_DB.Execute(DELETE_OL_SQL);
+				    }
+
+                    string _C_regis = _C["d_regis"].ToString().Substring(0,4) + _C["d_regis"].ToString().Substring(5,2) + _C["d_regis"].ToString().Substring(8,2);
+                    string DELETE_CM_SQL = "DELETE FROM " + AppState["table_s_comment"] + " WHERE uid=" + _C["uid"];
+                    string UPDATE_NUMINFO_SQL2 = "UPDATE " + AppState["table_s_numinfo"] + " SET comment=comment-1 WHERE date='" + _C_regis + "' AND site=" + _C["site"];
+                    @_DB.Execute(DELETE_CM_SQL);
+			    }
+            }
+        }
+    
+        if (R["upload"] != "") 
+        {
+            // 첨부파일 삭제 구현중
+        }
+    
+        if (R["tag"] != "") 
+        {
+            // 태그 삭제 구현중
+        }
+        
+        string R_month = R["d_regis"].ToString().Substring(0,4) + R["d_regis"].ToString().Substring(5,2);
+        string R_day = R["d_regis"].ToString().Substring(0,4) + R["d_regis"].ToString().Substring(5,2) + R["d_regis"].ToString().Substring(8,2);
+
+        string UPDATE_MONTH_SQL = "UPDATE " + AppState["table_bbsmonth"] + " SET num=num-1 WHERE date='" + R_month + "' AND site=" + R["site"] + " AND bbs=" + R["bbs"];
+        string UPDATE_DAY_SQL = "UPDATE " + AppState["table_bbsday"] + " SET num=num-1 WHERE date='" + R_month + "' AND site=" + R["site"] + " AND bbs=" + R["bbs"];
+        string DELETE_DATA_SQL = "DELETE FROM " + AppState["table_bbsdata"] + " WHERE uid=" + R["uid"];
+        string UPDATE_LIST_SQL = "UPDATE " + AppState["table_bbslist"] + " SET num_r=num_r-1 WHERE uid="+ R["bbs"];
+        
+        @_DB.Execute(UPDATE_MONTH_SQL);
+        @_DB.Execute(UPDATE_DAY_SQL);
+        @_DB.Execute(DELETE_DATA_SQL);
+        @_DB.Execute(UPDATE_LIST_SQL);        
+
+		if (c != null && c != "") 
+        {
+            backUrl = "./?c="+c;
+            filterUrl = _System.getLinkFilter("cat|p|sort|orderby|recnum|type|where|keyword", 
+                cat + "|" + p + "|" + sort + "|" + orderby + "|" + recnum + "|" + type + "|" + where + "|" + keyword);
+            
+            string month_sum = _DB.GetDbData_S(AppState["table_bbsmonth"].ToString(), "site=" + s + " AND bbs=" + R["bbs"], "sum(num)").ToString();
+            string UPDATE_MEMU_SQL = "UPDATE " + AppState["table_s_menu"] + " SET num=" + month_sum + " WHERE uid=" + c;
+            
+            @_DB.Execute(UPDATE_MEMU_SQL);
+        }
+        else 
+        {
+            backUrl = "./?m="+m;
+            filterUrl = _System.getLinkFilter("bid|skin|iframe", bid + "|" + skin + "|" + iframe);
+        }
+        
+        backUrl = backUrl+filterUrl;
+        
+        string DELETE_TB_SQL = "DELETE FROM " + AppState["table_s_trackback"] + " WHERE parent='" + R["bbsid"] + R["uid"] + "'";
+        @_DB.Execute(DELETE_TB_SQL);
+
+		@_System.getLink(backUrl, "parent.", "신고건수 누적으로 삭제처리 되었습니다." , history);    
+        return;
+    }
+    else 
+    {
+        if(Session["module_" + m + "_singo"] == null || Session["module_" + m + "_singo"].IndexOf("[" + R["uid"] + "]") < 0) 
+        {
+            string UPDATE_DATA_SQL2 = "UPDATE " + AppState["table_bbsdata"] + " SET singo=singo+1 WHERE uid=" + R["uid"];
+            @_DB.Execute(UPDATE_DATA_SQL2);        
+            
+            Session["module_" + m + "_singo"] = Session["module_" + m + "_singo"] + "[" + R["uid"] + "]";
+
+            @_System.getLink(backUrl, "parent.", "신고처리 되었습니다." , history)
+            return;
+        }
+    	else 
+        {
+		    @_System.getLink(backUrl, "parent.", "이미 신고하신 게시물입니다." , history)
+            return;
+        }
+	}
+}

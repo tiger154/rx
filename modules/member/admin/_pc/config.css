@@ -1,0 +1,61 @@
+#configbox {z-index:1;}
+#configbox .tab {height:28px;}
+#configbox .tab ul {padding:0;margin:0;position:relative;top:1px;}
+#configbox .tab li {width:115px;height:13px;text-align:center;list-style-type:none;float:left;border-top:#dfdfdf solid 1px;border-right:#dfdfdf solid 1px;border-bottom:#dfdfdf solid 1px;padding:9px 7px 7px 7px;background:#f9f9f9;cursor:pointer;font-weight:bold;}
+#configbox .tab .leftside {border-left:#dfdfdf solid 1px;}
+#configbox .tab .selected {border-bottom:#ffffff solid 1px;background:#ffffff;color:#FF5B01;}
+#configbox .agreebox {width:631px;border:#dfdfdf solid 1px;padding:35px 3px 0 15px;}
+
+
+#configbox table {margin:0 0 20px 0;}
+#configbox .table {margin-top:-30px;}
+#configbox .td1 {padding:9px 0 7px 0;vertical-align:top;letter-spacing:-1px;}
+#configbox .td1 span {width:115px;display:block;background:#808080;color:#ffffff;padding:5px 5px 5px 10px;font-size:11px;font-family:dotum;}
+#configbox .td2 {width:185px;padding:10px 0 17px 10px;color:#666666;vertical-align:top;}
+#configbox .td2 .dn {position:relative;top:4px;}
+#configbox .td2 .sname {width:144px;}
+#configbox .td2 .sname1 {width:300px;}
+#configbox .td2 .select1 {width:150px;letter-spacing:-1px;}
+#configbox .td2 .guide {font-size:11px;font-family:dotum;color:#555;line-height:150%;padding:10px 0 0 0;}
+#configbox .td2 .w {width:179px;}
+#configbox .td2 .dm {position:relative;top:2px;padding:5px;margin:0 3px 0 0;border:#dfdfdf solid 1px;background:#f9f9f9;cursor:pointer;}
+#configbox .td2 span {font-size:11px;font-family:dotum;color:#555;}
+#configbox .td2 table {margin:0;border-spacing:0px;border-collapse:collapse;}
+#configbox .td2 .question {width:250px;height:110px;line-height:150%;border:#dfdfdf solid 1px;padding:5px;color:#666666;}
+#configbox .td2 .job {width:175px;height:110px;line-height:150%;border:#dfdfdf solid 1px;padding:5px;color:#666666;}
+#configbox .submitbox {padding:20px 0 20px 300px;}
+#configbox .submitbox input {height:30px;margin:0 2px 0 2px;padding:0 10px 0 10px;font-weight:bold;}
+
+
+#configbox .addf table {width:620px;border-spacing:0px;border-collapse:collapse;}
+#configbox .addf table caption {display:none;}
+#configbox .addf thead th {height:28px;border-top:#D2D2D2 solid 1px;border-bottom:#D2D2D2 solid 1px;background:url('../../../../../_core/image/_public/bg_list_tt.jpg');font-size:11px;font-family:dotum;font-weight:normal;color:#787878;}
+#configbox .addf thead .side1 {border-left:#D2D2D2 solid 1px;}
+#configbox .addf thead .side2 {border-right:#D2D2D2 solid 1px;}
+#configbox .addf tbody td {text-align:center;color:#888888;font-family:arial;font-size:10px;border-bottom:#E6E6E6 solid 1px;letter-spacing:-1px;padding:5px 0 5px 0;}
+#configbox .addf tbody .addline td {background:#efefef;}
+#configbox .addf .btnblue {width:50px;}
+#configbox .addf .btngray {width:50px;}
+#configbox .addf ul {}
+#configbox .addf li {padding:4px 0 4px 0;}
+
+#configbox .addf .preview {padding:0 0 120px 0;}
+#configbox .addf .preview .tt {font-weight:bold;border-bottom:#dfdfdf dashed 1px;padding:0 0 10px 0;margin:0 0 20px 0;}
+#configbox .addf .preview table {width:600px;margin-left:10px;}
+#configbox .addf .preview td {text-align:left;border-bottom:0;}
+#configbox .addf .preview .td1 {width:80px;}
+#configbox .addf .preview .td2 {width:510px;padding:5px 20px 5px 10px;}
+
+#agreebox {z-index:2;display:none;position:relative;top:-105px;_top:-75px;}
+#agreebox .tab {height:28px;}
+#agreebox .tab ul {position:relative;top:1px;padding:0;margin:0;}
+#agreebox .tab li {text-align:center;width:115px;height:20px;line-height:130%;list-style-type:none;float:left;border-top:#dfdfdf solid 1px;border-right:#dfdfdf solid 1px;border-bottom:#dfdfdf solid 1px;padding:9px 7px 7px 7px;background:#f9f9f9;cursor:pointer;}
+#agreebox .tab .leftside {border-left:#dfdfdf solid 1px;}
+#agreebox .tab .selected {border-bottom:#ffffff solid 1px;background:#ffffff;color:#078DFF;}
+#agreebox .agreebox {width:641px;border:#dfdfdf solid 1px;padding:25px 1px 7px 7px;background:#ffffff;}
+#agreebox .agreebox textarea {border:0;width:640px;_width:639px;height:400px;overflow-x:hidden;overflow-y:auto;line-height:130%;color:#666;font-family:dotum;scrollbar-base-color:#E1E1E1;scrollbar-face-color:#FFF;scrollbar-track-color:#FFF;scrollbar-highlight-color:#FFF;scrollbar-3dlight-color:#E1E1E1;scrollbar-shadow-color:#E1E1E1;scrollbar-darkshadow-color:#FFF;scrollbar-arrow-color:#7a7a7a;}
+#agreebox .topline {border-top:#dfdfdf solid 1px;}
+#agreebox .submitbox {padding:20px 0 20px 300px;}
+#agreebox .submitbox input {height:30px;margin:0 2px 0 2px;padding:0 10px 0 10px;font-weight:bold;}
+
+

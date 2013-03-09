@@ -1,0 +1,15 @@
+
+.widget_review02 {position:relative;padding:0;}
+.widget_review02 h6 {border-bottom:#dfdfdf solid 1px;padding:0 0 9px 0;margin:0 0 15px 0;font-weight:bold;font-family:"gothic","dotum";font-size:13px;color:#384799;}
+.widget_review02 h6 a {color:#384799;}
+.widget_review02 ul {padding:0;margin:0;}
+.widget_review02 li {list-style-type:none;clear:both;padding:0;margin:0;height:60px;}
+.widget_review02 li img {float:left;margin:3px 10px 0 0;background:#efefef;}
+.widget_review02 li span {line-height:150%;font-family:dotum;}
+.widget_review02 li span a {color:#666;}
+.widget_review02 li span a:hover {color:#333;text-decoration:underline;}
+.widget_review02 .more {position:absolute;top:3px;right:1px;font-size:11px;font-family:dotum;color:#c0c0c0;}
+.widget_review02 .more:hover {text-decoration:underline;color:#000000;}
+.widget_review02 .comment {font:normal 11px arial;color:#FC6138;}
+.widget_review02 .new {font:normal 10px arial;color:#ff0000;}
+

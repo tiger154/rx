@@ -1,0 +1,102 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////  
+    var file_uid = Request["file_uid"];
+    var isreload = Request["isreload"];
+    var close = Request["close"];
+
+    dynamic R = null;
+
+    if (file_uid != null && file_uid != "") {
+        R = _DB.GetDbData_M(AppState["table_s_upload"].ToString(), "uid=" + file_uid);
+
+        if (my["admin"] == null || my["admin"] == "") {
+            if (R["mbruid"] == 0 || my["uid"] != R["mbruid"]) {
+                @_System.getLink("", "", "삭제권한이 없습니다.", "");
+            }
+        }
+        
+        if (R != null) {
+            string DELETE_UP_SQL = "DELETE FROM " + AppState["table_s_upload"].ToString() + " WHERE uid=" + R["uid"];
+            string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"].ToString() + " SET upload=upload-1"
+                + " WHERE date='" + R["d_regis"].ToString("yyMMdd") + "' and site=" + R["site"];
+
+            @_DB.Execute(DELETE_UP_SQL);
+            @_DB.Execute(UPDATE_NUM_SQL);
+            
+            File.Delete(g["path_root_ps"] + g["path_file"] + R["folder"] + "\\" + R["tmpname"]);
+            
+            if (R["type"] == "2") {     // image file
+                File.Delete(g["path_root_ps"] + g["path_file"] + R["folder"] + "\\" + R["thumbname"]);                
+            }
+        }
+
+        if (isreload == "Y") {
+            @_System.getLink("reload", "parent.", "", "")            
+        }
+        return;
+    }
+    else {
+        string sescode = Session["upsescode"].ToString();
+
+        if(sescode!=null && sescode!=""){
+            string FILES_SQL = "SELECT * FROM " + AppState["table_s_upload"] + " WHERE tmpcode='" + sescode + "'";
+            
+            foreach (var R_ in _DB.Query(FILES_SQL)) {
+                string DELETE_UP_SQL = "DELETE FROM " + AppState["table_s_upload"].ToString() + " WHERE uid=" + R_["uid"];
+                string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"].ToString() + " SET upload=upload-1"
+                    + " WHERE date='" + R_["d_regis"].ToString("yyMMdd") + "' and site=" + R_["site"];
+               
+                @_DB.Execute(DELETE_UP_SQL);
+                @_DB.Execute(UPDATE_NUM_SQL);
+
+                File.Delete(g["path_root_ps"] + g["path_file"] + R_["folder"] + "\\" + R_["tmpname"]);
+                
+                if (R_["type"] == "2") {        // image file
+                    File.Delete(g["path_root_ps"] + g["path_file"] + R_["folder"] + "\\" + R_["thumbname"]);
+                }
+            }
+        }
+        
+	    if (close == "Y") {            
+            Session["upsescode"] = null;
+            
+		    @_System.getLink("", "", "", "close")
+            return;
+        }
+        else
+        {
+            @_System.getLink("reload", "parent.", "", "")
+            return;
+	    }            
+        
+    }
+    
+       
+}

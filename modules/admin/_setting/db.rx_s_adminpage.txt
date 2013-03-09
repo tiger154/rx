@@ -1,0 +1,8 @@
+﻿CREATE TABLE rx_s_adminpage ( 
+uid  int  identity(1,1)  NOT NULL , 
+memberuid  int   NOT NULL , 
+gid  int   NOT NULL , 
+name  nvarchar(200)   NOT NULL , 
+url  nvarchar(200)   NOT NULL ,
+PRIMARY KEY (uid)
+);

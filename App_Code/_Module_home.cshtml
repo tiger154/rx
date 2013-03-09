@@ -1,0 +1,105 @@
+﻿@functions {
+    public static string pwd;
+
+    public static int getDirexists(string dir)
+    {
+        int fex = 0;
+
+        foreach (string file in Directory.GetDirectories(dir))
+        {
+            string file_name = Path.GetFileName(file);
+            
+            if (Directory.Exists(file) && !"[.][..][image][data]".Contains(file_name))
+            {
+                fex = 1;
+                break;
+            }
+        }
+        
+        return fex;
+    }       
+}
+
+
+@helper getPrintdir(int nTab, string filepath, string files, bool state, int dir_ex, dynamic g, int step_start)
+{    
+    
+    g["adm_href"] = g["s"] + "/?r=" + Request["r"] + "&system=" + Request["system"] + "&iframe=" + Request["iframe"] + (!Request["dropfield"].IsEmpty() ? "&dropfield=" + Request["dropfield"] : "") + 
+        (!Request["option"].IsEmpty() ? "&option=" + Request["option"] : "") + (!Request["isWcode"].IsEmpty() ? "&isWcode=" + Request["isWcode"] : ""); 
+    
+	string img_cdir = "";
+    string img_odir = "";    
+
+    if (step_start > 0)
+    {
+        nTab = nTab - step_start;
+    }
+
+    string css = pwd.Contains(filepath) ? "nowdir" : "alldir";
+    string fname1 = files;
+    string fname2 = _System.getFolderName(filepath);
+    
+    if (File.Exists(filepath + "main.cshtml"))
+    {
+ 		img_cdir = g["img_module_admin"] + "/ico_widget.gif";
+		img_odir = g["img_core"] + "/_public/ico_f1.png";
+    }
+    else
+    {
+		img_cdir = g["img_module_admin"] + "/close_dir.gif";
+		img_odir = g["img_module_admin"] + "/open_dir.gif";        
+    }
+    
+    @:<div class="dir01">
+    @:<img src="@g["img_module_admin"]/blank.gif" width="@((nTab*17)+3)" height="1" alt="" />
+    @:<a href="@Html.Raw(g["adm_href"] + "&pwd=" + HttpUtility.UrlEncode(filepath))" title="@fname1">
+
+    if (state && dir_ex != 0)
+    {
+        @:<img src="@g["img_module_admin"]/dir_closef.gif" align="absmiddle" alt="" />
+        @: <img src="@img_cdir" alt=""> <span class="@css">@fname2
+    }
+    else if (!state && dir_ex != 0)
+    {
+        @:<img src="@g["img_module_admin"]/dir_openf.gif" align="absmiddle" alt="" />
+        @: <img src="@img_odir" alt=""> <span class="@css">@fname2
+    }
+    else
+    {
+        @:<img src="@g["img_module_admin"]/blank.gif" width="11" height="18" align="absmiddle" alt="" />
+        @: <img src="@img_cdir" alt=""> <span class="@css">@fname2
+    }
+    @:</span></a></div>   
+}
+
+@helper getDirlist(string dirpath, int nStep, dynamic g, int step_start)
+{           
+    if (!Request["option"].IsEmpty())
+    {
+        string swvals = HttpUtility.UrlDecode(Request["option"].Replace("[!]", "&"));
+        pwd = g["path_root_ps"] + g["path_widget"] + swvals.Split(',')[0] + "\\";
+
+    }
+    else
+    {
+        pwd = !Request["pwd"].IsEmpty() ? HttpUtility.UrlDecode(Request["pwd"]) : g["path_root_ps"] + g["path_widget"];
+    }
+
+    string[] arrPath = pwd.Replace(g["path_root_ps"], "").Split('\\');    
+
+    foreach (string files in Directory.GetDirectories(dirpath))
+    {
+        string file_name = Path.GetFileName(files);
+        string subDir = files + "\\";
+
+        if (Directory.Exists(subDir) && !"[.][..][image][data]".Contains(file_name))
+        {
+            @getPrintdir(nStep, subDir, file_name, !pwd.Contains(subDir), getDirexists(subDir), g, step_start)
+            
+            if (arrPath[nStep] == file_name)
+            {
+                @getDirlist(subDir, nStep + 1, g, step_start)
+            }
+        }
+    }        
+}

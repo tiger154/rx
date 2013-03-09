@@ -1,0 +1,75 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var name = Request["name"];
+    var email = Request["email"];
+    var email_id = Request["email_id"];
+    
+    dynamic R = null;
+    dynamic M = null;
+
+    if(name == "" || email == "") {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;        
+    }
+    
+    if(email_id != "" && email_id != null) {
+        int R_num = _DB.GetDbData_Count(AppState["table_s_mbrid"].ToString(), "id='" + email + "'");
+        
+        if(R_num == 0) {
+            @_System.getLink("", "", "입력하신 정보로 일치하는 회원데이터가 없습니다.", "")
+            return;
+        }
+        else {
+            R = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "id='" + email + "'");
+            M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid="+R["uid"]);
+        }
+    }
+    else {
+        int M_num = _DB.GetDbData_Count(AppState["table_s_mbrdata"].ToString(), "email='"+email+"'");      
+
+        if(M_num == 0) {
+            @_System.getLink("", "", "입력하신 정보로 일치하는 회원데이터가 없습니다.", "")
+            return;
+        }            
+        else {
+            M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "email='" + email + "'");
+            R = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "uid="+M["memberuid"]);
+        }
+    }
+    
+    if(M["name"] != name) {
+        @_System.getLink("", "", "입력하신 정보로 일치하는 회원데이터가 없습니다.", "")
+        return;        
+    }
+    else {
+        @_System.getLink("", "", "회원님의 아이디는 ["+R["id"]+"] 입니다.", "")
+        return;        
+    }
+}

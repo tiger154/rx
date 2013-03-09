@@ -1,0 +1,35 @@
+﻿#container .mainbox .mleft {float:left;width:450px;padding:0 30px 0 0;}
+#container .mainbox .mleft h1 {padding:0;margin:0;font-size:23px;font-family:"malgun gothic";color:#555555;}
+#container .mainbox .mleft .mwrap {width:450px;height:260px;overflow:hidden;text-overflow:ellipsis;}
+#container .mainbox .mleft .cont {line-height:160%;padding:20px 0 0 0;color:#555555;}
+#container .mainbox .mleft .btnbox {padding:20px 0 0 0;}
+#container .mainbox .mright {float:left;width:470px;}
+#container .mainbox .mright div {width:470px;height:320px;overflow:hidden;}
+#container .mainbox .mright div img {width:470px;}
+
+#content .picbox {margin-bottom:30px;}
+#content .picbox .border {float:left;width:170px;height:110px;border:#c0c0c0 solid 1px;padding:3px;margin:20px 15px 20px 0;background:#ffffff;}
+#content .picbox .border div {width:170px;height:110px;overflow:hidden;}
+#content .picbox .border div img {width:170px;cursor:pointer;filter:gray();}
+#content .picbox .border div img:hover {filter:;}
+#content .picbox .plast {margin-right:0;}
+
+#content .topicbox {margin-bottom:30px;}
+#content .topicbox .tl {float:left;width:300px;margin-right:25px;}
+#content .topicbox .tr {float:right;width:300px;}
+
+#content .topicbox .tt {padding:0 0 8px 0;margin-bottom:15px;border-bottom:#dfdfdf dotted 1px;}
+#content .topicbox .tt .ts {float:left;font-weight:bold;}
+#content .topicbox .tt .tmore {float:right;}
+#content .topicbox .tt .tmore a {font-family:dotum;font-size:11px;color:#c0c0c0;}
+
+#content .topicbox .thumb {border:#BCBCBC solid 1px;height:130px;overflow:hidden;padding:1px;margin-bottom:20px;}
+#content .topicbox .thumb img {width:300px;background:#efefef;margin-top:-50px;}
+#content .topicbox .tsubject {line-height:140%;}
+#content .topicbox .tsubject a {font-weight:bold;color:#323232;}
+#content .topicbox .tdate {font-size:11px;font-family:dotum;color:#9B9B9B;padding-top:12px;}
+#content .topicbox .tcont {color:#9B9B9B;line-height:140%;padding:10px 0 10px 0;border-bottom:#dfdfdf dotted 1px;margin-bottom:15px;}
+#content .topicbox .tpost {line-height:140%;padding-bottom:8px;margin-bottom:8px;border-bottom:#dfdfdf dotted 1px;}
+#content .topicbox .tpost a {color:#363636;}
+#content .topicbox .tpost i {font-style:normal;font-family:arial;font-size:11px;color:#E75801;padding-left:3px;}
+#content .topicbox .none {height:130px;margin-bottom:20px;background:#efefef;}

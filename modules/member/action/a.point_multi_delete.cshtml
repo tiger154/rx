@@ -1,0 +1,63 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var pointType = Request["pointType"];
+    var point_members = Request["point_members"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+                                       
+    if (my["uid"] != 1)
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+        
+    if (pointType == null || pointType == "") 
+    {
+        pointType = "point";
+    }
+
+    foreach (string val in point_members.Split(','))
+    {
+        dynamic P = _DB.Get_module_data(AppState["table_s_" + pointType], "uid", val);
+        
+        if (P["uid"] == 0) 
+        {
+            continue;
+        }
+        
+        string DELETE_PTYPE_SQL = "DELETE " + AppState["table_s_" + pointType].ToString() + " WHERE uid=" + P["uid"];
+        string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET " + pointType + "=" + pointType + "-" + P["price"] + " WHERE memberuid=" + P["my_mbruid"];        
+        @_DB.Execute(DELETE_PTYPE_SQL);
+        @_DB.Execute(UPDATE_MBR_SQL);
+        
+    }
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

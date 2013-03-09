@@ -1,0 +1,120 @@
+﻿@{
+    
+
+    var mbruid = PageData[1];
+    var m = PageData[2];
+
+    dynamic g = PageData[0];
+    dynamic _HS = PageData[3];
+
+    dynamic M = Session["mbrdata"];
+    dynamic d_member = _DB.Get_code("member");  
+    
+    string r = Request["r"];
+    string page = Request["page"];
+    string front = Request["front"];
+    string post_select = "";
+    string comment_select = "";
+    string oneline_select = "";
+    string scrap_select = "";
+    string paper_select = "";
+    string friend_select = "";
+    string point_select = "";
+    string log_select = "";
+    string info_select = "";    
+    
+    //dynamic M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid="+mbruid);
+    
+    string url_reset = g["s"] + "/?r=" + r + "&iframe=Y&m=" + m + "&front=" + front + "&mbruid=" + M["memberuid"];
+    g["url_reset"] = g["s"] + "/?r=" + r + "&iframe=Y&m=" + m + "&front=" + front + "&mbruid=" + M["memberuid"];
+    g["url_page"] = g["url_reset"] + "&page=" + page;
+}
+
+<div id="pages_top">
+
+	<div class="title">
+		<div class="xl"><h2><a href="@url_reset">@M[_HS["nametype"]]님</a></h2></div>
+		<div class="xr">
+		
+			<ul>
+			<li class="leftside"></li>
+            @if(d_member["mytab_post"] == "1") {
+                if (page == "post")
+                {
+                    post_select = "class='selected'";
+                }
+                <li @Html.Raw(@post_select)><a href="@url_reset&page=post">게시물</a></li>
+            }
+            @if (d_member["mytab_comment"] == "1")
+            {
+                if (page == "comment")
+                {
+                    comment_select = "class='selected'";
+                }
+                <li @Html.Raw(@comment_select)><a href="@url_reset&page=comment">댓글</a></li>
+            }
+            @if (d_member["mytab_oneline"] == "1")
+            {
+                if (page == "oneline")
+                {
+                    oneline_select = "class='selected'";
+                }
+                <li @Html.Raw(@oneline_select)><a href="@url_reset&page=oneline">한줄의견</a></li>
+            }
+            @if (d_member["mytab_scrap"] == "1")
+            {
+                if (page == "scrap")
+                {
+                    scrap_select = "class='selected'";
+                }
+                <li @Html.Raw(@scrap_select)><a href="@url_reset&page=scrap">스크랩</a></li>
+            }
+            @if (d_member["mytab_paper"] == "1")
+            {
+                if (page == "paper")
+                {
+                    paper_select = "class='selected'";
+                }
+                <li @Html.Raw(@paper_select)><a href="@url_reset&page=paper">쪽지</a></li>
+            }
+            @if (d_member["mytab_friend"] == "1")
+            {
+                if (page == "friend")
+                {
+                    friend_select = "class='selected'";
+                }
+                <li @Html.Raw(@friend_select)><a href="@url_reset&page=friend">친구</a></li>
+            }
+            @if (d_member["mytab_point"] == "1")
+            {
+                if (page == "point")
+                {
+                    point_select = "class='selected'";
+                }
+                <li @Html.Raw(@point_select)><a href="@url_reset&page=point">포인트</a></li>
+            }
+            @if (d_member["mytab_log"] == "1")
+            {
+                if (page == "log")
+                {
+                    log_select = "class='selected'";
+                }
+                <li @Html.Raw(@log_select)><a href="@url_reset&page=log">접속기록</a></li>
+            }
+            @if (d_member["mytab_info"] == "1")
+            {
+                if (page == "info")
+                {
+                    info_select = "class='selected'";
+                }
+                <li @Html.Raw(@info_select)><a href="@url_reset&page=info">가입정보</a></li>
+	        }
+			<li><a href="javascript:top.close();">창닫기</a></li>
+            </ul>
+
+		</div>
+		<div class="clear"></div>
+	</div>
+	
+</div>
+

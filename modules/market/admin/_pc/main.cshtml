@@ -1,0 +1,80 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+
+    dynamic d_market = _DB.Get_code(module);
+
+    if (d_market["url"] != "")
+    {
+        <div style="padding:20px;text-align:center;border:#dfdfdf solid 5px;width:720px;font-size:13px;">
+        현재 RX마켓 준비중입니다.
+        </div> 
+        /*
+        
+        <iframe id="marketFrame" src="@d_market["url"]&iframe=Y" width="720" height="500" frameborder="0" scrolling="no" allowTransparency="true"></iframe>
+
+        <!-- FTP 정보는 세션값으로 사용되며 어떠한 형태로든 수집되지 않습니다. -->
+        <form name="procForm" action="@d_market["url"]" method="post" target="_action_frame_@(m)">
+        <input type="hidden" name="m" value="qmarket" />
+        <input type="hidden" name="a" value="cync" />
+        <input type="hidden" name="f_home" value="@r" />
+        
+        @if (d_market["ftpuse"] != "")
+        {
+            <input type="hidden" name="f_use" value="@d_market["ftpuse"]" />
+            <input type="hidden" name="f_host" value="@d_market["ftphost"]" />
+            <input type="hidden" name="f_port" value="@d_market["ftpport"]" />
+            <input type="hidden" name="f_pm" value="@d_market["ftppm"]" />
+            <input type="hidden" name="f_id" value="@d_market["ftpid"]" />
+            <input type="hidden" name="f_pw" value="@d_market["ftppw"]" />
+            <input type="hidden" name="f_path" value="@d_market["rbpath"]" />                   
+        }
+        
+        </form>
+    
+        <script type="text/javascript">
+        //<![CDATA[
+        window.onload = function () { document.procForm.submit(); }
+        //]]>
+        </script>
+        */
+    }
+    else
+    {
+        <div style="padding:20px;text-align:center;border:#dfdfdf solid 5px;width:720px;font-size:13px;">
+        <a href="@g["s"]/?r=@r&m=@m&module=@module&front=config">마켓 접속주소를 등록해 주세요.</a>
+        </div> 
+
+    }
+}
+
+
+
+
+
+

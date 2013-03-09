@@ -1,0 +1,279 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var r = PageData[12];
+
+    dynamic g = Session["g"];
+    dynamic B = Session["bbslist"];
+    dynamic d_theme = Session["bbstheme"];
+    dynamic d_bbs = _DB.Get_code("bbs");
+
+    var rss = g["bbs_rss"];
+    var skin = g["bbs_skin"];
+    var recnum = g["bbs_recnum"];
+    var newtime = g["bbs_newtime"];
+    var sbjcut = g["bbs_sbjcut"];
+
+    var uid = Request["uid"];
+    var cat = Request["cat"]; 
+}
+
+<div id="bbslist">
+	<div class="info">
+		<div class="article">
+		@string.Format("{0:#,0}", Convert.ToInt32(g["bbs_NUM"]))개 (@p / @g["bbs_TPG"] 페이지)
+        @if (d_bbs["rss"] == "1")
+        {
+            <a href="@g["s"]/?r=@r&m=@m&bid=@B["id"]&mod=rss" target="_blank"><img src="@g["img_core"]/_public/ico_rss.gif" alt="rss" /></a>
+        }
+		</div>
+		
+		<div class="category">
+        @if (my["admin"] == "1")
+        {
+		    <a href="@g["s"]/?r=@r&m=admin&module=@m&uid=@B["uid"]"><img src="@g["img_core"]/_public/btn_admin.gif" alt="" title="게시판관리" /></a>
+		    <a href="@g["s"]/?r=@r&m=admin&module=@m&front=skin&theme=@skin"><img src="@g["img_core"]/_public/btn_explorer.gif" alt="" title="테마관리" /></a>            
+        }
+        
+        @if (B["category"] != "")
+        {
+            string[] _catexp = B["category"].Split(',');
+            int _catnum = _catexp.Count();
+                
+            <select onchange="document.bbssearchf.cat.value=this.value;document.bbssearchf.submit();">
+		    <option value="">&nbsp;+ @_catexp[0]</option>
+		    <option value="" class="sline">-------------------</option>            
+
+            @for (int i = 1; i < _catexp.Length; i++)
+            {
+                if (d_theme["show_catnum"] != "0")
+                {
+                    int dataCnt = _DB.GetDbData_Count(AppState["table_" + m + "data"].ToString(), "notice=0 and bbs=" + B["uid"] + " and category='" + _catexp[i] + "'");                            
+                    <option value="@_catexp[i]"@_System.getSltStr(_catexp[i], cat)>ㆍ@(_catexp[i])(@dataCnt)</option>    
+                }
+                else
+                {                            
+                    <option value="@_catexp[i]"@_System.getSltStr(_catexp[i], cat)>ㆍ@(_catexp[i])</option>
+                }
+            }        
+            
+		    </select>
+        }
+		</div>
+		<div class="clear"></div>
+	</div>
+
+    @if (g["bbs_N_NUM"] != 0)
+    {   // notice posts
+ 	    <table summary="@(B["name"] != "" ? B["name"] : "전체") 게시물리스트 입니다.">
+	    <caption>@(B["name"] != "" ? B["name"] : "전체게시물")</caption>
+	    <colgroup> 
+	    <col width="50"> 
+	    <col> 
+	    <col width="80"> 
+	    <col width="70"> 
+	    <col width="90"> 
+	    </colgroup> 
+	    <thead>
+	    <tr>
+	    <th scope="col" class="side1">번호</th>
+	    <th scope="col">제목</th>
+	    <th scope="col">글쓴이</th>
+	    <th scope="col">조회</th>
+	    <th scope="col" class="side2">날짜</th>
+	    </tr>
+	    </thead>
+	    <tbody>
+
+        @foreach (var R in _DB.Query(g["bbs_N_sql"]))
+        {
+            string R_mobile = _System.isMobileConnect(R["agent"]);
+                
+            <tr class="noticetr">
+            <td>
+            @if (R["uid"].ToString() == uid)
+            {
+                <span class="now">&gt;&gt;</span>
+            }
+            else
+            {
+                <img src="@g["img_module_skin"]/ico_notice.gif" alt="공지" class="notice" />
+            }
+	        </td>
+                        
+	        <td class="sbj">
+            @if (R_mobile != "")
+            {
+                <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@R_mobile)로 등록된 글입니다" />
+            }
+                
+            <a href="@g["bbs_view"]@R["uid"]" class="b">@_System.getStrCut(R["subject"], sbjcut, "")</a>
+                            
+            @if (R["content"].Contains(".jpg"))
+            {
+                <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+            }
+            @if (R["upload"] != "")
+            {
+                <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+            }
+            @if (R["hidden"] == "1")
+            {
+                <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+            }
+            @if (R["comment"] > 0)
+            {
+                <span class="comment">[@R["comment"]@(R["oneline"] > 0 ? "+" + R["oneline"] : "")]</span>
+            }
+            @if (R["trackback"] > 0)
+            {
+                <span class="trackback">[@R["trackback"]]</span>
+            }
+            @if (_System.getNew(R["d_regis"].ToString(), newtime))
+            {
+                <span class="new">new</span>
+            }
+	        </td>
+            <td class="name"><span class="hand" onclick="getMemberLayer('@R["mbruid"]',event);">@R[_HS["nametype"]]</span></td>
+            <td class="hit b">@R["hit"]</td>
+            <td class="hit b">@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+            </tr>        
+        }
+        </tbody>
+	    </table>
+    }
+    else
+    {      
+        <div class="ttline"></div>
+    }
+
+    @if (Convert.ToInt32(g["bbs_NUM"]) == 0)
+    {
+        <div class="none">
+        <img src="@g["img_module_skin"]/nopost.gif" alt="등록된 포스트가 없습니다" />		    
+	    </div>
+    }
+    else
+    {
+        <div class="gallery">
+        @foreach (var R in _DB.Query(g["bbs_R_sql"]))
+        {                                                    
+            // selected first image
+            string R_mobile = _System.isMobileConnect(R["agent"]);
+            string _thumbimg = _System.getUploadImage(R["upload"], R["d_regis"].ToString(), R["content"], d_theme["picimgext"], g);        
+            
+            <div class="picbox" style="width:@((Convert.ToInt32(d_theme["picwidth"]) + 6))px;height:@((Convert.ToInt32(d_theme["picheight"]) + 80))px;">
+			    <div class="pic" style="height:@d_theme["picheight"]px;">
+				    <a href="@g["bbs_view"]@R["uid"]">
+                    @if (_thumbimg != "")
+                    {
+                        <img src="@_thumbimg" width="@d_theme["picwidth"]" height="@d_theme["picheight"]" alt="" />
+                    }                    
+                    </a>
+			    </div>
+            
+                <div class="sbjx">
+                @if (R_mobile != "")
+                {
+                    <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@R_mobile)로 등록된 글입니다" />
+                }
+                
+                <a href="@g["bbs_view"]@R["uid"]" class="b">@_System.getStrCut(R["subject"], sbjcut, "")</a>
+                            
+                @if (R["content"].Contains(".jpg"))
+                {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+                }
+                @if (R["upload"] != "")
+                {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+                }
+                @if (R["hidden"] == "1")
+                {
+                    <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+                }
+                @if (R["comment"] > 0)
+                {
+                    <span class="comment">[@R["comment"]@(R["oneline"] > 0 ? "+" + R["oneline"] : "")]</span>
+                }
+                @if (R["trackback"] > 0)
+                {
+                    <span class="trackback">[@R["trackback"]]</span>
+                }
+                @if (_System.getNew(R["d_regis"].ToString(), newtime))
+                {
+                    <span class="new">new</span>
+                }
+                </div>
+            </div>
+        }
+
+		<div class="clear"></div>
+	</div>
+    }
+
+	<div class="bottom">
+		<div class="btnbox1">
+        @if (B["uid"] != 0)
+        {
+            <span class="btn00"><a href="@g["bbs_write"]">글쓰기</a></span>
+        }
+		</div>
+        
+		<div class="btnbox2">
+		<span class="btn00"><a href="@g["bbs_reset"]">처음목록</a></span>
+		<span class="btn00"><a href="@g["bbs_list"]">새로고침</a></span>
+		</div>
+		
+        <div class="clear"></div>
+		
+        <div class="pagebox01">
+            <script type="text/javascript">
+            getPageLink(@d_theme["pagenum"], @p, @g["bbs_TPG"], "@g["img_core"]/page/default");
+            </script>
+		</div>
+	</div>
+
+	<div class="searchform">
+		<form name="bbssearchf" action="@g["s"]/">
+        <input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="c" value="@c" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="bid" value="@g["bid"]" />
+		<input type="hidden" name="cat" value="@cat" />
+		<input type="hidden" name="sort" value="@g["sort"]" />
+		<input type="hidden" name="orderby" value="@g["orderby"]" />
+		<input type="hidden" name="recnum" value="@recnum" />
+		<input type="hidden" name="type" value="@g["type"]" />
+		<input type="hidden" name="iframe" value="@g["iframe"]" />
+		<input type="hidden" name="skin" value="@skin" />
+
+		@if (d_theme["search"] == "1")
+  {   
+    		<select name="where">
+	    	    <option value="subject|tag" @_System.getSltStr(g["where"], "subject|tag")>제목+태그</option>
+		        <option value="content" @_System.getSltStr(g["where"], "content")>본문</option>
+		        <option value="name" @_System.getSltStr(g["where"], "name")>이름</option>
+		        <option value="nic" @_System.getSltStr(g["where"], "nic")>닉네임</option>
+		        <option value="id" @_System.getSltStr(g["where"], "id")>아이디</option>
+                <option value="term" @_System.getSltStr(g["where"], "term")>등록일</option>
+		    </select>            
+        		
+    		<input type="text" name="keyword" size="30" value="@g["keyword"]" class="input" />
+	    	<input type="submit" value=" 검색 " class="btngray" />
+        }
+		</form>
+	</div>
+</div>

@@ -1,0 +1,67 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    
+    dynamic g = Session["g"];
+    string uid = Request["uid"];
+
+    dynamic R = _DB.GetDbData_M(AppState["table_s_popup"].ToString(), "uid='"+uid+"'");
+    int R_cnt = _DB.GetDbData_Count(AppState["table_s_popup"].ToString(), "uid='"+uid+"'");
+    
+    if(R_cnt < 1) {
+        @_System.getLink("", "", "", "close");
+    }
+}
+
+
+<div id="popclose">
+	<form name="pop"> 
+		<input type="checkbox" name="x" checked="cbecked" />
+		오늘 하루 이창을 그만 엽니다.
+		<a href=".#" onclick="closeWin();"><img src="@g["img_module_skin"]/event_close_btn.gif" alt="창닫기" /></a>
+	</form>
+</div>
+<div id="popupbody">
+@{
+    if(R["html"] == "HTML") {
+        @Html.Raw(R["content"]);                
+    }
+    else {
+        @R["content"];
+    }    
+}    
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function closeWin() 
+{ 
+    if ( document.pop.x.checked )
+	{
+		var nowcookie = getCookie("popview");
+        @Html.Raw("setCookie( 'popview', '["+R["uid"]+"]' + nowcookie , 1);\n");
+	}    
+	self.close(); 
+}
+function popPositionSet()
+{
+    @{
+        if(R["center"] == "1") {
+            @Html.Raw("var width = parseInt(document.body.clientWidth);\n");
+            @Html.Raw("var height = parseInt(document.body.clientHeight);\n");
+            @Html.Raw("var windowX = (parseInt((window.screen.width-width)/2)+"+R["pleft"]+");\n");
+            @Html.Raw("var windowY = (parseInt((window.screen.height-height)/2)+"+R["ptop"]+");\n");
+            @Html.Raw("window.moveTo(windowX,windowY);\n");
+        }
+        
+        @Html.Raw("document.title = '"+R["name"]+"';\n");        
+    }
+}
+window.onload = popPositionSet;
+//]]>
+</script> 
+

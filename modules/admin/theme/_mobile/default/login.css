@@ -1,0 +1,16 @@
+
+#pages_login {width:90%;margin:30px auto;}
+
+#pages_login h2 {font-family:"malgun gothic",dotum;font-size:20px;padding:0 0 10px 0;margin:0;border-bottom:#999999 solid 3px;}
+#pages_login .msg {color:#1C5B8C;font-family:dotum;line-height:150%;padding:20px 0 20px 0;}
+#pages_login .msg .nosite {color:#ff0000;font-weight:bold;}
+
+#pages_login .agreebox {border:#dfdfdf solid 3px;padding:10px 10px 20px 10px;}
+#pages_login .agreebox .tblbox {padding:15px;background:#efefef;}
+#pages_login .agreebox table {width:100%;}
+#pages_login .agreebox .key {width:50px;padding:10px 10px 10px 0;color:#666666;letter-spacing:-1px;text-align:right;}
+#pages_login .agreebox .xfont {color:#999999;position:relative;left:-5px;}
+#pages_login .agreebox .input {width:100%;}
+#pages_login .agreebox .submitbox {padding:20px 0 0 80px;}
+#pages_login .agreebox .submitbox .btngray {height:25px;}
+#pages_login .agreebox .submitbox .btnblue {width:100px;height:25px;}

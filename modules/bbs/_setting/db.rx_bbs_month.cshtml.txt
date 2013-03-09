@@ -1,0 +1,1 @@
+﻿CREATE TABLE rx_bbs_month ( uid  int  identity(1,1)  NOT NULL , date  nvarchar(6)   NOT NULL , site  int   NOT NULL , bbs  int   NOT NULL , num  int   NOT NULL ,PRIMARY KEY (uid));

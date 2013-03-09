@@ -1,0 +1,64 @@
+﻿@{    
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var parent = Request["parent"];
+    var account = Request["account"];
+    var backc = Request["backc"];
+    var uid = Request["uid"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+                                       
+    dynamic R = _DB.GetDbData_M(AppState["table_s_page"].ToString(), "uid=" + uid);
+
+    string DELETE_PAGE_SQL = "DELETE FROM " + AppState["table_s_page"] + " WHERE uid=" + R["uid"];
+    @_DB.Execute(DELETE_PAGE_SQL);    
+    
+    File.Delete(g["path_root_ps"] + g["path_page"] + R["id"] + ".cshtml");
+    File.Delete(g["path_root_ps"] + g["path_page"] + R["id"] + ".widget.cshtml");
+
+    File.Delete(g["path_root_ps"] + g["path_page"] + R["id"] + ".mobile.cshtml");
+    File.Delete(g["path_root_ps"] + g["path_page"] + R["id"] + ".css");
+    File.Delete(g["path_root_ps"] + g["path_page"] + R["id"] + ".js");
+
+    File.Delete(g["path_root_ps"] + g["path_page"] + R["id"] + ".txt");
+    File.Delete(g["path_root_ps"] + g["path_page"] + R["id"] + ".cache");
+    File.Delete(g["path_root_ps"] + g["path_page"] + R["id"] + ".mobile.cache");
+    
+    if (_HS["startpage"]!=null && _HS["startpage"]!=0)
+    {
+        if (_HS["startpage"] == R["uid"])
+        {
+            string UPDATE_SITE_SQL = "DELETE FROM " + AppState["table_s_site"] + " SET startpage=0 WHERE uid=" + s;
+            @_DB.Execute(UPDATE_SITE_SQL);
+        }
+    }
+
+    @_System.getLink("reload","parent.","","")
+    return;
+}

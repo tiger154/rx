@@ -1,0 +1,18 @@
+
+.sbox {padding:0 0 15px 0;}
+.sbox .btngray {margin:0;height:17px;}
+.sbox .account {width:192px;}
+.sbox div {padding:10px 0 0 0;}
+
+
+
+.kbox {width:90%;height:290px;border:#dfdfdf solid 1px;background:#f9f9f9;margin:0 0 35px 0;padding:20px;overflow:auto;}
+.kbox .keywordarea {float:left;width:134px;height:20px;border:#efefef solid 1px;margin:3px;padding:3px 0 0 5px;background:#ffffff;overflow:hidden;}
+.kbox .keywordarea:hover {background:#efefef;}
+.kbox .keywordarea a {color:#111;}
+.kbox .keywordarea a:hover {text-decoration:underline;}
+.kbox .keywordarea .num {font-size:12px;font-family:arial;color:#ff0000;font-weight:bold;}
+.kbox .keywordarea .hit {font-size:11px;font-family:dotum;color:#999;}
+
+.nodata {width:99%;text-align:center;padding:135px 0 35px 0;font-size:12px;font-family:dotum;color:#999;}
+.nodata img {position:relative;top:2px;}

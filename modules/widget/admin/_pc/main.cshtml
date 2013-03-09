@@ -1,0 +1,252 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var wdgvar = new Dictionary<string, string>();
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var option = Request["option"];
+    var swidget = Request["swidget"];
+    var pwd = Request["pwd"];
+    var widgetAdd = Request["widgetAdd"];
+    var type = Request["type"];
+    
+    string frame_name = "_action_frame_" + m;
+    string pwd_start = g["path_root_ps"] + g["path_widget"];
+
+    int step_start = 1;
+
+    if (option != null && option != "")
+    {
+        string[] swval = HttpUtility.UrlDecode(option.Replace("[!]", "&")).Split(',');
+        swidget = swval[0];
+        pwd = pwd_start + swidget + "\\";
+
+        foreach (string _cval in swval)
+        {
+            string[] _xval = _cval.Split('^');
+            wdgvar.Add(_xval[0], _xval[1]);
+        }
+    }
+    else
+    {
+        if (pwd != null && pwd != "")
+        {
+            pwd = HttpUtility.UrlDecode(pwd);
+        }
+        else
+        {
+            pwd = pwd_start;
+        }
+
+        if (File.Exists(pwd + "main.cshtml"))
+        {
+            swidget = pwd.Replace(g["path_root_ps"] + g["path_widget"], "");
+        }
+        else
+        {
+            swidget = "";
+        }
+
+        if (swidget != null && swidget != "")
+        {
+            swidget = swidget.Substring(0, swidget.Length - 1);
+        }
+    }
+
+    if (pwd.Contains(".."))
+    { 
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "close")
+        return;
+    }
+
+    if (!Directory.Exists(pwd))
+    {
+        @_System.getLink("", "", "존재하지 않는 폴더입니다.", "close")
+        return;
+    }    
+}
+
+
+<div id="catebody">
+	<div id="category">
+
+		<div class="title">
+			위젯리스트
+			<span class="add">
+			<a href="@g["adm_href"]&widgetAdd=Y" title="위젯분류추가"><img src="@g["img_core"]/_public/ico_folder.gif" alt="" /></a>
+			<a href="@g["s"]/?r=@r&m=@m&module=market&front=pack&type=widget" title="위젯추가"><img src="@g["img_core"]/_public/btn_add.gif" alt="추가" /></a>
+			<a class="hand" onclick="OpenWindow('@g["s"]/?r=@r&system=popup.widget&iframe=Y&isWcode=Y');"><img src="@g["img_core"]/_public/btn_code.gif" alt="위젯코드" title="위젯코드" /></a>
+			</span>
+		</div>
+		
+		<div class="tree">
+        @_Module_widget.getDirlist(pwd_start, step_start, g, step_start)
+		</div>
+
+	</div>
+
+
+	<div id="catinfo">
+        @if (widgetAdd != null && widgetAdd != "")
+        {
+		    <form name="procForm" action="@g["s"]/" method="post" target="@Html.Raw("_action_frame_" + m)" onsubmit="return saveCheck(this);">
+		    <input type="hidden" name="r" value="@r" />
+		    <input type="hidden" name="m" value="@module" />
+		    <input type="hidden" name="a" value="regisfolder" />
+
+
+		    <div class="title">
+			    <div class="xleft">
+				    <span class="b">위젯분류추가</span>
+			    </div>
+			    <div class="xright">
+			    </div>
+			    <div class="clear"></div>
+		    </div>
+
+
+		    <div class="notice">
+			    관리가 편하도록 위젯분류를 적절히 지정하여 등록해 주세요.<br />
+			    위젯분류 폴더명은 영문소문자+숫자+_ 조합만 사용할 수 있습니다.
+		    </div>
+
+
+		    <table>
+			    <tr>
+				    <td class="td1">
+					    분류명칭
+				    </td>
+				    <td class="td2">
+					    <input type="text" name="name" value="" class="input sname" />
+				    </td>
+			    </tr>
+			    <tr>
+				    <td class="td1">
+					    폴더명칭
+				    </td>
+				    <td class="td2 shift">
+					    <input type="text" name="folder" value="" class="input sname" />
+				    </td>
+			    </tr>
+		    </table>
+
+		    <div class="submitbox">
+			    <input type="submit" class="btnblue" value="위젯분류등록" />
+		    </div>
+
+		    </form>
+            
+        }
+        else
+        {
+ 		    <div class="title">
+			    <div class="xleft">
+				    <span class="b">위젯안내</span> @*(@_System.getFolderName(pwd,"name.txt"))*@
+			    </div>
+			    <div class="xright">
+                
+            @if (pwd != ".\\widgets\\")
+            {
+                <a href="@g["s"]/?r=@r&m=@module&a=widget_delete&pwd=@pwd" target="@Html.Raw("_action_frame_" + m)" onclick="return confirm('정말로 이 위젯을 삭제하시겠습니까?       ');">위젯삭제</a>
+            }
+                
+			    </div>
+			    <div class="clear"></div>
+		    </div>
+		
+            if (pwd == ".\\widgets\\")
+            {
+  		        <div class="none">
+			        <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+			        위젯을 선택하시면 위젯 안내문서를 확인할 수 있습니다.
+		        </div>              
+            }
+            else
+            {
+                if (File.Exists(pwd + "main.cshtml"))
+                {
+                    if (File.Exists(pwd + "readme.txt"))
+                    {
+					    <div class="guide">
+					    <textarea rows="10" cols="100">
+                        @using (StreamReader sr = new StreamReader(pwd + "readme.txt", System.Text.Encoding.UTF8, true))
+                        { 
+                            @Html.Raw(sr.ReadToEnd())
+                        }
+                        </textarea>
+					    </div>                        
+                    }
+                    else
+                    {
+ 					    <div class="none">
+						    <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+						    이 위젯은 안내문서를 제공하지 않습니다.
+					    </div>                       
+                    }
+                }
+                else
+                {
+				    <div class="none">
+					    <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+					    위젯분류 폴더입니다. 위젯을 선택해 주세요.
+				    </div>                    
+                }
+            }
+        }
+		
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function saveCheck(f) {
+        if (f.name.value == '') {
+            alert('분류명을 입력해 주세요.   ');
+            f.name.focus();
+            return false;
+        }
+        if (f.folder.value == '') {
+            alert('폴더명을 입력해 주세요.   ');
+            f.folder.focus();
+            return false;
+        }
+        if (!chkIdValue(f.folder.value)) {
+            alert('폴더명은 영문소문자,숫자,_만 사용할 수 있습니다.      ');
+            f.folder.focus();
+            return false;
+        }
+
+        return confirm('정말로 실행하시겠습니까?    ');
+    }
+//]]>
+</script>
+
+

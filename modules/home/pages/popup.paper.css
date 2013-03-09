@@ -1,0 +1,18 @@
+
+
+#paperbox {width:100%;}
+#paperbox .direct {position:absolute;top:50px;left:320px;}
+#paperbox .direct a {font-size:11px;font-family:dotum;text-decoration:underline;}
+
+#paperbox .line1 {height:1px;background:#1ACAD4;}
+#paperbox .line2 {height:2px;background:#0BA2B4;}
+#paperbox .line3 {height:1px;background:#037F93;}
+
+#paperbox .wrap {padding:20px;}
+#paperbox .i1 {padding:5px 0 5px 0;color:#444;}
+#paperbox .i1 .date {font-family:dotum;font-size:11px;color:#777;}
+#paperbox .msg {border:#c0c0c0 solid 1px;margin:10px 0 0 0;padding:8px;width:365px;height:150px;line-height:150%;font-family:dotum;overflow:auto;}
+#paperbox .msg1 {border:#c0c0c0 solid 1px;margin:10px 0 0 0;padding:8px;width:225px;height:150px;line-height:150%;font-family:dotum;overflow:auto;}
+#paperbox .pagebox01 {padding:15px 0 15px 0;text-align:center;}
+
+#paperbox .footer {height:50px;border-top:#efefef solid 1px;text-align:center;padding:20px 0 0 0;}

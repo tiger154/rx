@@ -1,0 +1,1352 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var front = Request["front"];
+    var account = Request["account"];
+    var auth = Request["auth"];
+    var sosok = Request["sosok"];
+    var level = Request["level"];
+    var sex = Request["sex"];
+    var addr0 = Request["addr0"];
+    var now_log = Request["now_log"];
+    var marr1 = Request["marr1"];
+    var mailing = Request["mailing"];
+    var sms = Request["sms"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyw = Request["keyw"];
+    var comp = Request["comp"];
+    var year1 = Request["year1"];
+    var month1 = Request["month1"];
+    var day1 = Request["day1"];
+    var year2 = Request["year2"];
+    var month2 = Request["month2"];
+    var day2 = Request["day2"];
+    
+    string frame_name = "_action_frame_" + m;    
+    string site_sql = "SELECT * FROM "+AppState["table_s_site"]+" ORDER BY gid ASC";
+    string levelnum_sql = "SELECT uid FROM "+AppState["table_s_mbrlevel"]+" WHERE gid='1'";
+    string levelnum = _DB.GetDbData_S(AppState["table_s_mbrlevel"].ToString(), "gid=1", "uid").ToString();
+    string _WHERE = "";
+    string accountQue = "";
+    string[] autharr = { "", "인증", "보류", "대기", "탈퇴" };
+    
+    int now_year = Convert.ToInt32(date["year"]);
+    int now_month = Convert.ToInt32(date["month"]);
+    int now_day = Convert.ToInt32(date["day"]);
+    int now_hour = date["totime"].Hour;
+    int now_min = date["totime"].Minute;
+
+    int site_Row = _DB.getDbRows(site_sql);
+    
+    // 검색부
+    if(year1 == null || year1 == "") {
+        year1 = date["year"];
+	}
+    if(month1 == null || month1== "") {
+        month1 = date["month"];
+	}
+    if(day1 == null || day1== "") {
+        day1 = "01";
+	}
+    if(year2 == null || year2 == "") {
+        year2 = date["year"];
+	}
+    if(month2 == null || month2 == "") {
+        month2 = date["month"];
+	}
+    if(day2 == null || day2== "") {
+        day2 = date["day"];
+	}
+    if(sort == null || sort == "") {
+        sort = "memberuid";
+	}
+    if(orderby == null || orderby == "") {
+        orderby = "desc";
+	}
+    if(recnum == null || recnum == "" || Convert.ToInt32(recnum) > 200) {
+        recnum = "20";
+	}
+    if (p == null || p == 0) 
+    {
+        p = 1;
+	}
+
+    string date_sc1 = year1+"-"+month1+"-"+day1;
+    string date_sc2 = year2+"-"+month2+"-"+day2;
+    
+    if(account != null && account != "") {
+        accountQue = " WHERE site='"+account+"'";
+	}
+    else {
+        accountQue = " WHERE site<>''";
+	}
+    if(auth != null && auth != "") {
+        _WHERE =  _WHERE+" AND auth='"+auth+"'";
+	}
+    if(sosok != null && sosok != "") {
+        _WHERE =  _WHERE+" AND sosok='"+sosok+"'";
+	}
+    if(level != null && level != "") {
+        _WHERE =  _WHERE+" AND level="+level;
+	}
+    if(now_log != null && now_log != "") {
+        _WHERE =  _WHERE+" AND now_log='"+now_log+"'";
+	}
+    if(sex != null && sex != "") {
+        _WHERE =  _WHERE+" AND sex='"+sex+"'";
+	}
+    if(comp != null && comp != "") {
+        _WHERE =  _WHERE+" AND comp='"+comp+"'";
+	}
+    if(year1 != null && year1 != "") {
+        _WHERE =  _WHERE+" AND d_regis BETWEEN '"+date_sc1+"' AND '"+date_sc2+" 23:59:59'";
+	}
+    if(where != null && where != "") {
+        _WHERE =  _WHERE+" AND "+where+" LIKE '%"+keyw+"%'";
+	}
+    if(accountQue == "" && _WHERE != "") {
+        _WHERE = "WHERE";
+	}
+
+    _WHERE = accountQue + _WHERE;
+
+    //string ORD = " ORDER BY "+sort+" "+orderby;
+    int list_start;
+    
+    if (p == 1) 
+    {
+        list_start = 0;    
+	}
+    else {
+        list_start = ((Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum)) - 1;        
+	}
+
+    string RCD_sql = _System.GetQuery(AppState["table_s_mbrdata"].ToString(), "", _WHERE, sort, orderby, list_start, recnum);    
+
+    int NUM = _DB.GetDbData_Count(AppState["table_s_mbrdata"].ToString(), _WHERE.Replace("WHERE", ""));
+    int NUM2 = NUM;
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+}
+
+<div id="mbrlist">
+
+
+	<div class="sbox">
+		<form name="procForm" action="@g["s"]/" method="get">
+        <input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="module" value="@g["module"]" />
+		<input type="hidden" name="front" value="@front" />
+
+		<select name="account" class="account" onchange="this.form.submit();">
+		<option value="">&nbsp;+ 전체사이트</option>
+		<option value="">---------------------------</option>
+		@foreach(var S in _DB.Query(site_sql)) {
+            string acc_select = "";
+            
+            if(account != "" && account != null) {
+                if(Convert.ToInt32(account) == S["uid"]) {
+                    acc_select = "selected='selected'";
+			    }
+	        }            
+
+            <option value="@S["uid"]"@acc_select>ㆍ @S["name"]</option>
+		}
+        @if(site_Row == 0) {
+    		<option value="">등록된 사이트가 없습니다.</option>
+        }
+		</select>
+
+		<div>
+		<select name="year1">
+		@{
+            for(var i = 2009; i <= now_year; i++) {
+                var tmp_i = i.ToString();
+                string year_select = "";
+                
+                if(tmp_i == year1) {
+                    year_select = " selected='selected'";
+				}
+                <option value="@i"@year_select>@Html.Raw(@i+"년")</option>
+			}
+		}            
+		</select>
+            
+		<select name="month1">
+		@{
+            for(var i = 1; i <= 12; i++) {
+                var tmp_i = i.ToString();
+                string month_select = "";
+                
+                if(tmp_i.Length == 1) {
+                    tmp_i = "0"+tmp_i;
+				}
+                if(tmp_i == month1) {
+                    month_select = " selected='selected'";
+				}
+                <option value="@tmp_i"@month_select>@Html.Raw(@tmp_i+"월")</option>
+			}
+		}            
+		</select>
+            
+		<select name="day1">
+		@{
+            for(var i = 1; i <= 31; i++) {
+                var tmp_i = i.ToString();
+                string day_select = "";
+                
+                if(tmp_i.Length == 1) {
+                    tmp_i = "0"+tmp_i;
+				}
+                if(tmp_i == day1) {
+                    day_select = " selected='selected'";
+				}
+                <option value="@tmp_i"@day_select>@Html.Raw(@tmp_i+"일")</option>
+			}
+		}            
+		</select> ~
+		<select name="year2">
+		@{
+            for(var i = 2009; i <= now_year; i++) {
+                var tmp_i = i.ToString();
+                string year_select = "";
+                
+                if(tmp_i == year2) {
+                    year_select = " selected='selected'";
+				}
+                <option value="@i"@year_select>@Html.Raw(@i+"년")</option>
+			}
+		}            
+		</select>
+            
+		<select name="month2">
+		@{
+            for(var i = 1; i <= 12; i++) {
+                var tmp_i = i.ToString();
+                string month_select = "";
+                
+                if(tmp_i.Length == 1) {
+                    tmp_i = "0"+tmp_i;
+				}
+                if(tmp_i == month2) {
+                    month_select = " selected='selected'";
+				}
+                <option value="@tmp_i"@month_select>@Html.Raw(@tmp_i+"월")</option>
+			}
+		}
+		</select>
+            
+		<select name="day2">
+		@{
+            for(var i = 1; i <= 31; i++) {
+                var tmp_i = i.ToString();
+                string day_select = "";
+                
+                if(tmp_i.Length == 1) {
+                    tmp_i = "0"+tmp_i;
+				}
+                if(tmp_i == day2) {
+                    day_select = " selected='selected'";
+				}
+                <option value="@tmp_i"@day_select>@Html.Raw(@tmp_i+"일")</option>
+			}
+		}       
+		</select>
+
+        <input type="button" class="btngray" value="기간적용" onclick="this.form.submit();" />
+	    <input type="button" class="btngray" value="어제" onclick="dropDate('@date["_yester"]','@date["_yester"]');" />
+	    <input type="button" class="btngray" value="오늘" onclick="dropDate('@date["totime"]','@date["totime"]');" />
+	    <input type="button" class="btngray" value="일주" onclick="dropDate('@date["_week"]','@date["totime"]');" />
+	    <input type="button" class="btngray" value="한달" onclick="dropDate('@date["_month"]','@date["totime"]');" />
+	    <input type="button" class="btngray" value="전체" onclick="dropDate('2009-01-01','@date["totime"]');" />
+
+		</div>
+
+		<div>
+
+		<select name="auth" onchange="this.form.submit();">
+		<option value="">회원인증</option>
+		<option value="">--------</option>
+        @{
+            string auth_select1 = "";
+            string auth_select2 = "";
+            string auth_select3 = "";
+            string auth_select4 = "";
+            
+            if(auth == "1") {
+                auth_select1 = "selected='selected'";
+			}
+            if(auth == "2") {
+                auth_select2 = "selected='selected'";
+			}
+            if(auth == "3") {
+                auth_select3 = "selected='selected'";
+			}
+            if(auth == "4") {
+                auth_select4 = "selected='selected'";
+			}
+		}
+		<option value="1"@auth_select1>인증</option>
+		<option value="2"@auth_select2>보류</option>
+		<option value="3"@auth_select3>대기</option>
+		<option value="4"@auth_select4>탈퇴</option>
+		</select>
+
+		<select name="sosok" onchange="this.form.submit();">
+		<option value="">회원그룹</option>
+		<option value="">--------</option>
+        @{
+            string group_sql = "SELECT * FROM " + AppState["table_s_mbrgroup"] + " ORDER BY gid ASC";
+
+            foreach(var _G in _DB.Query(group_sql)) 
+            {                
+                <option value="@_G["uid"]"@_System.getSltStr(_G["uid"], sosok)>@_G["name"] (@string.Format("{0:#,0}", _G["num"]))</option>
+            }
+		}
+		</select>
+
+		<select name="level" onchange="this.form.submit();">
+		<option value="">회원등급</option>
+		<option value="">--------</option>
+        @{
+            string level_sql = "SELECT TOP " + levelnum + " * FROM " + AppState["table_s_mbrlevel"] + " ORDER BY uid ASC";
+
+            foreach (var _L in _DB.Query(level_sql))
+            {
+                string level_select = "";
+
+                if (level == _L["uid"].ToString())
+                {
+                    level_select = " selected='selected'";
+                }
+                <option value="@_L["uid"]"@level_select>@_L["name"] (@string.Format("{0:#,0}", _L["num"]))</option>
+            }
+		}
+		</select>
+
+		<select name="sex" onchange="this.form.submit();">
+		<option value="">회원성별</option>
+		<option value="">--------</option>
+        @{
+            string sex_select1 = "";
+            string sex_select2 = "";
+
+            if (sex == "1")
+            {
+                sex_select1 = " selected='selected'";
+            }
+            if (sex == "2")
+            {
+                sex_select2 = " selected='selected'";
+            }
+		}
+		<option value="1"@sex_select1>남성</option>
+		<option value="2"@sex_select2>여성</option>
+		</select>
+
+		<select name="addr0" onchange="this.form.submit();">
+		<option value="">가입지역</option>
+		<option value="">--------</option>
+        @{
+            string addr_select1 = "";
+            string addr_select2 = "";
+            string addr_select3 = "";
+            string addr_select4 = "";
+            string addr_select5 = "";
+            string addr_select6 = "";
+            string addr_select7 = "";
+            string addr_select8 = "";
+            string addr_select9 = "";
+            string addr_select10 = "";
+            string addr_select11 = "";
+            string addr_select12 = "";
+            string addr_select13 = "";
+            string addr_select14 = "";
+            string addr_select15 = "";
+            string addr_select16 = "";
+            string addr_select17 = "";
+
+            if (addr0 == "서울")
+            {
+                addr_select1 = " selected='selected'";
+            }
+            if (addr0 == "경기")
+            {
+                addr_select2 = " selected='selected'";
+            }
+            if (addr0 == "인천")
+            {
+                addr_select3 = " selected='selected'";
+            }
+            if (addr0 == "강원")
+            {
+                addr_select4 = " selected='selected'";
+            }
+            if (addr0 == "충남")
+            {
+                addr_select5 = " selected='selected'";
+            }
+            if (addr0 == "충북")
+            {
+                addr_select6 = " selected='selected'";
+            }
+            if (addr0 == "대전")
+            {
+                addr_select7 = " selected='selected'";
+            }
+            if (addr0 == "전남")
+            {
+                addr_select8 = " selected='selected'";
+            }
+            if (addr0 == "전북")
+            {
+                addr_select9 = " selected='selected'";
+            }
+            if (addr0 == "광주")
+            {
+                addr_select10 = " selected='selected'";
+            }
+            if (addr0 == "경남")
+            {
+                addr_select11 = " selected='selected'";
+            }
+            if (addr0 == "경북")
+            {
+                addr_select12 = " selected='selected'";
+            }
+            if (addr0 == "부산")
+            {
+                addr_select13 = " selected='selected'";
+            }
+            if (addr0 == "대구")
+            {
+                addr_select14 = " selected='selected'";
+            }
+            if (addr0 == "울산")
+            {
+                addr_select15 = " selected='selected'";
+            }
+            if (addr0 == "제주")
+            {
+                addr_select16 = " selected='selected'";
+            }
+            if (addr0 == "OUT")
+            {
+                addr_select17 = " selected='selected'";
+            }
+		}
+		<option value="서울"@addr_select1>서울</option>
+		<option value="경기"@addr_select2>경기</option>
+		<option value="인천"@addr_select3>인천</option>
+		<option value="강원"@addr_select4>강원</option>
+		<option value="충남"@addr_select5>충남</option>
+		<option value="충북"@addr_select6>충북</option>
+		<option value="대전"@addr_select7>대전</option>
+		<option value="전남"@addr_select8>전남</option>
+		<option value="전북"@addr_select9>전북</option>
+		<option value="광주"@addr_select10>광주</option>
+		<option value="경남"@addr_select11>경남</option>
+		<option value="경북"@addr_select12>경북</option>
+		<option value="부산"@addr_select13>부산</option>
+		<option value="대구"@addr_select14>대구</option>
+		<option value="울산"@addr_select15>울산</option>
+		<option value="제주"@addr_select16>제주</option>
+		<option value="OUT"@addr_select17>해외</option>
+		</select>
+
+		<select name="now_log" onchange="this.form.submit();">
+		<option value="">현재접속</option>
+		<option value="">--------</option>
+        @{
+            string now_log1 = "";
+            string now_log2 = "";
+
+            if (now_log == "2")
+            {
+                now_log1 = " selected='selected'";
+            }
+            if (now_log == "1")
+            {
+                now_log2 = " selected='selected'";
+            }
+		}            
+		<option value="2"@now_log1>온라인</option>
+		<option value="1"@now_log2>오프라인</option>
+		</select>
+
+		<select name="marr1" onchange="this.form.submit();">
+		<option value="">결혼여부</option>
+		<option value="">--------</option>
+        @{
+            string marr1_1 = "";
+            string marr1_2 = "";
+
+            if (marr1 == "1")
+            {
+                marr1_1 = " selected='selected'";
+            }
+            if (marr1 == "2")
+            {
+                marr1_2 = " selected='selected'";
+            }
+		}            
+		<option value="1"@marr1_1>미혼</option>
+		<option value="2"@marr1_2>기혼</option>
+		</select>
+
+		<select name="mailing" onchange="this.form.submit();">
+		<option value="">메일수신</option>
+		<option value="">--------</option>
+        @{
+            string mailing1 = "";
+            string mailing2 = "";
+
+            if (mailing == "2")
+            {
+                mailing1 = " selected='selected'";
+            }
+            if (mailing == "1")
+            {
+                mailing2 = " selected='selected'";
+            }
+		}            
+		<option value="2"@mailing1>동의</option>
+		<option value="1"@mailing2>동의안함</option>
+		</select>
+
+		<select name="sms" onchange="this.form.submit();">
+		<option value="">문자수신</option>
+		<option value="">--------</option>
+        @{
+            string sms1 = "";
+            string sms2 = "";
+
+            if (sms == "2")
+            {
+                sms1 = " selected='selected'";
+            }
+            if (sms == "1")
+            {
+                sms2 = " selected='selected'";
+            }
+		}         
+        <option value="2"@sms1>동의</option>
+		<option value="1"@sms2>동의안함</option>
+		</select>
+
+		</div>
+
+		<div>
+		<select name="sort" onchange="this.form.submit();">
+        @{
+            string sort1 = "";
+            string sort2 = "";
+            string sort3 = "";
+            string sort4 = "";
+            string sort5 = "";
+            string sort6 = "";
+            string sort7 = "";
+            string sort8 = "";
+
+            if (sort == "memberuid")
+            {
+                sort1 = " selected='selected'";
+            }
+            if (sort == "sosok")
+            {
+                sort2 = " selected='selected'";
+            }
+            if (sort == "level")
+            {
+                sort3 = " selected='selected'";
+            }
+            if (sort == "point")
+            {
+                sort4 = " selected='selected'";
+            }
+            if (sort == "usepoint")
+            {
+                sort5 = " selected='selected'";
+            }
+            if (sort == "last_log")
+            {
+                sort6 = " selected='selected'";
+            }
+            if (sort == "birth1")
+            {
+                sort7 = " selected='selected'";
+            }
+            if (sort == "birth2")
+            {
+                sort8 = " selected='selected'";
+            }
+		}                    
+		<option value="memberuid"@sort1>가입일</option>
+		<option value="sosok"@sort2>회원그룹</option>
+		<option value="level"@sort3>회원등급</option>
+		<option value="point"@sort4>보유포인트</option>
+		<option value="usepoint"@sort5>사용포인트</option>
+		<option value="last_log"@sort6>최근접속</option>
+		<option value="birth1"@sort7>나이</option>
+		<option value="birth2"@sort8>생년월일</option>
+		</select>
+            
+		<select name="orderby" onchange="this.form.submit();">
+        @{
+            string orderby1 = "";
+            string orderby2 = "";
+
+            if (orderby == "desc")
+            {
+                orderby1 = " selected='selected'";
+            }
+            if (orderby == "asc")
+            {
+                orderby2 = " selected='selected'";
+            }
+		}   
+        <option value="desc"@orderby1>역순</option>
+		<option value="asc"@orderby2>정순</option>
+		</select>
+
+		<select name="recnum" onchange="this.form.submit();">
+        @{
+            string recnum1 = "";
+            string recnum2 = "";
+            string recnum3 = "";
+            string recnum4 = "";
+            string recnum5 = "";
+
+            if (recnum == "20")
+            {
+                recnum1 = " selected='selected'";
+            }
+            if (recnum == "35")
+            {
+                recnum2 = " selected='selected'";
+            }
+            if (recnum == "50")
+            {
+                recnum3 = " selected='selected'";
+            }
+            if (recnum == "75")
+            {
+                recnum4 = " selected='selected'";
+            }
+            if (recnum == "90")
+            {
+                recnum5 = " selected='selected'";
+            }
+		}   
+		<option value="20"@recnum1>20명</option>
+		<option value="35"@recnum2>35명</option>
+		<option value="50"@recnum3>50명</option>
+		<option value="75"@recnum4>75명</option>
+		<option value="90"@recnum5>90명</option>
+		</select>
+            
+		<select name="where">
+        @{
+            string where1 = "";
+            string where2 = "";
+            string where3 = "";
+
+            if (where == "id")
+            {
+                where1 = " selected='selected'";
+            }
+            if (where == "name")
+            {
+                where2 = " selected='selected'";
+            }
+            if (where == "nic")
+            {
+                where3 = " selected='selected'";
+            }
+		}               
+
+        <option value="name"@where2>이름</option>
+		<option value="nic"@where3>닉네임</option>
+		</select>
+
+		<input type="text" name="keyw" value="@keyw" class="input" />
+		<input type="submit" value="검색" class="btnblue" />
+		<input type="button" value="리셋" class="btngray" onclick="location.href='@g["adm_href"]&account=@account';" />        
+		<input type="checkbox" name="comp" id="compmember" value="1" @_System.getChkStr(comp, 1) onclick="this.form.submit();" /><label for="compmember">기업회원</label>
+		</div>
+
+		</form>
+	</div>
+
+	<div class="info">
+		<div class="article">
+			@string.Format("{0:#,0}", NUM)명(@p / @Html.Raw(TPG + " 페이지"))
+		</div>
+		
+		<div class="category">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+
+
+	<form name="listForm" action="@g["s"]/" method="post" target="@frame_name">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@g["module"]" />
+	<input type="hidden" name="a" value="" />
+	<input type="hidden" name="act" value="" />
+	<input type="hidden" name="_WHERE" value="@_WHERE" />
+	<input type="hidden" name="_num" value="@NUM" />
+
+	<table class="tblfix" summary="회원리스트 입니다.">
+	<caption>회원리스트</caption> 
+	<colgroup> 
+	<col width="30">
+	<col width="50"> 
+	<col width="30"> 
+	<col width="30"> 
+	<col width="70"> 
+	<col> 
+	<col width="70"> 
+	<col width="30"> 
+	<col width="30">
+	<col width="30"> 
+	<col width="60"> 
+	<col width="50"> 
+	<col width="80"> 
+	<col width="70"> 
+	<col width="70"> 
+	</colgroup> 
+
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" alt="선택/반전" class="hand" onclick="chkFlag('mbrmembers');" /></th>
+	<th scope="col">번호</th>
+	<th scope="col">인증</th>
+	<th scope="col">접속</th>
+	<th scope="col">이룸</th>
+	<th scope="col">닉네임</th>
+	<th scope="col">아이디</th>
+	<th scope="col">등급</th>
+	<th scope="col">성별</th>
+	<th scope="col">나이</th>
+	<th scope="col">생년월일</th>
+	<th scope="col">지역</th>
+	<th scope="col">연락처</th>
+	<th scope="col">가입일</th>
+	<th scope="col" class="side2">최근접속</th>
+
+	</tr>
+	</thead>
+	<tbody>
+	@{
+        foreach (var R in _DB.Query(RCD_sql))
+        {           
+            dynamic _R = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "uid=" + R["memberuid"]);
+
+            string now_log_conf = "N";
+            string tel_conf = "-";
+            string auth_conf = "";
+            string birth_set = "-";
+            string addr_conf = "해외";
+
+            int _recnum = 0;
+
+            if (R["birth1"].Length > 3)
+            {
+                string birth_year = R["birth1"].Substring(2, 2);
+                string birth_month = R["birth2"].Substring(0, 2);
+                string birth_day = R["birth2"].Substring(2, 2);
+
+                birth_set = birth_year + "/" + birth_month + "/" + birth_day;
+            }
+
+            if (R["now_log"] == "2")
+            {
+                now_log_conf = "Y";
+            }
+            if (R["tel2"] != "")
+            {
+                tel_conf = R["tel2"];
+            }
+            else if (R["tel1"] != "")
+            {
+                tel_conf = R["tel1"];
+            }
+            if (R["auth"] == "1")
+            {
+                auth_conf = "인증";
+            }
+            else if (R["auth"] == "2")
+            {
+                auth_conf = "보류";
+            }
+            else if (R["auth"] == "3")
+            {
+                auth_conf = "대기";
+            }
+            else if (R["auth"] == "4")
+            {
+                auth_conf = "탈퇴";
+            }
+            if (R["now_log"] == "1")
+            {
+                now_log_conf = "Y";
+            }
+            if (R["addr0"] != "")
+            {
+                addr_conf = R["addr0"];
+            }
+
+            NUM = NUM - (((Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum)) + _recnum);
+        	
+            <tr>
+	        <td class="side1"><input type="checkbox" name="mbrmembers" value="@R["memberuid"]" /></td>
+	        <td>@NUM</td>
+	        <td>@auth_conf</td>
+	        <td>@now_log_conf</td>
+	        <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=@g["module"]&front=manager&page=main&mbruid=@R["memberuid"]');" title="회원메니져">@R["name"]</a></td>
+	        <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=@g["module"]&front=manager&page=post&mbruid=@R["memberuid"]');" title="게시정보">@R["nic"]</a></td>
+	        <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=@g["module"]&front=manager&page=info&mbruid=@R["memberuid"]');" title="회원정보">@_R["id"]</a></td>
+	        <td>@R["level"]</td>
+	        <td>@_System.getSex(@R["sex"])</td>
+	        <td>@_System.getAge(@R["birth1"])</td>
+	        <td>@birth_set</td>
+	        <td>@addr_conf</td>
+	        <td>@tel_conf</td>
+	        <td>@R["d_regis"].ToString().Substring(0, 10)</td>
+	        <td title="">@_System.getRemainDate(R["last_log"].ToString())일</td>         
+        	</tr>
+        
+            _recnum = _recnum + 1;
+            NUM--;
+        }
+	}
+
+	</tbody>
+	</table>
+	<div class="tblfix">
+	@{
+        if (NUM2 == 0)
+        {
+    		<div class="nodata"><img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> 조건에 해당하는 회원이 없습니다.</div>
+        }
+	}
+
+	<div class="pagebox01">
+		<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>
+    
+    
+	<div class="prebox">
+		<div class="xt">
+		<input type="button" class="btngray" value="작업" onclick="actQue('tool');" />
+		<input type="button" class="btngray" value="지급" onclick="actQue('give');" />
+		<input type="button" class="btngray" value="쪽지" onclick="actQue('paper');" />
+		<input type="button" class="btngray" value="메일" onclick="actQue('email');" />
+		<input type="button" class="btngray" value="추출" onclick="actQue('dump');" />
+		<input type="checkbox" name="all" id="all_check" /><label for="all_check">현재 해당되는 모든회원(@string.Format("{0:#,0}", NUM)명) 선택</label>
+		</div>
+		
+		<div id="span_member_tool" class="xt1 hide">
+
+		<select name="auth" class="select">
+		<option value="">회원인증</option>
+		<option value="">-----------------</option>
+		<option value="1">ㆍ @autharr[1]</option>
+		<option value="2">ㆍ @autharr[2]</option>
+		<option value="3">ㆍ @autharr[3]</option>
+		<option value="4">ㆍ @autharr[4]</option>
+		</select>
+		<input type="button" class="btnblue" value="변경" onclick="actQue('tool_auth');" /> <br />
+
+		<select name="sosok" class="select">
+		<option value="">회원그룹</option>
+		<option value="">--------</option>
+        @{
+            var _GRPARR = new Dictionary<int, string>();
+            string GRP_sql = "SELECT * FROM " + AppState["table_s_mbrgroup"].ToString() + " ORDER BY gid asc";
+
+            foreach (var _G in _DB.Query(GRP_sql))
+            {
+                _GRPARR.Add(_G["uid"], _G["name"]);
+                <option value="@_G["uid"]">ㆍ @_G["name"] (@string.Format("{0:#,0}", Convert.ToInt32(_G["num"]))</option>
+            }
+        }
+		</select>
+
+		<input type="button" class="btnblue" value="변경" onclick="actQue('tool_sosok');" /> <br />
+
+		<select name="level" class="select">
+		<option value="">회원등급</option>
+		<option value="">--------</option>
+        @{            
+            var _LBLARR = new Dictionary<int, string>();
+
+            foreach (var _L in _DB.Query(level_sql))
+            {
+                _LBLARR.Add(_L["uid"], _L["name"]);
+                
+                <option value="@_L["uid"]">ㆍ @_L["name"] (@string.Format("{0:#,0}", Convert.ToInt32(_L["num"]))</option>
+            }
+        }
+		</select>
+		<input type="button" class="btnblue" value="변경" onclick="actQue('tool_level');" />  <br />
+
+		<input type="button" class="btnblue" value="데이터삭제" onclick="actQue('tool_delete');" />
+		<input type="button" class="btnblue" value="탈퇴처리" onclick="actQue('tool_out');" />
+
+		</div>
+
+		<div id="span_member_give" class="xt1 hide">
+
+		<select name="pointType">
+		<option value="point">포인트</option>
+		<!--<option value="cash">적립금</option>
+		<option value="money">예치금</option>-->
+		</select>		
+		<select name="how" class="sm">
+		<option value="+">+</option>
+		<option value="-">-</option>
+		</select>
+		<input type="text" name="price" size="5" class="input" />포인트(원) | 지급사유 : 
+		<input type="text" name="comment" size="60" class="input" />
+		<input type="button" class="btnblue" value="지급(차감)" onclick="actQue('give_point');" />
+
+		</div>
+
+		<div id="span_member_paper" class="xt1 hide">
+
+		<textarea name="memo" rows="8" cols="60" class="textarea"></textarea><br />
+
+		전송시간 : 
+		<select name="year1">
+		@{
+            for (var i = now_year - 2; i <= now_year; i++)
+            {
+                var tmp_i = i.ToString();
+                string year_select = "";
+
+                if (tmp_i == year1)
+                {
+                    year_select = " selected='selected'";
+                }
+                
+                <option value="@i"@year_select>@i</option>
+            }
+		}            
+		</select>
+            
+		<select name="month1">
+		@{
+            for (var i = 1; i <= 12; i++)
+            {
+                var tmp_i = i.ToString();
+                string month_select = "";
+
+                if (tmp_i.Length == 1)
+                {
+                    tmp_i = "0" + tmp_i;
+                }
+                if (tmp_i == month1)
+                {
+                    month_select = " selected='selected'";
+                }
+                
+                <option value="@tmp_i"@month_select>@tmp_i</option>
+            }
+		}            
+		</select>
+            
+		<select name="day1">
+		@{
+            for (var i = 1; i <= 31; i++)
+            {
+                var tmp_i = i.ToString();
+                string day_select = "";
+
+                if (tmp_i.Length == 1)
+                {
+                    tmp_i = "0" + tmp_i;
+                }
+                if (tmp_i == day1)
+                {
+                    day_select = " selected='selected'";
+                }
+                
+                <option value="@tmp_i"@day_select>@i</option>
+            }
+		}            
+		</select>
+
+		<select name="hour1">
+		@{
+            for (var i = 0; i < 24; i++)
+            {
+                var tmp_i = i.ToString();
+                string hour_select = "";
+
+                if (tmp_i.Length == 1)
+                {
+                    tmp_i = "0" + tmp_i;
+                }
+                if (i == now_hour)
+                {
+                    hour_select = " selected='selected'";
+                }
+                
+                <option value="@tmp_i"@hour_select>@i</option>
+            }
+		}            
+		</select>
+
+		<select name="min1">
+		@{
+            for (var i = 0; i < 60; i++)
+            {
+                var tmp_i = i.ToString();
+                string min_select = "";
+
+                if (tmp_i.Length == 1)
+                {
+                    tmp_i = "0" + tmp_i;
+                }
+                if (i == now_min)
+                {
+                    min_select = " selected='selected'";
+                }
+                
+                <option value="@tmp_i"@min_select>@i</option>
+            }
+		}            
+		</select>
+
+		<input type="button" class="btnblue" value="보내기" onclick="actQue('send_paper');" />
+		</div>        
+
+		<div id="span_member_email" class="xt1 hide">
+
+		불러오기 : 
+
+		<select class="maildoc" onchange="maildocLoad(this);">
+		<option value="">&nbsp;+ 이메일양식 불러오기</option>
+		<option value="">----------------------------------------------------------------------</option>
+
+        @{
+            string tdir = g["path_root_ps"] + g["path_module"] + g["module"] + "\\doc\\";
+
+            foreach (string dirs in Directory.GetFiles(tdir))
+            {
+                string skin_name = dirs.Substring(tdir.Length, dirs.Length - tdir.Length).Replace(".txt", "");
+
+                if (skin_name == "." || skin_name == "..")
+                {
+                    continue;
+                }
+
+                var typeset = new Dictionary<string, string>();
+                typeset.Add("_join", "회원가입축하 양식");
+                typeset.Add("_auth", "이메일인증 양식");
+                typeset.Add("_pw", "비밀번호요청 양식");
+
+                string docStr = skin_name;
+
+                if (typeset.ContainsKey(skin_name))
+                {
+                    docStr = typeset[skin_name] + "(" + skin_name + ")";
+                }
+                
+                <option value="@skin_name">ㆍ @docStr</option>                    
+            }
+        }
+
+		</select>
+
+		<br />
+
+		메일제목 : <input type="text" name="subject" value="" size="80" class="input" />
+		<input type="checkbox" name="mailing" value="1" checked="checked" />메일링 비동의회원 제외<br />
+
+		<div class="iconbox">
+			<a class="hand" onclick="window.open('@g["s"]/?r=@r&m=@m&module=filemanager&front=main&fileupload=Y&iframe=Y&pwd=./files/_etc/&pwd1=email');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" />이미지 첨부하기</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="OpenWindow('@g["s"]/?r=@r&system=popup.image&folder=./files/_etc/&sfolder=email&iframe=Y');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" />이미지 불러오기</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('layout');">레이아웃</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('table');">테이블</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('box');">박스</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('link');">링크</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('icon');">아이콘</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="frames.editFrame.ToolboxShowHide(0);" /><img src="@g["img_core"]/_public/ico_edit.gif" alt="" />편집</a>
+		</div>
+
+		<input type="hidden" name="html" id="editFrameHtml" value="HTML" />
+		<input type="hidden" name="content" id="editFrameContent" value="" />
+		<iframe name="editFrame" id="editFrame" src="" width="100%" height="550" frameborder="0" scrolling="no"></iframe><br /><br />
+		<input type="button" class="btnblue" value="보내기" onclick="actQue('send_email');" />
+        </div>
+
+		<div id="span_member_dump" class="xt1 hide">
+		<input type="button" class="btnblue" value="이메일" onclick="actQue('dump_email');" />
+		<input type="button" class="btnblue" value="연락처" onclick="actQue('dump_tel');" />
+		<input type="button" class="btnblue" value="DM주소" onclick="actQue('dump_address');" />
+		<input type="button" class="btnblue" value="전체데이터" onclick="actQue('dump_alldata');" />
+		</div>        
+    </div>
+	</form>
+
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function ToolCheck(compo)
+{
+	frames.editFrame.showCompo();
+	frames.editFrame.EditBox(compo);
+}
+function maildocLoad(obj)
+{
+	if (obj.value)
+	{
+		frames._action_frame_@(m).location.href = g["s"] + "/?r=@r&m=@g["module"]&a=maildoc_load&type=" + obj.value;
+		obj.value = '';
+		obj.form.subject.focus();
+	}
+}
+function dropDate(date1,date2)
+{
+	var f = document.procForm;
+	f.year1.value = date1.substring(0,4);
+	f.month1.value = date1.substring(5,7);
+	f.day1.value = date1.substring(8,10);
+	
+	f.year2.value = date2.substring(0,4);
+	f.month2.value = date2.substring(5,7);
+	f.day2.value = date2.substring(8,10);
+
+	f.submit();
+}
+var submitFlag = false;
+function actQue(flag)
+{
+	if (submitFlag == true)
+	{
+		alert('요청하신 작업을 실행중에 있습니다. 완료될때까지 기다려 주세요.  ');
+		return false;
+	}
+
+	var f = document.listForm;
+    var l = document.getElementsByName('mbrmembers');
+    var n = l.length;
+    var i;
+	var j=0;
+	var s='';
+
+	for	(i = 0; i < n; i++)
+	{
+		if (l[i].checked == true)
+		{
+			j++;
+			s += l[i].value +',';
+		}
+	}
+	if (!j && f.all_check.checked == false)
+	{
+		alert('회원을 선택해 주세요.     ');
+		return false;
+	}
+	
+	if (flag == 'tool' || flag == 'give' || flag == 'paper' || flag == 'email' || flag == 'dump')
+	{
+		getId('span_member_tool').style.display = 'none';
+		getId('span_member_give').style.display = 'none';
+		getId('span_member_paper').style.display = 'none';
+		getId('span_member_email').style.display = 'none';
+		getId('span_member_dump').style.display = 'none';
+
+		getId('span_member_'+flag).style.display = 'block';
+		
+		if (flag == 'email')
+		{
+			frames.editFrame.location.href = g["s"] + '/?r=@r&m=editor&toolbox=Y';
+		}
+		return false;
+	}
+
+	//회원인증
+	if (flag == 'tool_auth')
+	{
+		if (f.auth.value == '')
+		{
+			alert('변경할 회원인증 상태를 선택해 주세요.   ');
+			f.auth.focus();
+			return false;
+		}
+	}
+	//회원그룹
+	if (flag == 'tool_sosok')
+	{
+		if (f.sosok.value == '')
+		{
+			alert('변경할 회원그룹을 선택해 주세요.   ');
+			f.sosok.focus();
+			return false;
+		}
+	}
+	//회원등급
+	if (flag == 'tool_level')
+	{
+		if (f.level.value == '')
+		{
+			alert('변경할 회원등급을 선택해 주세요.   ');
+			f.level.focus();
+			return false;
+		}
+	}
+	//회원삭제
+	if (flag == 'tool_delete')
+	{
+
+	}
+	//회원탈퇴
+	if (flag == 'tool_out')
+	{
+
+	}
+	//포인트지급
+	if (flag == 'give_point')
+	{
+		if (f.price.value == '')
+		{
+			alert('지급할 포인트를 입력해 주세요.   ');
+			f.price.focus();
+			return false;
+		}
+		if (f.comment.value == '')
+		{
+			alert('지급사유를 입력해 주세요.   ');
+			f.comment.focus();
+			return false;
+		}
+	}
+	//쪽지전송
+	if (flag == 'send_paper')
+	{
+		if (f.all_check.checked == true)
+		{
+			if (parseInt(f._num.value) > 5000)
+			{
+				alert('쪽지는 한번에 최대 5000명까지만 전송할 수 있습니다.     ');
+				return false;
+			}
+		}
+		if (f.memo.value == '')
+		{
+			alert('내용을 입력해 주세요.   ');
+			f.memo.focus();
+			return false;
+		}
+	}
+	//메일전송
+	if (flag == 'send_email')
+	{
+		if (f.all_check.checked == true)
+		{
+			if (parseInt(f._num.value) > 1000)
+			{
+				alert('이메일은 한번에 최대 1000명까지만 전송할 수 있습니다.     ');
+				return false;
+			}
+		}
+		if (f.subject.value == '')
+		{
+			alert('제목을 입력해 주세요.   ');
+			f.subject.focus();
+			return false;
+		}
+
+		frames.editFrame.getEditCode(f.content,f.html);
+		if (f.content.value == '')
+		{
+			alert('내용을 입력해 주세요.       ');
+			frames.editFrame.getEditFocus();
+			return false;
+		}
+	}
+	//이메일추출
+	if (flag == 'dump_email')
+	{
+
+	}
+	//연락처추출
+	if (flag == 'dump_tel')
+	{
+
+	}
+	//DM추출
+	if (flag == 'dump_address')
+	{
+
+	}
+	//전체데이터추출
+	if (flag == 'dump_alldata')
+	{
+
+	}
+	if (confirm('정말로 실행하시겠습니까?        '))
+	{
+		submitFlag = true;
+		f.a.value = 'admin_action';
+		f.act.value = flag;
+		f.submit();
+	}
+    else 
+	{
+		return false;
+	}
+}
+
+function isNumeric(s) {
+    for (i = 0; i < s.length; i++) {
+        c = s.substr(i, 1);
+        if (c < "0" || c > "9") return false;
+    }
+    return true;
+}
+
+//]]>
+</script>

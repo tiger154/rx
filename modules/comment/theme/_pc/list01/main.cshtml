@@ -1,0 +1,94 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    dynamic g = Session["g"];
+    dynamic my = Session["my"];
+    dynamic _HS = Session["_HS"];
+    dynamic R = Session["commentdata"];
+    dynamic temp_R = _DB.Get_module_data(AppState["table_s_comment"].ToString(), "uid", 0);
+    dynamic member = Session["member"];
+    dynamic OCD = Session["OCD"];
+    dynamic NCD = Session["NCD"];
+    dynamic RCD = Session["RCD"];    
+
+    string uid = g["uid"];
+    string r = g["r"];
+    string c = g["c"];
+    string m = g["m"];
+    string skin = g["skin"];
+    string iframe = g["iframe"];
+    string p = g["p"];
+    string sort = g["sort"];
+    string orderby = g["orderby"];
+    string recnum = g["recnum"];
+    string where = g["where"];
+    string keyword = g["keyword"];    
+    string _keyword = g["_keyword"];
+    //string _keyword = PageData[10];
+
+    string type = Request["type"];
+
+    int Total_NUM = Convert.ToInt32(g["NUM_N"]) + Convert.ToInt32(g["NUM"]);        // normal posts + notice posts count
+
+    
+    if (type == "modify") 
+    {
+	    @RenderPage("../../../../../"+g["dir_module_skin"] + "_write.cshtml", g, "", c, m, p, _HS, my, "", "", "", _keyword, "", r, "", "", Session["commentdata"], member, OCD, NCD, RCD);        
+	}
+    else 
+    {
+        if (R["uid"] != 0) 
+        {
+            if (Convert.ToBoolean(Session["isSECRETCHECK"]))
+            {
+                @RenderPage("../../../../../" + g["dir_module_skin"] + "_view.cshtml", g, "", c, m, p, _HS, my, "", "", "", _keyword, "", r, "", "", Session["commentdata"], member, OCD, NCD, RCD);
+            }
+            else
+            {
+                @RenderPage("../../../../../" + g["dir_module_skin"] + "_pwcheck.cshtml", g, "", c, m, p, _HS, my, "", "", "", _keyword, "", r, "", "", Session["commentdata"], member, OCD, NCD, RCD);
+            }
+        }   
+
+        @RenderPage("../../../../../" + g["dir_module_skin"] + "_list.cshtml", g, "", c, m, p, _HS, my, "", "", "", _keyword, "", r, "", "", Session["commentdata"], member, OCD, NCD, RCD);
+	    @RenderPage("../../../../../" + g["dir_module_skin"] + "_write.cshtml", g, "", c, m, p, _HS, my, "", "", "", _keyword, "", r, "", "", temp_R, member, OCD, NCD, RCD);
+    }
+}
+
+<script type="text/javascript">
+//<![CDATA[
+function frameSetting() {
+	var obj = parent.getId(frames.name);
+    var wdj = parent.getId('widgeArea');
+	var nh  = parseInt(document.body.scrollHeight);
+    
+	if(obj) {
+		obj.style.height = parseInt(document.body.scrollHeight) + 'px';
+        if(parent.getId('@Html.Raw("comment_num" + _System.getSyncValue(Session[g["m"] + "cync"], 2))')) {
+            parent.getId('@Html.Raw("comment_num" + _System.getSyncValue(Session[g["m"] + "cync"], 2))').innerHTML = '@Total_NUM';
+        }
+	}
+
+	if (wdj)
+	{
+		var vh = @Html.Raw("parent.wdjTop" + _System.getSyncValue(Session[g["m"] + "cync"], 2));
+		var wh = parseInt(parent.getId('widgeArea').style.height);
+		wdj.style.height = (wh>nh?wh:nh+(vh?vh:0)+30)+'px';
+	}
+
+	
+	@if (type != "modify" && uid != null && uid != "" && uid != "0" && Convert.ToBoolean(Session["isSECRETCHECK"]))
+    {
+	    @Html.Raw("var ofs = getOfs(getId('vContent'));\n");
+    	@Html.Raw("getDivWidth(ofs.width,'vContent');\n");
+	}
+}
+
+window.onload = frameSetting;
+//]]>
+</script>

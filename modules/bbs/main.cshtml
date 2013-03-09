@@ -1,0 +1,534 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var B_var = new Dictionary<string, dynamic>();
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var my = PageData[1];
+    var _HM = PageData[2];
+    var _HP = PageData[3];
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var _HS = PageData[11];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    var front = PageData[16];
+    var _m = PageData[17];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var mod = Request["mod"];
+    var _stop = Request["_stop"];
+    var sort = Request["sort"];
+    var cat = Request["cat"];
+    var type = Request["type"];
+    var reply = Request["reply"];
+    var iframe = Request["iframe"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var TRACKBACK = Request["TRACKBACK"];
+    var print = Request["print"];
+    var recnum = Request["recnum"];
+    
+  
+    var session_pw = Session["module_" + m + "_pwcheck"];
+    var session_view = Session["module_" + m + "_view"];
+    
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    dynamic d_bbs = _DB.Get_code("bbs");
+    dynamic d_bbsenv = _DB.Get_module_data(AppState["table_code_d_bbsenv"], "uid", 0);
+    dynamic d_bbstheme = null;    
+    dynamic B = _DB.Get_module_data(AppState["table_bbslist"], "uid", 0);
+    dynamic R = _DB.Get_module_data(AppState["table_bbsdata"], "uid", 0);
+
+    string orderby = "";
+    string adminStr = "," + "." + ",";
+    string bbs_reset = g["s"] + "/?";
+    string filterUrl = "";    
+    string g_main;    
+
+    Session["g"] = null;
+
+    // global variables
+    g["bbs_NUM"] = 0;
+    g["bbs_N_NUM"] = 0;
+    g["bbs_TPG"] = 0;
+    g["bbs_R_sql"] = "";
+    g["bbs_N_sql"] = "";
+
+    g["main"] = "";
+    g["subject"] = "";
+    g["name"] = "";
+    g["browtitle"] = "";
+    g["meta_tit"] = "";
+    g["html"] = "";
+    g["adddata"] = "";
+    g["uid"] = "";
+    g["hidden"] = "";
+    
+    g["add_header_inc"] = "";
+    g["add_header_img"] = "";
+    g["add_footer_inc"] = "";
+    g["add_footer_img"] = "";
+    g["member_photo"] = "";
+    
+    B_var.Add("skin", d_bbs["skin_total"]);
+    B_var.Add("isperm", true);
+    B_var.Add("admin", "");
+    B_var.Add("rss", "");
+    B_var.Add("recnum", "");
+    B_var.Add("newtime", "");
+    B_var.Add("sbjcut", "");
+
+    //////////////////////////////////////////////////////////////////
+    // view post
+    //////////////////////////////////////////////////////////////////
+    if (uid != null &&  uid != ""  && uid != "0")
+    {
+        R = _DB.Get_module_data(AppState["table_" + m + "data"].ToString(), "uid", uid);
+
+        bid = R["bbsid"];
+        g["adddata"] = R["adddata"];
+
+        if (R["uid"] == 0) 
+        {
+            @_System.getLink("./", "", "존재하지 않는 게시물입니다.", "")
+            return;
+        }
+        
+        B = _DB.Get_module_data(AppState["table_" + m + "list"].ToString(), "uid", R["bbs"]);
+        d_bbsenv = _DB.Get_module_data(AppState["table_code_d_bbsenv"].ToString(), "id", B["id"]);
+        B_var["skin"] = d_bbsenv["skin"];
+
+        @RenderPage("mod\\_view.cshtml", g, my, m,d_bbsenv, B_var, mod, R)            
+        g["main"] = Session["g_main"];
+        if (mod == null || mod == "")
+        {
+            mod = "view";
+        }
+
+        // header, footer Setting
+        if (B_var["isperm"])
+        {
+            if (("_" + B["puthead"]).Contains("[v]"))
+            {
+                g["add_header_inc"] = g["dir_module"] + "var\\code\\" + B["id"] + ".header.cshtml";
+                
+                if (B["imghead"] != "")
+                {
+                    g["add_header_img"] = g["dir_module"] + "/var/files/" + B["imghead"];
+                }
+            }
+
+            if (("_" + B["putfoot"]).Contains("[v]"))
+            {
+                g["add_footer_inc"] = g["dir_module"] + "var\\code\\" + B["id"] + ".footer.cshtml";
+                
+                if (B["imgfoot"] != "")
+                {
+                    g["add_footer_img"] = g["url_module"] + "/var/files/" + B["imgfoot"];
+                }
+            }        
+        
+            if (R["mbruid"] != 0) 
+            {
+                g["member_photo"] = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "memberuid=" + R["mbruid"], "photo").ToString();
+
+                if(_HS["titlefix"] != "1") 
+                {
+                    g["browtitle"] = _HS["title"] + "-" + _System.Strip_tags(R["content"]);
+                }
+
+                g["meta_tit"] = R["subject"];
+                
+                if (R["tag"] != "")
+                {
+                    g["meta_key"] = R["tag"];
+                }
+                else 
+                {
+                    g["meta_key"] = R["subject"];
+                }
+            
+                g["meta_des"] = _System.getStrCut(_System.Strip_tags(R["content"]).Replace("&nbsp;", ""), 100, "");
+            }
+        }
+    }
+    
+    else 
+    {
+        if (bid != null && bid != "" && bid != "0")
+        {
+            B = _DB.Get_module_data(AppState["table_bbslist"].ToString(), "id", bid);
+            
+            if (B["uid"] == 0) 
+            {                  
+                if (_stop == "Y")
+                {
+                    return;
+                }
+            
+  		        @_System.getLink("?r=" + r + "&_stop=Y", "", "존재하지 않는 게시판입니다.", "")
+                return;
+            }
+
+            d_bbsenv = _DB.Get_module_data(AppState["table_code_d_bbsenv"].ToString(), "id", B["id"]);
+            B_var["skin"] = d_bbsenv["skin"];
+            g["meta_sbj"] = B["name"];
+            
+            if(_HS["titlefix"] != "1" && _HM["uid"] == 0)
+            {
+                g["browtitle"] = _HS["title"] + "-" + _System.Strip_tags(B["name"]);
+            }                
+        }
+        else 
+        {
+            if (d_bbs["skin_total"] == "")
+            {
+                @_System.getLink("", "", "게시판아이디가 지정되지 않았습니다.", "-1")
+                return;
+            }                    
+        }        
+    }
+
+    // global board > local board
+    // rss, posts number, remaining new article, cutting subject
+    if(bid == null || bid == "") {
+        B_var["rss"] = d_bbs["rss"];
+        B_var["newtime"] = d_bbs["newtime"];
+        B_var["sbjcut"] = d_bbs["sbjcut"];
+    }
+    else{
+        B_var["rss"] = d_bbsenv["rss"];
+        B_var["newtime"] = d_bbsenv["newtime"];
+        B_var["sbjcut"] = d_bbsenv["sbjcut"];
+    }
+
+    if (recnum == null || recnum == "" || recnum == "0" || Convert.ToInt32(recnum) >= 200)
+    {
+        if(bid == null || bid == "")
+        {
+            recnum = d_bbs["recnum"];
+        }
+        else
+        {
+           recnum = d_bbsenv["recnum"].ToString();       
+        }
+    }
+    
+    if (mod == null || mod == "")
+    {
+        mod = "list";
+    }    
+    if (sort == null || sort == "")
+    {
+        sort = "gid";
+    }    
+    if (orderby == null || orderby == "" || (!"[asc][desc]".Contains(orderby)))
+    {
+        orderby = "asc";
+    }    
+    if (mod == "list")
+    {
+        if (d_bbsenv["admin"] != "")
+        {
+            adminStr = "," + d_bbsenv["admin"] + ",";
+        }
+        if (my["admin"] != "1" && !adminStr.Contains("," + my["id"] + ","))
+        {
+            if (d_bbsenv["perm_l_list"] > Convert.ToInt32(my["level"]) || d_bbsenv["perm_g_list"].Contains(my["sosok"].ToString()))
+            {
+                g["main"] = g["dir_module"] + "mod\\_permcheck.cshtml";
+                B_var["isperm"] = false;
+            }
+        }
+
+        // Header, Footer Setting
+        if (B_var["isperm"])
+        {
+            if (("_" + B["puthead"]).Contains("[l]"))
+            {
+                g["add_header_inc"] = g["dir_module"] + "var\\code\\" + B["id"] + ".header.cshtml";
+                
+                if (B["imghead"] != "")
+                {
+                    g["add_header_img"] = g["dir_module"] + "/var/files/" + B["imghead"];
+                }
+            }
+
+            if (("_" + B["putfoot"]).Contains("[l]"))
+            {
+                g["add_footer_inc"] = g["dir_module"] + "var\\code\\" + B["id"] + ".footer.cshtml";
+                
+                if (B["imgfoot"] != "")
+                {
+                    g["add_footer_img"] = g["url_module"] + "/var/files/" + B["imgfoot"];
+                }
+            }
+        }
+        
+        if (d_bbsenv["hidelist"] != "1")
+        {
+            @RenderPage("mod\\_list.cshtml", g, B, s, p, recnum)
+        }
+    }
+    else if (mod == "write")
+    {   
+        if (d_bbsenv["admin"] != "")
+        {
+            adminStr = "," + d_bbsenv["admin"] + ",";
+        }
+        if (my["admin"] != "1" && !adminStr.Contains("," + my["id"] + ","))
+        {
+            if (d_bbsenv["perm_l_write"] > Convert.ToInt32(my["level"]) || d_bbsenv["perm_g_write"].ToString().Contains(my["sosok"].ToString()))
+            {
+                g["main"] = g["dir_module"] + "mod\\_permcheck.cshtml";
+                B_var["isperm"] = false;
+            }
+            
+            if (R["uid"] != 0 && reply != "Y")
+            {
+                if (my["uid"] == 0 || (my["uid"] > 0 && (my["uid"] != R["mbruid"])))
+                {
+                    if (Session["module_" + m + "_pwcheck"] == null || _System.IsValue(Session["module_" + m + "_pwcheck"], "[" + R["uid"], ']') == false) 
+                    {
+                        g["main"] = g["dir_module"] + "mod\\_pwcheck.cshtml";
+    				}
+                }
+            }
+        }       
+        
+        if (B_var["isperm"])
+        {
+            if (("_" + B["puthead"]).Contains("[w]"))
+            {
+                g["add_header_inc"] = g["dir_module"] + "var\\code\\" + B["id"] + ".header.cshtml";
+                
+                if (B["imghead"] != "")
+                {
+                    g["add_header_img"] = g["dir_module"] + "/var/files/" + B["imghead"];
+                }
+            }
+
+            if (("_" + B["putfoot"]).Contains("[w]"))
+            {
+                g["add_footer_inc"] = g["dir_module"] + "var\\code\\" + B["id"] + ".footer.cshtml";
+                
+                if (B["imgfoot"] != "")
+                {
+                    g["add_footer_img"] = g["url_module"] + "/var/files/" + B["imgfoot"];
+                }
+            }           
+        }
+        
+        if (reply == "Y")
+        {
+            g["subject"] = d_bbs["restr"] + R["subject"];            
+        }
+        else 
+        {
+            g["subject"] = R["subject"];
+            g["name"] = R["name"];
+        }
+        
+        if (R["uid"] == 0)
+        {
+            if (B["writecode"] != "")
+            {
+                g["content"] = B["writecode"];
+            }
+            else 
+            {
+                g["content"] = R["content"];
+            }
+            
+            Session["wcode"] = date["totime"].ToString();            
+        }        
+    }
+    else if (mod == "delete")
+    {
+        g["main"] = g["dir_module"] + "mod\\_pwcheck.cshtml";
+    }
+    else if (mod == "rss")
+    {
+        //g["main"] = g["dir_module"] + "mod\\_rss.cshtml";
+        @RenderPage("mod\\_rss.cshtml", g, _HS, s, r, p, m, bid, d_bbsenv)
+        return;
+    }
+
+    if (_HM["layout"] == "")
+    {
+        // _HM["layout"] = d_layout;     // read only error !! (11.10.21 taiji88)
+
+        // string _HM_sql = "UPDATE "+AppState["table_s_menu"]+" SET layout='"+d_bbsenv["layout"]+"' WHERE uid="+c;
+        // @_DB.Execute(_HM_sql);
+    }
+   
+    if (B_var["skin"] == "")
+    {
+        B_var["skin"] = d_bbs["skin_main"];
+    }
+    if (skin != null && skin != "")
+    {
+        B_var["skin"] = skin;
+    }
+    if (g["mobile"] != "" && Session["pcmode"] != "Y")
+    {
+        if (d_bbsenv["m_skin"] != "")
+        {
+            B_var["skin"] = d_bbsenv["m_skin"];
+        }
+        else 
+        {
+            B_var["skin"] = d_bbs["skin_mobile"];
+        }
+    }    
+
+    //d_bbstheme = _DB.Get_module_data(AppState["table_code_d_bbstheme"].ToString(), "theme", B_var["skin"]);
+
+    d_bbstheme = _DB.Get_bbstheme(B_var["skin"]);
+
+    // bbs_reset variable setting
+    if (_HS["usescode"] == 1)
+    {
+        bbs_reset += "r=" + r + "&";
+    }
+
+    if (c != "" && c != null)
+    {
+        bbs_reset += "c=" + c;
+        filterUrl = _System.getLinkFilter("skin|iframe|cat", skin + "|" + iframe + "|" + cat);
+        bbs_reset += filterUrl;
+    }
+    else
+    {
+        bbs_reset += "m=" + m;
+        filterUrl = _System.getLinkFilter("bid|skin|iframe|cat", bid + "|" + skin + "|" + iframe + "|" + cat);
+        bbs_reset += filterUrl;
+    }
+    
+    g["bid"] = bid;
+    g["cat"] = cat;
+    g["sort"] = sort;
+    g["orderby"] = orderby;
+    g["iframe"] = iframe;
+    g["type"] = type;
+    g["skin"] = B_var["skin"];
+    g["where"] = where;
+    g["keyword"] = keyword;
+    g["TRACKBACK"] = TRACKBACK;
+    g["reply"] = reply;
+    g["print"] = print;
+    g["cuid"] = _HM["uid"].ToString();
+    g["mod"] = mod;
+
+    string f_l_name = "";
+    string f_l_val = "";
+
+    if (Convert.ToInt32(p) > 1)
+    {
+        f_l_name += "p|";
+        f_l_val += p + "|";
+    }
+    if (sort != "gid")
+    {
+        f_l_name += "sort|";
+        f_l_val += sort + "|";
+    }
+    if (orderby != "asc")
+    {
+        f_l_name += "orderby|";
+        f_l_val += orderby + "|";
+    } 
+    if (recnum != d_bbsenv["recnum"].ToString())
+    {
+        f_l_name += "recnum|";
+        f_l_val += recnum + "|";
+    }
+
+    f_l_name += "type|where|keyword";
+    f_l_val += type + "|" + where + "|" + keyword;
+
+    g["bbs_reset"] = bbs_reset;
+    g["bbs_list"] = g["bbs_reset"] + _System.getLinkFilter(f_l_name, f_l_val);
+    g["pagelink"] = g["bbs_list"];
+    g["bbs_orign"] = g["bbs_reset"];
+    
+    g["bbs_view"] = g["bbs_list"] + "&uid=";
+    g["bbs_write"] = g["bbs_list"] + "&mod=write";
+    g["bbs_modify"] = g["bbs_write"] + "&uid=";
+    g["bbs_reply"] = g["bbs_write"] + "&reply=Y&uid=";
+    g["bbs_action"] = g["bbs_list"] + "&a=";
+    g["bbs_delete"] = g["bbs_action"] + "delete&uid=";
+    g["bbs_print"] = g["bbs_reset"] + "&iframe=Y&print=Y&uid=";
+    
+    g["bbs_rss"] = B_var["rss"];
+    g["bbs_skin"] = B_var["skin"];
+    g["bbs_recnum"] = Convert.ToInt32(recnum);
+    g["bbs_newtime"] = Convert.ToInt32(B_var["newtime"]);
+    g["bbs_sbjcut"] = Convert.ToInt32(B_var["sbjcut"]);
+
+    if (_HS["rewrite"] == "1" && sort == "gid" && orderby == "asc" && recnum == d_bbsenv["recnum"].ToString() && p == 1 && (bid != "" && bid != null) && (cat == "" || cat == null) && (skin == "" || skin == null) && (type == "" || type == null) && (iframe != "Y"))    {
+        g["bbs_reset"] = g["r"] + "/b/" + bid;
+        g["bbs_list"] = g["bbs_reset"];
+        g["bbs_view"] = g["bbs_list"] + "/";
+        g["bbs_write"] = g["bbs_list"] + "/write";
+    }
+
+    g["dir_module_skin"] = g["dir_module"] + "theme\\" + B_var["skin"] + "\\";
+    g["url_module_skin"] = g["url_module"] + "/theme/" + B_var["skin"];
+    g["img_module_skin"] = g["url_module_skin"] + "/image";
+
+    g["dir_module_mode"] = g["dir_module_skin"] + mod;
+    g["url_module_mode"] = g["url_module_skin"] + "/" + mod;
+    
+    if (_m != g["sys_module"] && _HM["uid"] == 0)
+    {
+        if (B["uid"] != 0 )
+        {
+            g["location"] += " &gt; <a href='" + g["bbs_reset"] + "'>" + B["name"] + "</a>";
+        }
+        else
+        {
+            g["location"] += " &gt; <a href='" + g["bbs_reset"] + "'>전체게시물</a>";
+        }        
+    }
+
+    // module main
+    if (g["main"] == null || g["main"] == "")
+    {
+        g_main = g["dir_module_mode"] + ".cshtml";
+    }
+    else
+    {
+        g_main = g["main"];
+    }
+    
+    // session setting    
+    Session["bbsdata"] = R;    
+    Session["bbslist"] = B;    
+    Session["bbsenv"] = d_bbsenv;
+    Session["bbstheme"] = d_bbstheme;
+    Session["g"] = g;
+    Session["g_main"] = g_main;
+    Session["B_var"] = B_var;
+}

@@ -1,0 +1,343 @@
+﻿@using System.Drawing;
+@using System.Drawing.Imaging;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var my = PageData[1];
+    var s = PageData[2];
+    var r = PageData[3];
+    var _HS = PageData[4];
+    var d_layout = PageData[5];
+
+    string changeType = Request["changeType"];
+    string nowLayout = Request["nowLayout"];
+        
+    string _WHERE = " layout='" + nowLayout + "'";
+
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);   
+    
+    @_System.checkAdmin(my["admin"], 0)     // 관리자 체크
+
+    // config initial page change
+    LAYOUT_ARR["begin"] = "1";
+
+
+    // Front
+    if (changeType == "front")
+    {        
+        string mainType_layout = Request["mainType_layout"];
+        string mainType_rb = Request["mainType_rb"];
+        string bbs1 = Request["bbs1"];
+        string sort1 = Request["sort1"];
+        string bbs1_day = Request["bbs1_day"];
+        string bbs1_num = Request["bbs1_num"];
+        string bbs2 = Request["bbs2"];
+        string sort2 = Request["sort2"];
+        string bbs2_day = Request["bbs2_day"];
+        string bbs2_num = Request["bbs2_num"];
+        string bbs3 = Request["bbs3"];
+        string sort3 = Request["sort3"];
+        string bbs3_day = Request["bbs3_day"];
+        string bbs3_num = Request["bbs3_num"];
+        string bbs4 = Request["bbs4"];
+        string sort4 = Request["sort4"];
+        string bbs4_day = Request["bbs4_day"];
+        string bbs4_num = Request["bbs4_num"];
+        
+        if(LAYOUT_ARR["mainType_layout"] == "1" && mainType_layout == "1")
+        {
+            LAYOUT_ARR["bbs1"] = bbs1;
+            LAYOUT_ARR["sort1"] = sort1;
+            LAYOUT_ARR["bbs1_day"] = bbs1_day;
+            LAYOUT_ARR["bbs1_num"] = bbs1_num;
+            LAYOUT_ARR["bbs2"] = bbs2;
+            LAYOUT_ARR["sort2"] = sort2;
+            LAYOUT_ARR["bbs2_day"] = bbs2_day;
+            LAYOUT_ARR["bbs2_num"] = bbs2_num;
+            LAYOUT_ARR["bbs3"] = bbs3;
+            LAYOUT_ARR["sort3"] = sort3;
+            LAYOUT_ARR["bbs3_day"] = bbs3_day;
+            LAYOUT_ARR["bbs3_num"] = bbs3_num;
+            LAYOUT_ARR["bbs4"] = bbs4;
+            LAYOUT_ARR["sort4"] = sort4;
+            LAYOUT_ARR["bbs4_day"] = bbs4_day;
+            LAYOUT_ARR["bbs4_num"] = bbs4_num;
+        }
+
+        LAYOUT_ARR["mainType_layout"] = mainType_layout;
+        LAYOUT_ARR["mainType_rb"] = mainType_rb;
+    }    
+    
+    // Theme
+    if (changeType == "theme")
+    {
+        string theme = Request["theme"];
+
+        LAYOUT_ARR["theme"] = theme;
+    }
+
+    // Detail
+    if (changeType == "detail")
+    {
+        string title = Request["title"];
+        string title_t = Request["title_t"];
+        string title_b = Request["title_b"];
+        string imglogo_w = Request["imglogo_w"];
+        string imglogo_h = Request["imglogo_h"];
+        string imglogo_use = Request["imglogo_use"];
+        string bg_use = Request["bg_use"];
+        string bg_o = Request["bg_o"];
+        string title_color = Request["title_color"];
+        string message = Request["message"].Trim();
+        string message_color = Request["message_color"];
+        string memberlink_color = Request["memberlink_color"];
+        string menunum = Request["menunum"];
+        string homestr = Request["homestr"].Trim();
+        string homestr_use = Request["homestr_use"];
+
+        var uploadedFile = Request.Files[0];
+        var uploadedFile1 = Request.Files[1];
+        bool _newupload = false;
+        bool _imglogo_use = false;
+        
+        string name = Path.GetFileName(uploadedFile.FileName);
+        string name1 = Path.GetFileName(uploadedFile1.FileName);
+
+        // file upload (1)
+        if(name != "" && name != null)
+        {
+            string fileExt = _System.getExt(name).ToLower();    
+
+            if(fileExt=="jpeg") {
+                fileExt = "jpg";
+            }    
+            
+            if(!("[gif][jpg][png]").Contains(fileExt)) {
+                @_System.getLink("", "", "gif/jpg/png 파일만 등록할 수 있습니다.", "")
+                return;
+            }
+
+            string photo = "logo." + fileExt;    
+            string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + photo;
+            string saveFile2 = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["imglogo"];
+            
+            _imglogo_use = true;
+
+            if(File.Exists(saveFile2) == true)
+            {
+                
+                // Process Unlock
+                using (Image Img = Image.FromFile(saveFile2)){
+                    using(Image thumbImg = new Bitmap(Img)) {
+                        thumbImg.Dispose();
+                    }
+                }
+                
+                File.Delete(saveFile2);
+            }
+
+            uploadedFile.SaveAs(saveFile);
+            Image image = Image.FromFile(saveFile, false);
+
+            LAYOUT_ARR["imglogo_w"] = image.Width;
+            LAYOUT_ARR["imglogo_h"] = image.Height;
+            LAYOUT_ARR["imglogo"] = photo;
+            
+            _newupload = true;
+        }
+        
+        // file upload (2)
+        if(name1 != "" && name1 != null)
+        {
+            string fileExt = _System.getExt(name1).ToLower();    
+
+            if(fileExt=="jpeg") {
+                fileExt = "jpg";
+            }    
+            
+            if(!("[gif][jpg][png]").Contains(fileExt)) {
+                @_System.getLink("", "", "gif/jpg/png 파일만 등록할 수 있습니다.", "")
+                return;
+            }
+
+            string photo = "bgtitle." + fileExt;    
+            string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + photo;
+            string saveFile2 = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["bg"];
+            
+            if(File.Exists(saveFile2) == true)
+            {
+                // Process Unlock
+                using (Image Img = Image.FromFile(saveFile2)){
+                    using(Image thumbImg = new Bitmap(Img)) {
+                        thumbImg.Dispose();
+                    }
+                }
+                
+                File.Delete(saveFile2);
+            }
+
+            uploadedFile1.SaveAs(saveFile);
+
+            LAYOUT_ARR["bg"] = photo;  
+        }
+
+        LAYOUT_ARR["title"] = title;
+        LAYOUT_ARR["title_t"] = title_t;
+        LAYOUT_ARR["title_b"] = title_b;  
+        
+        if(_imglogo_use == true || (_imglogo_use == false && LAYOUT_ARR["imglogo"] != "")) {
+            LAYOUT_ARR["imglogo_use"] = imglogo_use;  
+        }
+
+        LAYOUT_ARR["bg_use"] = bg_use;
+        LAYOUT_ARR["bg_o"] = bg_o;
+        LAYOUT_ARR["title_color"] = title_color;
+        LAYOUT_ARR["message"] = message;
+        LAYOUT_ARR["message_color"] = message_color;
+        LAYOUT_ARR["memberlink_color"] = memberlink_color;
+        LAYOUT_ARR["menunum"] = menunum;
+        LAYOUT_ARR["homestr"] = homestr;
+        LAYOUT_ARR["homestr_use"] = homestr_use;
+        
+        if(_newupload == false)
+        {
+            LAYOUT_ARR["imglogo_w"] = imglogo_w;
+            LAYOUT_ARR["imglogo_h"] = imglogo_h;        
+        }
+    }
+
+    // AD
+    if (changeType == "ad")
+    {
+        string ad_img = Request["ad_img"];
+        string ad_swf = Request["ad_swf"];
+        string adtype = Request["adtype"];
+        string ad_imglink = Request["ad_imglink"];
+        string ad_imgtarget = Request["ad_imgtarget"];
+        string adcode = Request.Unvalidated("adcode");
+
+        var uploadedFile = Request.Files[0];
+        var uploadedFile1 = Request.Files[1];
+        
+        string name = Path.GetFileName(uploadedFile.FileName);
+        string name1 = Path.GetFileName(uploadedFile1.FileName);
+
+        // file upload (1)
+        if(name != "" && name != null)
+        {
+            string fileExt = _System.getExt(name).ToLower();    
+
+            if(fileExt=="jpeg") {
+                fileExt = "jpg";
+            }    
+            
+            if(!("[gif][jpg][png]").Contains(fileExt)) {
+                @_System.getLink("", "", "gif/jpg/png 파일만 등록할 수 있습니다.", "")
+                return;
+            }
+
+            string photo = "ad." + fileExt;    
+            string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + photo;
+            string saveFile2 = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["ad_img"];
+            
+            if(File.Exists(saveFile2) == true)
+            {
+                // Process Unlock
+                using (Image Img = Image.FromFile(saveFile2)){
+                    using(Image thumbImg = new Bitmap(Img)) {
+                        thumbImg.Dispose();
+                    }
+                }
+
+                File.Delete(saveFile2);
+            }
+
+            uploadedFile.SaveAs(saveFile);
+            Image image = Image.FromFile(saveFile, false);
+
+            LAYOUT_ARR["ad_img"] = photo;          
+        }
+        
+        // file upload (2)
+        if(name1 != "" && name1 != null)
+        {
+            string fileExt = _System.getExt(name1).ToLower();    
+
+            if(fileExt=="jpeg") {
+                fileExt = "jpg";
+            }    
+            
+            if(!("[swf]").Contains(fileExt)) {
+                @_System.getLink("", "", "플래쉬는 swf 파일만 등록할 수 있습니다.", "")
+                return;
+            }
+
+            string photo = "ad." + fileExt;    
+            string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + photo;
+            string saveFile2 = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["ad_swf"];
+            
+            if(File.Exists(saveFile2) == true)
+            {
+                // Process Unlock
+                using (Image Img = Image.FromFile(saveFile2)){
+                    using(Image thumbImg = new Bitmap(Img)) {
+                        thumbImg.Dispose();
+                    }
+                }
+                
+                File.Delete(saveFile2);
+            }
+
+            uploadedFile1.SaveAs(saveFile);
+
+            LAYOUT_ARR["ad_swf"] = photo;            
+        }
+        
+        string F_path = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\_ad.cshtml";
+        File.WriteAllText(F_path, adcode.Trim(), System.Text.Encoding.UTF8);
+
+        LAYOUT_ARR["adtype"] = adtype;
+        LAYOUT_ARR["ad_imglink"] = ad_imglink;
+        LAYOUT_ARR["ad_imgtarget"] = ad_imgtarget;
+    }
+    
+    // SNS
+    if (changeType == "sns")
+    {
+        string sns_hide = Request["sns_hide"];
+        string sns_t = Request["sns_t"];
+        string sns_f = Request["sns_f"];
+        string sns_m = Request["sns_m"];
+        string sns_y = Request["sns_y"];
+
+        LAYOUT_ARR["sns_hide"] = sns_hide;
+        LAYOUT_ARR["sns_t"] = sns_t;
+        LAYOUT_ARR["sns_f"] = sns_f;
+        LAYOUT_ARR["sns_m"] = sns_m;
+        LAYOUT_ARR["sns_y"] = sns_y;
+    }
+    
+    string filePath = g["path_root_ps"] + "layouts\\" + nowLayout + "\\_var\\_var.cshtml";
+
+    File.WriteAllText(filePath, "", System.Text.Encoding.UTF8);
+
+    StreamWriter sw = File.AppendText(filePath);
+
+    foreach (string key in LAYOUT_ARR.Keys)
+    {
+        sw.WriteLine("[" + nowLayout + "][" + key + "][" + LAYOUT_ARR[key] + "]");
+    }
+
+    sw.Close();
+         
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+                                                 
+}

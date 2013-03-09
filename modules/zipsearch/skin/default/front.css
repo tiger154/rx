@@ -1,0 +1,15 @@
+﻿#zipbox {}
+#zipbox .title {height:52px;background:url('./image/tt.gif') left top no-repeat;}
+#zipbox .ment {text-align:center;line-height:150%;padding:10px 0 10px 0;color:#808080;}
+#zipbox .searchform {margin:0 20px 0 20px;padding:15px;border:#dfdfdf solid 1px;text-align:center;background:#efefef;}
+#zipbox .searchform span {position:relative;top:2px;font-weight:bold;}
+#zipbox .searchform .input {width:200px;}
+#zipbox .searchform .btn {position:relative;top:1px;}
+#zipbox .resultbox {margin:0 20px 0 20px;height:260px;overflow:auto;border-left:#dfdfdf solid 1px;border-right:#dfdfdf solid 1px;border-bottom:#dfdfdf solid 1px;}
+#zipbox .resultbox table {width:90%;}
+#zipbox .resultbox td {padding:3px 0 3px 0;letter-spacing:-1px;}
+#zipbox .resultbox .td1 {width:60px;text-align:center;color:#555;}
+#zipbox .resultbox .td2 a {color:#222;}
+#zipbox .resultbox .td2 a:hover {text-decoration:underline;}
+#zipbox .resultbox .none {text-align:center;padding:100px 0 0 50px;}
+#zipbox .bottom {margin:20px 20px 0 20px;height:60px;text-align:center;}

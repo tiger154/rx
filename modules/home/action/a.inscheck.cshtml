@@ -1,0 +1,69 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate 
+    /// (from "/modules/home/admin/_pc/main.cshtml")
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    string frame_name = "_action_frame_" + m;
+    string instFp = g["path_root_ps"] + g["path_var"] + "install.txt";
+    string instIp = "";
+    
+    dynamic d_market = _DB.Get_code("market");
+    dynamic d_admin = _DB.Get_code("admin");
+    
+    if (File.Exists(instFp))
+    {    
+        using (StreamReader sr = new StreamReader(instFp, System.Text.Encoding.UTF8, true)) { 
+            if (sr.ReadToEnd().Trim() != "")
+            {
+                instIp = sr.ReadToEnd().Trim();
+            }
+        }
+    }
+    else
+    {
+        instIp = AppState["myip"].ToString();
+    }
+        
+    if (!instIp.Contains("127.0.") && !instIp.Contains("192.168."))
+    {
+        File.WriteAllText(instFp, AppState["myip"].ToString(), System.Text.Encoding.UTF8);
+
+        <form name="installForm" action="@d_market["url"]" method="post" target="@frame_name">
+        <input type="hidden" name="m" value="qmarket" />
+        <input type="hidden" name="a" value="rx_install" />
+        <input type="hidden" name="url" value="@g["url_root_host"]" />
+        <input type="hidden" name="ip" value="@AppState["myip"]" />
+        <input type="hidden" name="server" value="@Request.ServerVariables["SERVER_SOFTWARE"]" />        
+        <input type="hidden" name="version" value="@d_admin["version"]" />
+        <input type="hidden" name="language" value="@g["sys_selectlang"]" />
+        </form>
+        <script type="text/javascript">
+        //<![CDATA[
+            window.onload = function () { document.installForm.submit(); }
+        //]]>
+        </script>
+    }
+}

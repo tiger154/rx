@@ -1,0 +1,139 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var my = PageData[1];
+    var _HM = PageData[2];
+    var _HP = PageData[3];
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var _HS = PageData[11];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    var front = PageData[16];
+    var _m = PageData[17];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var mod = Request["mod"];
+    var files = Request["files"];
+
+    dynamic d_upload = _DB.Get_code("upload");
+    
+    string iframe = "Y";
+    string g_main;
+
+    decimal limit_size = 0;
+    decimal LimitSize = 0;
+
+    int limit_num = 0;
+    int SS = 0;
+    int N = 0;
+    int LimitNum = 0;
+
+    
+    Random rnd = new Random();      // random number
+	decimal signal = rnd.Next(100000000);
+
+    if (Session["upsescode"] == null || Session["upsescode"] == "") 
+    {
+        Session["upsescode"] = signal;
+	}
+    
+    var sescode = Session["upsescode"];
+    
+    string PHOTOS = "";
+
+    if(sescode != null) 
+    {
+        PHOTOS = "SELECT * FROM "+AppState["table_s_upload"]+" WHERE tmpcode='"+sescode+"' ORDER BY uid ASC";
+        
+        foreach(var R in _DB.Query(PHOTOS)) 
+        {
+            SS += R["size"];
+            N++;
+		}
+	}
+    
+    // global variables
+    g["dir_module_skin"] = g["dir_module"]+"theme\\"+d_upload["theme"]+"\\";    
+    g["url_module_skin"] = g["url_module"]+"/theme/"+d_upload["theme"].Replace("\\","/")+"/";    
+    g["img_module_skin"] = g["url_module_skin"]+"image";    
+    g["dir_module_mode"] = g["dir_module_skin"]+mod;    
+    g["url_module_mode"] = g["url_module_skin"]+mod;      
+ 
+    g["d_use_theme"] = d_upload["theme"];
+    g["d_use_classicup"] = d_upload["use_classicup"];
+    g["d_maxnum_img"] = d_upload["maxnum_img"];
+    g["d_maxsize_img"] = d_upload["maxsize_img"];
+    g["d_maxnum_file"] = d_upload["maxnum_file"];
+    g["d_maxsize_file"] = d_upload["maxsize_file"];
+    g["d_name_img"] = d_upload["name_img"];
+    g["d_ext_img"] = d_upload["ext_img"];
+    g["d_name_file"] = d_upload["name_file"];
+    g["d_ext_file"] = d_upload["ext_file"];
+    g["d_ext_cut"] = d_upload["ext_cut"];
+    g["d_ftp_urlpath"] = d_upload["ftp_urlpath"];
+    g["d_use_fileserver"] = d_upload["use_fileserver"];
+
+    g["d_width_img"] = d_upload["width_img"];
+    g["d_ftp_host"] = d_upload["ftp_host"];
+    g["d_ftp_port"] = d_upload["ftp_port"];
+    g["d_ftp_user"] = d_upload["ftp_user"];
+    g["d_ftp_pass"] = d_upload["ftp_pass"];
+    g["d_ftp_folder"] = d_upload["ftp_folder"];
+
+    g["SS"] = SS.ToString();
+    g["N"] = N.ToString();
+    g["PHOTOS"] = PHOTOS;
+    g["mod"] = mod;
+
+    if (mod == "photo") 
+    {
+        limit_num = Convert.ToInt32(g["d_maxnum_img"]);
+        limit_size = Convert.ToInt32(g["d_maxsize_img"]);
+	}
+    else 
+    {
+        limit_num = Convert.ToInt32(g["d_maxnum_file"]);
+        limit_size = Convert.ToInt32(g["d_maxsize_file"]);        
+	}
+    
+    limit_size = limit_size * 1024 * 1024;
+
+    LimitNum = limit_num - N;
+	LimitSize = limit_size - SS;
+    
+    g["limit_num"] = limit_num.ToString();
+    g["limit_size"] = limit_size.ToString();
+    g["LimitNum"] = LimitNum.ToString();
+    g["LimitSize"] = LimitSize.ToString();
+    
+    // module main
+    g_main = g["dir_module_mode"]+".cshtml";
+
+    // session setting
+    Session["g"] = g;
+    Session["g_main"] = g_main;
+    Session["iframe"] = iframe;        
+
+}

@@ -1,0 +1,157 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    dynamic d_editor = _DB.Get_code(module);
+
+	string tdir = g["path_root_ps"] + g["path_module"] + module + "\\skin\\";
+	string compo_dir = g["path_root_ps"] + g["path_module"] + module + "\\component\\";
+    string frame_name = "_action_frame_" + m;
+    
+    int i = 0;
+}
+
+<div id="editorbox">
+
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="config" />
+	<input type="hidden" name="compo" value="@d_editor["compo"]" />
+
+	<div class="title">
+		편집기 설정
+	</div>
+
+	<table>
+		<tr>
+			<td class="td1">편집기 스킨</td>
+			<td class="td2">
+				
+				<select name="skin" class="select1">
+                @foreach (string skin in Directory.GetDirectories(tdir)) 
+                {
+                    string skin_name = skin.Substring(tdir.Length, skin.Length - tdir.Length);         // 디렉토리 명 구하기
+
+                    string name_file = tdir+skin_name+"\\name.txt";
+                        
+                    if (File.Exists(name_file)) 
+                    {
+                        Array userData = null;
+                        userData = File.ReadAllLines(name_file);
+
+                        foreach (string dataLine in userData) 
+                        {
+	        			    <option value="@skin_name" title="@skin_name"@_System.getSltStr(d_editor["skin"], skin_name)>ㆍ @Html.Raw(dataLine + " (" + skin_name + ")")</option>
+                        }
+					}
+                }
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">사용 확장도구</td>
+			<td class="td2 shift">
+				
+				
+            @foreach (string compo in Directory.GetDirectories(compo_dir)) 
+            {
+                string compo_name = compo.Substring(compo_dir.Length, compo.Length - compo_dir.Length);         // 디렉토리 명 구하기
+                string compo_check = "";
+
+                if (d_editor["compo"].IndexOf("["+compo_name+"]") > -1) 
+                {
+                    compo_check = " checked='checked'";
+				}
+                        
+                string name_file = compo_dir+compo_name+"\\name.txt";
+                        
+                if (File.Exists(name_file) == true) 
+                {
+                    Array userData = null;
+                    userData = File.ReadAllLines(name_file);
+
+                    foreach (string dataLine in userData) 
+                    {
+                        <input type="checkbox" name="compo_members" value="@compo_name"@compo_check />@Html.Raw(dataLine+" ("+compo_name+")")
+        				<a href="@g["s"]/?r=@r&m=@module&a=compo_delete&compo=@compo_name" onclick="return confirm('정말로 삭제하시겠습니까?  ');">
+                        <img src="@g["img_core"]/_public/btn_del_s01.gif" class="del" alt="" />
+                        </a>
+		        		<br />
+                    }
+				}
+                                        
+                i++;
+            }
+                    
+            @if (i == 0) 
+            {
+        		<input type="checkbox" disabled="disabled" />@:등록된 확장도구가 없습니다.
+			}
+            else 
+            {
+        		<div class="guide">사용할 확장도구를 체크해 주세요.</div>                        
+			}
+      
+                
+			</td>
+		</tr>
+	</table>
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function saveCheck(f)
+{
+    var l = document.getElementsByName('compo_members');
+    var n = l.length;
+    var i;
+	var j=0;
+	var s='';
+
+	for	(i = 0; i < n; i++)
+	{
+		if (l[i].checked == true)
+		{
+			j++;
+			s += '['+l[i].value +']';
+		}
+	}
+	f.compo.value = s;
+
+	return confirm('정말로 실행하시겠습니까?         ');
+}
+//]]>
+</script>
+
+
+
+

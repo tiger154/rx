@@ -1,0 +1,219 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    string RCD_sql = "SELECT * FROM " + AppState["table_s_mbrdata"] + " WHERE admin='1' ORDER BY memberuid ASC";
+    string frame_name = "_action_frame_" + m;
+    
+    int NUM = _DB.GetDbData_Count(AppState["table_s_mbrdata"].ToString(), "admin='1'");
+    int recnum = 20;
+
+    decimal TPG = _System.getTotalPage(NUM, recnum);
+}
+
+<div id="mbrlist">
+
+	<div class="info">
+
+		<div class="article">
+			@string.Format("{0:#,0}", Convert.ToInt32(_DB.getDbRows(RCD_sql))) 명 (@p / @TPG 페이지)
+		</div>
+		
+		<div class="category">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+
+
+	<form name="listForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return false;">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="" />
+    <input type="hidden" name="perm" value="" />
+
+	<table summary="관리자리스트 입니다.">
+	<caption>관리자리스트</caption> 
+	<colgroup> 
+	<col width="30">
+	<col width="40"> 
+	<col width="40"> 
+	<col width="70"> 
+	<col width="100"> 
+	<col width="70"> 
+	<col width="40"> 
+	<col width="40">
+	<col width="40"> 
+	<col width="60"> 
+	<col width="50"> 
+	<col width="80"> 
+	<col width="70"> 
+	<col width="70"> 
+	<col>
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" alt="선택/반전" class="hand" onclick="chkFlag('mbrmembers');" /></th>
+	<th scope="col">권한</th>
+	<th scope="col">접속</th>
+	<th scope="col">이름</th>
+	<th scope="col">닉네임</th>
+	<th scope="col">아이디</th>
+	<th scope="col">등급</th>
+	<th scope="col">성별</th>
+	<th scope="col">나이</th>
+	<th scope="col">생년월일</th>
+	<th scope="col">지역</th>
+	<th scope="col">연락처</th>
+	<th scope="col">가입일</th>
+    <th scope="col">최근접속</th>
+	<th scope="col" class="side2"></th>
+
+	</tr>
+	</thead>
+	<tbody>
+        
+	@foreach (var R in _DB.Query(RCD_sql))
+ {
+     dynamic _R = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "uid=" + R["memberuid"]);
+
+     string birth_set = "-";
+
+     if (R["birth1"].Length > 3)
+     {
+         string birth_year = R["birth1"].Substring(2, 2);
+         string birth_month = R["birth2"].Substring(0, 2);
+         string birth_day = R["birth2"].Substring(2, 2);
+
+         birth_set = birth_year + "/" + birth_month + "/" + birth_day;
+     }
+        
+        <tr>
+        @if (R["memberuid"] == 1)
+        {
+	        <td class="side1"><input type="checkbox" disabled="disabled" /></td>
+	        <td>-</td>  
+        }
+        else
+        {
+	        <td class="side1"><input type="checkbox" name="mbrmembers" value="@R["memberuid"]" /></td>
+	        <td><a href="@g["adm_href"]&uid=@R["memberuid"]" class="u">권한</a></td>
+        }
+
+	    <td>@(R["now_log"] == "1" ? "Y" : "N")</td>
+	    <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=member&front=manager&page=main&mbruid=@R["memberuid"]');" title="회원메니져">@R["name"]</a></td>
+	    <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=member&front=manager&page=post&mbruid=@R["memberuid"]');" title="게시정보">@R["nic"]</a></td>
+	    <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=member&front=manager&page=info&mbruid=@R["memberuid"]');" title="회원정보">@_R["id"]</a></td>
+	    <td>@R["level"]</td>
+	    <td>@_System.getSex(R["sex"])</td>
+	    <td>@(R["birth1"] != "" ? _System.getAge(R["birth1"]) : "")</td>
+	    <td>@(R["birth1"] != "" ? birth_set : "")</td>
+	    <td>@R["addr0"]</td>
+	    <td>@(R["tel2"] != "" ? R["tel2"] : R["tel1"])</td>
+	    <td>@R["d_regis"].ToString("yyyy.MM.dd")</td>
+	    <td title="@R["last_log"].ToString("yyyy.MM.dd")">@_System.getRemainDate(R["last_log"].ToString())일</td>
+	    <td></td>
+
+	    </tr>
+	}
+	</tbody>
+	</table>
+	<div>
+
+	<div class="prebox">
+		<div class="xt">
+		<input type="text" name="admin_id" value="" size="10" class="input" title="관리자로 추가할 회원의 아이디를 입력해 주세요." />
+		<input type="button" class="btnblue" value="관리자추가" onclick="actQue('admin_regis');" />
+		<input type="button" class="btnblue" value="관리자제외" onclick="actQue('admin_delete');" />
+		</div>
+	</div>
+	</form>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function saveCheck(f) {
+    var l = document.getElementsByName('module_members');
+    var n = l.length;
+    var i;
+    var s = '';
+
+    for (i = 0; i < n; i++) {
+        if (l[i].checked == true) {
+            s += '[' + l[i].value + ']';
+        }
+    }
+
+    f.perm.value = s;
+
+    return confirm('정말로 실행하시겠습니까?   ');
+}
+function actQue(flag)
+{
+	var f = document.listForm;
+    var l = document.getElementsByName('mbrmembers');
+    var n = l.length;
+    var i;
+	var j=0;
+	var s='';
+	
+	if (flag == 'admin_delete')
+	{
+		for	(i = 0; i < n; i++)
+		{
+			if (l[i].checked == true)
+			{
+				j++;
+				s += l[i].value +',';
+			}
+		}
+		if (!j)
+		{
+			alert('제외시킬 관리자를 선택해 주세요.     ');
+			return false;
+		}
+
+		if (confirm('정말로 실행하시겠습니까?         '))
+		{
+			f.a.value = flag;
+			f.submit();
+		}
+	}
+	if (flag == 'admin_regis')
+	{
+		if (f.admin_id.value == '')
+		{
+			alert('관리자로 추가할 회원아이디를 입력해 주세요.       ');
+			f.admin_id.focus();
+			return false;
+		}
+		f.a.value = flag;
+		f.submit();
+	}
+
+	return false;
+}
+//]]>
+</script>

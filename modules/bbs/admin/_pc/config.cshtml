@@ -1,0 +1,282 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var skin = Request["skin"];
+
+    dynamic d_bbs = _DB.Get_code("bbs");
+    
+    string frame_name = "_action_frame_" + m;
+}
+
+<div id="configbox">
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="config" />
+
+	<div class="title">
+		게시판 기초환경
+	</div>
+
+	<table>
+		<tr>
+			<td class="td1">
+				대표테마
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_skin','block','none');" />
+			</td>
+			<td class="td2">
+				
+				<select name="skin_main" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">--------------------------------</option>
+
+               @{
+                    string tdir = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_pc\\";
+        
+                    foreach (string tpl in Directory.GetDirectories(tdir)) 
+                    {
+                        string theme_name = tpl.Substring(tdir.Length, tpl.Length - tdir.Length);
+                        string theme_sel = "";
+                        string F_Path = "";
+
+                        if (d_bbs["skin_main"] == "_pc\\" + theme_name)
+                        {
+                            theme_sel = "selected='selected'";
+                        }             
+                                                       
+                        if (theme_name != "_blank") 
+                        {
+                            F_Path = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_pc\\" + theme_name;            
+                                              
+                            <option value="@Html.Raw("_pc\\"+theme_name)" @Html.Raw(theme_sel)>ㆍ @_System.getFolderName(F_Path, "name.txt") (@theme_name)</option>
+                        }
+                    }
+                }
+				</select>
+				<div id="guide_skin" class="guide hide">
+				지정된 대표테마는 게시판설정시 별도의 테마지정없이 자동으로 적용됩니다.<br />
+				가장 많이 사용하는 테마를 지정해 주세요.
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1 m">
+				(모바일테마)
+			</td>
+			<td class="td2">
+				
+				<select name="skin_mobile" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">--------------------------------</option>
+                
+               @{
+                   string tdir_m = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_mobile\\";
+
+                   foreach (string tpl in Directory.GetDirectories(tdir_m))
+                   {
+                       string theme_name = tpl.Substring(tdir_m.Length, tpl.Length - tdir_m.Length);
+                       string theme_sel = "";
+                       string F_Path = "";
+
+                       if (d_bbs["skin_mobile"] == "_mobile\\" + theme_name)
+                       {
+                           theme_sel = "selected='selected'";
+                       }
+
+                       if (theme_name != "_blank")
+                       {
+                           F_Path = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_mobile\\" + theme_name;
+                            
+                            <option value="@Html.Raw("_mobile\\" + theme_name)" @Html.Raw(theme_sel)>ㆍ @_System.getFolderName(F_Path, "name.txt") (@theme_name)</option>
+                       }
+                   }
+                }
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">
+				통합보드테마
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_total','block','none');" />
+			</td>
+			<td class="td2">
+				
+				<select name="skin_total" class="select1">
+				<option value="">&nbsp;+ 통합보드 사용안함</option>
+				<option value="">--------------------------------</option>
+
+
+                @{
+                    string tdir2 = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_pc\\";
+
+                    foreach (string tpl in Directory.GetDirectories(tdir2))
+                    {
+                        string theme_name = tpl.Substring(tdir2.Length, tpl.Length - tdir2.Length);
+                        string theme_sel = "";
+                        string F_Path = "";
+
+                        if (d_bbs["skin_total"] == "_pc\\" + theme_name)
+                        {
+                            theme_sel = "selected='selected'";
+                        }
+
+                        if (theme_name != "_blank")
+                        {
+                            F_Path = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_pc\\" + theme_name;  
+                            
+                            <option value="@Html.Raw("_pc\\" + theme_name)" title="@skin" @Html.Raw(theme_sel)>ㆍ @_System.getFolderName(F_Path, "name.txt") (@theme_name)</option>
+                        }
+                    }
+                }
+
+				</select>
+				<div id="guide_total" class="guide hide">
+				통합보드란 모든 게시판의 전체 게시물을 하나의 게시판으로 출력해 주는 서비스입니다.<br />
+				사용하시려면 통합보드용 테마를 지정해 주세요.<br />
+				통합보드의 호출은 <a href="?r=@r&m=@module" target="_blank" class="b u"> @Html.Raw("?m=" + module)</a> 입니다.
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">RSS발행</td>
+			<td class="td2 shift">
+				<input type="checkbox" name="rss" value="1" @_System.getChkStr(d_bbs["rss"], 1) />RSS발행을 허용합니다.(개별게시판별 RSS발행은 개별게시판 설정을 따름)<br />
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">게시물출력</td>
+			<td class="td2">
+            @{
+                if (d_bbs["recnum"] == "" || d_bbs["recnum"] == "0")
+                {
+                    d_bbs["recnum"] = "20";
+                }
+            }
+				<input type="text" name="recnum" value="@d_bbs["recnum"]" size="5" class="input" />개(한페이지에 출력할 게시물의 수)
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">제목끊기</td>
+			<td class="td2">
+            @{
+                if (d_bbs["sbjcut"] == "")
+                {
+                    d_bbs["sbjcut"] = "40";
+                }
+            }
+				<input type="text" name="sbjcut" value="@d_bbs["sbjcut"]" size="5" class="input" />자(제목이 길 경우 자르기)
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">새글유지시간</td>
+			<td class="td2">
+             @{
+                 if (d_bbs["newtime"] == "")
+                 {
+                     d_bbs["newtime"] = "24";
+                 }
+            }
+				<input type="text" name="newtime" value="@d_bbs["newtime"]" size="5" class="input" />시간(새글로 인식되는 시간)
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">답글인식문자</td>
+			<td class="td2">
+				<input type="text" name="restr" value="@d_bbs["restr"]" size="5" class="input" />
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">삭제제한</td>
+			<td class="td2 shift">
+				<input type="checkbox" name="replydel" value="1" @_System.getChkStr(d_bbs["replydel"], 1) />답변글이 있는 원본글의 삭제를 제한합니다.<br />
+				<input type="checkbox" name="commentdel" value="1" @_System.getChkStr(d_bbs["commentdel"], 1) />댓글이 있는 원본글의 삭제를 제한합니다.
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">불량글 처리</td>
+			<td class="td2 shift">
+				<input type="checkbox" name="singo_del" value="1" @_System.getChkStr(d_bbs["singo_del"], 1) />신고수가 
+				<input type="text" name="singo_del_num" value="@d_bbs["singo_del_num"]" size="5" class="input" />건 이상일 경우 
+				<select name="singo_del_act">
+				<option value="1" @_System.getChkStr(d_bbs["singo_del_act"], 1)>자동삭제</option>
+				<option value="2" @_System.getChkStr(d_bbs["singo_del_act"], 2)>비밀처리</option>
+				</select>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="td1">제한단어</td>
+			<td class="td2">
+				<textarea name="badword" rows="5" cols="70" onfocus="this.style.color='#000000';" onblur="this.style.color='#ffffff';">@d_bbs["badword"]</textarea>
+			
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">제한단어 처리</td>
+			<td class="td2">
+				<input type="radio" name="badword_action" value="0" @_System.getChkStr(d_bbs["badword_action"], 0) />제한단어 체크하지 않음<br />
+				<input type="radio" name="badword_action" value="1" @_System.getChkStr(d_bbs["badword_action"], 1) />등록을 차단함<br />
+				<input type="radio" name="badword_action" value="2" @_System.getChkStr(d_bbs["badword_action"], 2) />제한단어를 다음의 문자로 치환하여 등록함
+				<input type="text" name="badword_escape" value="@d_bbs["badword_escape"]" size="1" maxlength="1" class="input" />
+			</td>
+		</tr>
+
+	</table>
+
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function saveCheck(f) {
+        if (f.skin_main.value == '') {
+            alert('대표테마를 선택해 주세요.       ');
+            f.skin_main.focus();
+            return false;
+        }
+        if (f.skin_mobile.value == '') {
+            alert('모바일테마를 선택해 주세요.       ');
+            f.skin_mobile.focus();
+            return false;
+        }
+
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+//]]>
+</script>
+
+

@@ -1,0 +1,683 @@
+﻿@using System.Web.Security;
+@using System.Drawing;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uploadedFile = Request.Files;
+    var subject = Request["subject"].Replace("'", "''");
+    var hidepost = Request["hidepost"];
+    var name = Request["name"];
+    var category = Request["category"];
+    var content = Request.Unvalidated("content").Replace("'", "''");
+    var html = Request["html"];
+    var tag = Request["tag"];
+    var trackback = Request["trackback"];
+    var agent = Request.UserAgent;
+    var upfiles = Request["upfiles"];
+    var hidden = Request["hidden"];
+    var notice = Request["notice"];
+    var num_upfile = Request["num_upfile"];
+    var num_photo = Request["num_photo"];
+    var uid = Request["uid"];
+    var reply = Request["reply"];
+    var pw = Request["pw"];
+    var adddata = Request["adddata"];
+    var backtype = Request["backtype"];
+    var nlist = Request["nlist"];
+    var sns = Request["sns"];
+    var insert_photo = Request["insert_photo"];
+    var point3 = Request["point3"];
+    var point4 = Request["point4"];
+
+    dynamic d_bbs = _DB.Get_code("bbs");
+    dynamic d_upload = _DB.Get_code("upload");    
+    dynamic R = _DB.Get_module_data(AppState["table_bbsdata"], "uid", 0);
+    dynamic B = null;
+    dynamic d_bbsenv = null;
+
+    string ip = AppState["myip"].ToString();
+    string today = date["year"] + date["month"] + date["day"];
+    string today_month = date["year"] + date["month"];
+    string d_regis = date["totime"].ToString("yyyy-MM-dd HHmmss");
+    string fserver = "";
+    string fserverurl = g["url_root_host"] + "/files/";    
+    string display = "0";
+    string up_hidden = "0";
+    string upload = upfiles;
+    string up_name = "";
+    string up_tmpname = "";
+    string up_thumbname = "";
+    string up_fileExt = "";
+    string LASTUID = "";
+    string NOWUID = "";
+    string incPhoto = "";
+    string id = "";    
+    string nic = name;    
+    string bbsid = "";
+    
+    int mbruid = 0;
+    int parentmbr = 0;
+    int depth = 0;
+    int up_gid = 0;
+    int up_type = 0;
+    int up_size = 0;
+    int width = 0;
+    int height = 0;
+    int point1 = 0;
+    int point2 = 0;
+    int bbsuid = 0;
+
+    //이노릭스 
+    if (Session["up_uid"] != null && Session["up_uid"].ToString() != "")
+    {
+        upload = Session["up_uid"].ToString();
+        Session["up_uid"] = "";
+    }    
+
+    if (bid == null || bid.Trim() == "")
+    {        
+        @_System.getLink("", "", "게시판 아이디가 지정되지 않았습니다.", "")
+        return;
+    }
+
+    B = _DB.Get_module_data(AppState["table_bbslist"].ToString(), "id", bid);
+
+    if (B["uid"] == 0)
+    {
+        @_System.getLink("", "", "존재하지 않는 게시판입니다.", "")
+        return;
+    }
+    if (subject == "")
+    {
+        @_System.getLink("", "", "제목이 입력되지 않았습니다.", "")
+        return;
+    }
+
+    d_bbsenv = _DB.Get_module_data(AppState["table_code_d_bbsenv"].ToString(), "id", B["id"]);
+
+    bbsuid = B["uid"];
+    bbsid = B["id"];
+
+    if (my["uid"] != 0)
+    {
+        mbruid = my["uid"];
+        name = my["name"];
+        nic = (my["nic"] != "" ? my["nic"] : my["name"]);
+    }
+    
+    if (my["id"] != "")
+    {
+        id = my["id"];
+    }
+    if (html == "")
+    {
+        html = "TEXT";
+    }
+    if (category != null && category != "")
+    {
+        category = category.Trim();
+    }
+    if (tag != null && tag != "")
+    {
+        tag = tag.Trim();
+    }
+    if (hidden == null || hidden == "")
+    {
+        hidden = "0";
+    }
+    if (notice == null || notice == "")
+    {
+        notice = "0";
+    }
+    if (point3 == null || point3 == "")
+    {
+        point3 = "0";
+    }
+    if (point4 == null || point4 == "")
+    {
+        point4 = "0";
+    }
+    if (d_bbsenv["display"] == "1" || hidepost == "1" || hidden == "0")
+    {
+        display = "1";
+    }
+
+    /////////////////// 욕설검사 (맨 뒤에 쉼표는 붙이지 않는 조건) /////////////////
+    if (d_bbs["badword_action"] == "1")
+    {
+        if (d_bbs["badword"] != "")
+        {
+            char[] delimiter = { ',' };
+            string[] strArray = d_bbs["badword"].Split(delimiter);
+
+            for (int k = 0; k < strArray.Length; k++)
+            {
+                if (subject.IndexOf(strArray[k]) > -1 || content.IndexOf(strArray[k]) > -1)
+                {
+                    if (d_bbs["badword_escape"] != "")
+                    {
+                        int escape_length = strArray[k].Length;
+                        string escape_set = "";
+
+                        for (int es = 1; es <= escape_length; es++)
+                        {        // 문자길이만큼 return
+                            escape_set = escape_set + d_bbs["badword_escape"];
+                        }
+                        subject = subject.Replace(strArray[k], escape_set);
+                        content = content.Replace(strArray[k], escape_set);
+                    }
+                    else
+                    {
+                        @_System.getLink("", "", "등록이 제한된 단어를 사용하셨습니다. [" + strArray[k] + "]", "")
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    /////////////////// 첨부파일 검사 /////////////////
+    if (Convert.ToInt32(num_upfile) > 0 || Convert.ToInt32(num_photo) > 0)
+    {
+        fserver = d_bbsenv["use_fileserver"];
+        if (fserver != null && fserver != "")
+        {
+            fserverurl = d_upload["ftp_urlpath"];
+        }
+        else
+        {
+            fserver = "0";
+        }
+        if (uid == null || uid == "")
+        {
+            upload = "";
+        }
+        string saveDir = g["path_root_ps"] + g["path_file"];
+
+        string[] savePath = { saveDir + d_regis.Substring(0, 4), 
+                            saveDir + d_regis.Substring(0, 4) + "\\" + d_regis.Substring(5, 2), 
+                            saveDir + d_regis.Substring(0, 4) + "\\" + d_regis.Substring(5, 2) + "\\" + d_regis.Substring(8, 2) };
+
+        string up_folder = d_regis.Substring(0, 4) + "\\" + d_regis.Substring(5, 2) + "\\" + d_regis.Substring(8, 2);
+        string up_caption = subject;
+        string up_cync = "";
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (Directory.Exists(savePath[i]) == false)
+            {
+                Directory.CreateDirectory(savePath[i]);
+            }
+        }
+
+        for (int i = 0; i < uploadedFile.Count; i++)
+        {
+            if (uploadedFile[i] == null || uploadedFile[i].ContentLength == 0)
+            {
+                continue;
+            }
+
+            up_name = Path.GetFileName(uploadedFile[i].FileName);
+            up_size = uploadedFile[i].ContentLength;
+            up_fileExt = _System.getExt(up_name);
+
+            if (up_fileExt == "jpeg")
+            {
+                up_fileExt = "jpg";
+            }
+
+            up_type = _System.getFileType(up_fileExt);
+
+            up_tmpname = FormsAuthentication.HashPasswordForStoringInConfigFile(up_name.Split('.')[0], "SHA1");      // SHA1 encording 
+            up_tmpname = up_tmpname + d_regis.Substring(11, 6);
+
+            if (up_type == 2)
+            {
+                up_tmpname = up_tmpname + "." + up_fileExt;
+            }
+
+            string up_mingid = _DB.GetDbData_S(AppState["table_s_upload"].ToString(), "", "min(convert(decimal(10,2),gid))").ToString();
+
+            if (up_mingid != null && up_mingid != "")
+            {
+                if (up_mingid.Contains("."))
+                {
+                    up_mingid = up_mingid.Split('.')[0];
+                }
+                up_gid = Convert.ToInt32(up_mingid) - 1;
+            }
+            else
+            {
+                up_gid = 99999999;
+            }
+
+            string up_saveFile = savePath[2] + "\\" + up_tmpname;
+
+            if (up_type == 2)
+            {
+                up_hidden = "1";
+            }
+            else
+            {
+                up_hidden = "0";
+            }
+
+            if (!File.Exists(up_saveFile))
+            {
+                uploadedFile[i].SaveAs(up_saveFile);  // saved file to directory
+
+                if (up_type == 2)
+                {                                          // image file
+                    up_thumbname = FormsAuthentication.HashPasswordForStoringInConfigFile(up_tmpname, "SHA1") + "." + up_fileExt;
+                    up_thumbname = up_thumbname + "." + up_fileExt;
+                    string thumbFile = savePath[2] + "\\" + up_thumbname;
+
+                    using (Image Img = Image.FromFile(up_saveFile))
+                    {
+                        using (Image thumbImg = new Bitmap(Img, 150, 150))
+                        {
+                            thumbImg.Save(thumbFile, Img.RawFormat);
+                            width = Img.Width;
+                            height = Img.Height;
+                        }
+                    }
+                }
+            }
+
+            
+            
+            string QKEY = "gid,hidden,tmpcode,site,mbruid,type,ext,fserver,url,folder,name,tmpname,thumbname,size,width,height,caption,down,d_regis,d_update,cync";
+            string QVAL = "'" + up_gid + "','" + up_hidden + "','','" + s + "','" + mbruid + "','" + up_type + "','" + up_fileExt + "','" + fserver + "','" + fserverurl
+                + "','" + up_folder + "','" + up_name + "','" + up_tmpname + "','" + up_thumbname + "','" + up_size + "','" + width + "','" + height +
+                "','" + up_caption + "','0','" + date["insert"] + "','','" + up_cync + "'";
+            string INSERT_UP_SQL = "INSERT INTO " + AppState["table_s_upload"].ToString() + " (" + QKEY + ") VALUES (" + QVAL + ")";
+
+            @_DB.Execute(INSERT_UP_SQL);
+
+            string up_lastuid = _DB.GetDbData_S(AppState["table_s_upload"].ToString(), "", "max(uid)").ToString();
+            upload = upload + "[" + up_lastuid + "]";
+
+            if (up_type == 2)
+            {
+                incPhoto += "<img src=''" + g["url_root_host"] + "/files/" + up_folder.Replace("\\", "/") + "/" + up_tmpname + "'' width=''" + d_upload["width_img"] + "'' class=''photo'' alt='''' /><br /><br />";
+
+                if (fserver != null && fserver != "")
+                {
+                    if (d_upload["ftp_urlpath"] != null && d_upload["ftp_urlpath"] != "")
+                    {
+                        incPhoto += "<img src=''" + d_upload["ftp_urlpath"].Replace("\\", "/") + up_folder.Replace("\\", "/") + "/" + up_tmpname + "'' width=''" + d_upload["width_img"] + "'' class=''photo'' alt='''' /><br /><br />";
+                    }
+                }
+            }
+
+            string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"].ToString() + " SET upload=upload+1 WHERE date='" + today + "' and site=" + s;
+            @_DB.Execute(UPDATE_NUM_SQL);
+        }
+    }
+
+    if (incPhoto != "")
+    {
+        if (insert_photo == "top")
+        {
+            content = incPhoto + "<br />" + content;
+        }
+        if (insert_photo == "bottom")
+        {
+            content = "<br />" + content + "<br /><br />" + incPhoto;
+        }
+
+        html = "HTML";
+    }
+
+
+    if (uid == "" || uid == "0" || reply == "Y")
+    {
+        int day_row = _DB.GetDbData_Count(AppState["table_bbsday"].ToString(), "date='" + today + "' AND site=" + s + " AND bbs=" + bbsuid);
+        int month_row = _DB.GetDbData_Count(AppState["table_bbsmonth"].ToString(), "date='" + today_month + "' AND site=" + s + " AND bbs=" + bbsuid);
+
+        if (day_row == 0)
+        {      // 오늘 처음 쓰는 글이라면 날짜테이블에 insert
+            string day_insert = "INSERT INTO " + AppState["table_bbsday"] + " (date, site, bbs, num) VALUES ('" + today + "', " + s + ", " + bbsuid + ", 0)";
+            @_DB.Execute(day_insert);
+        }
+        if (month_row == 0)
+        {      // 오늘 처음 쓰는 글이라면 날짜테이블에 insert
+            string month_insert = "INSERT INTO " + AppState["table_bbsmonth"] + " (date, site, bbs, num) VALUES ('" + today_month + "', " + s + ", " + bbsuid + ", 0)";
+            @_DB.Execute(month_insert);
+        }
+    }
+
+    // 답변 및 수정
+    if (uid != null && uid != "" && uid != "0")
+    {
+        decimal gid = 0;
+
+        R = _DB.Get_module_data(AppState["table_bbsdata"].ToString(), "uid", uid);
+
+        if (R["uid"] == 0)
+        {
+            @_System.getLink("./", "", "존재하지 않는 게시물입니다.", "")
+            return;
+        }
+
+        // 답변
+        if (reply == "Y")
+        {
+            if (my["admin"] != "1" && (my["id"] != "" && _System.IsValue(d_bbsenv["admin"], my["id"], ',') == false))
+            {
+                if (d_bbsenv["perm_l_write"] > Convert.ToInt32(my["level"]) || _System.IsValue(d_bbsenv["perm_g_write"], "[" + my["sosok"] + "]", ',') == true)
+                {
+                    @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+                    return;
+                }
+            }
+
+            if (R["hidden"] == "1" && hidden == "1")
+            {
+                if (R["mbruid"] != 0)
+                {
+                    pw = R["mbruid"].ToString();
+                }
+                else
+                {
+                    if (my["uid"] > 0)
+                    {
+                        pw = R["pw"];
+                    }
+                    else
+                    {
+                        if (pw == R["pw"])
+                        {
+                            pw = R["pw"];
+                        }
+                        else
+                        {
+                            pw = FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (pw != "" && pw != null)
+                {
+                    pw = FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1");
+                }
+                else
+                {
+                    pw = "";
+                }
+            }
+
+            depth = R["depth"] + 1;
+            decimal dDepth = Convert.ToDecimal(Math.Pow(0.01, depth));
+            gid = Convert.ToDecimal(R["gid"]) + dDepth;
+
+            while (_DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "depth=" + depth + " and gid='" + gid + "'") != 0)
+            {
+                gid = gid + dDepth;
+            }
+
+            if (depth > 20)
+            {   // depth는 20 까지 가능
+                @_System.getLink("", "", "죄송합니다. 더이상 답글을 달 수 없습니다.", "")
+                return;
+            }
+
+            if (gid == Convert.ToDecimal(R["gid"]))
+            {   // 게시물 하나 당 답변 20개 미만
+                @_System.getLink("", "", "죄송합니다. 더이상 답글을 달 수 없습니다." + R["gid"] + "/" + gid, "")
+                return;
+            }
+
+            parentmbr = R["mbruid"];
+
+            // 데이터 인서트
+            string INSERT_BBSDATA_SQL = "INSERT INTO " + AppState["table_bbsdata"] + " (site,gid,bbs,bbsid,depth,parentmbr,hidden,display,notice,name,nic,mbruid,id,pw,category,subject,content,html,tag,";
+            INSERT_BBSDATA_SQL = INSERT_BBSDATA_SQL + "hit,down,comment,oneline,trackback,score1,score2,singo,point1,point2,point3,point4,d_regis,d_modify,d_comment,d_trackback,upload,ip,agent,sns,adddata) VALUES ";
+            INSERT_BBSDATA_SQL = INSERT_BBSDATA_SQL + "(" + s + "," + gid.ToString() + "," + bbsuid + ",'" + bbsid + "'," + depth + "," + parentmbr + ",'" + hidden + "','" + display + "','" + notice + "','" + name + "','" + nic + "'," + mbruid + ",'" + id + "','" + pw + "','" + category + "','";
+            INSERT_BBSDATA_SQL = INSERT_BBSDATA_SQL + subject + "','" + Html.Raw(_System.getContents(content)) + "','" + html + "','" + tag + "','0','0','0','0','0','0','0','0','" + point1 + "','" + point2 + "','" + point3 + "','" + point4 + "','" + date["insert"] + "'," + "'','','','" + upload + "','" + ip + "','" + agent + "','" + sns + "','" + adddata + "');";
+            string INSERT_BBSIDX_SQL = "INSERT INTO " + AppState["table_" + m + "idx"].ToString() + " (site,notice,bbs,gid) VALUES ('" + s + "','" + notice + "','" + bbsuid + "','" + gid + "')";
+
+            // 게시판 리스트테이블 UPDATE
+            string UPDATE_LIST_SQL = "UPDATE " + AppState["table_bbslist"] + " SET num_r=num_r+1, d_last=getdate() WHERE uid=" + bbsuid;
+            string UPDATE_MONTH_SQL = "UPDATE " + AppState["table_bbsmonth"] + " SET num=num+1 WHERE date='" + today_month + "' AND site=" + s + " AND bbs=" + bbsuid;
+            string UPDATE_DAY_SQL = "UPDATE " + AppState["table_bbsday"] + " SET num=num+1 WHERE date='" + today + "' AND site=" + s + " AND bbs=" + bbsuid;
+
+            @_DB.Execute(INSERT_BBSDATA_SQL);
+            @_DB.Execute(INSERT_BBSIDX_SQL);
+            @_DB.Execute(UPDATE_LIST_SQL);
+            @_DB.Execute(UPDATE_MONTH_SQL);
+            @_DB.Execute(UPDATE_DAY_SQL);
+
+            LASTUID = _DB.GetDbData_S(AppState["table_bbsdata"].ToString(), "", "max(uid)").ToString();
+
+            if (c != "")
+            {
+                string month_cnt = _DB.GetDbData_S(AppState["table_bbsmonth"].ToString(), "site=" + s + " AND bbs=" + bbsuid, "sum(num)").ToString();
+                string UPDATE_MENU_SQL = "UPDATE " + AppState["table_s_menu"] + " SET num=" + month_cnt + ", d_last=getdate() WHERE uid=" + c;
+                @_DB.Execute(UPDATE_MENU_SQL)
+            }
+        }
+        // 수정하기
+        else
+        {
+            if (my["admin"] != "1" && my["uid"] != R["mbruid"])
+            {
+                if (_System.IsValue(Session["module_" + m + "_pwcheck"], "[" + R["uid"], ']') == false)
+                {
+                    @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+                    return;
+                }
+            }
+
+            string UPDATE_DATA_SQL = "UPDATE " + AppState["table_bbsdata"] + " SET hidden='" + hidden + "',display='" + display + "',notice='" + notice + "',category='" + category + "',subject='" + subject + "',content='" + Html.Raw(_System.getContents(content)) + "',";
+            UPDATE_DATA_SQL = UPDATE_DATA_SQL + "html='" + html + "',tag='" + tag + "',d_modify=getdate(),upload='" + upload + "',adddata='' WHERE uid=" + R["uid"];
+
+            @_DB.Execute(UPDATE_DATA_SQL);
+        }
+    }
+
+    // 쓰기 (일반)        
+    else
+    {
+        int gid = 99999999;
+
+        if (my["admin"] != "1" && (my["id"] != "" && _System.IsValue(d_bbsenv["admin"], my["id"], ',') == false))
+        {
+            if (d_bbsenv["perm_l_write"] > Convert.ToInt32(my["level"]) || d_bbsenv["perm_g_write"].IndexOf("[" + my["sosok"] + "]") > -1)
+            {
+                @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+                return;
+            }
+        }
+
+        if (hidden == "1" && my["uid"] > 0)
+        {
+            pw = my["uid"].ToString();
+        }
+        else
+        {
+            if (pw != null)
+            {
+                pw = FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1");       // SHA 암호화
+            }
+            else
+            {
+                pw = "";
+            }
+        }
+
+        string mingid = _DB.GetDbData_S(AppState["table_bbsdata"].ToString(), "", "min(convert(decimal(10,2),gid))").ToString();
+
+        if (mingid != null && mingid != "")
+        {
+            if (mingid.Contains("."))
+            {
+                mingid = mingid.Split('.')[0];
+            }
+            gid = Convert.ToInt32(mingid) - 1;
+        }
+
+        // 데이터 인서트
+        string INSERT_SQL = "INSERT INTO " + AppState["table_bbsdata"] + " (site,gid,bbs,bbsid,depth,parentmbr,hidden,display,notice,name,nic,mbruid,id,pw,category,subject,content,html,tag,";
+        INSERT_SQL = INSERT_SQL + "hit,down,comment,oneline,trackback,score1,score2,singo,point1,point2,point3,point4,d_regis,d_modify,d_comment,d_trackback,upload,ip,agent,sns,adddata) VALUES ";
+        INSERT_SQL = INSERT_SQL + "(" + s + "," + gid.ToString() + "," + bbsuid + ",'" + bbsid + "'," + depth + "," + parentmbr + ",'" + hidden + "','" + display + "','" + notice + "','" + name + "','" + nic + "'," + mbruid + ",'" + id + "','" + pw + "','" + category + "','";
+        INSERT_SQL = INSERT_SQL + subject + "','" + Html.Raw(_System.getContents(content)) + "','" + html + "','" + tag + "','0','0','0','0','0','0','0','0','" + point1 + "','" + point2 + "','" + point3 + "','" + point4
+            + "','" + date["insert"] + "','','','','" + upload + "','" + ip + "','" + agent + "','" + sns + "','" + adddata + "');";
+
+        // 인덱스 삽입        
+        string INSERT_BBSIDX_SQL = "INSERT INTO " + AppState["table_" + m + "idx"].ToString() + " (site,notice,bbs,gid) VALUES ('" + s + "','" + notice + "','" + bbsuid + "','" + gid + "')";
+
+        // 게시판 리스트테이블 UPDATE
+        string month_num = _DB.GetDbData_S(AppState["table_bbsmonth"].ToString(), "site=" + s + " AND bbs=" + bbsuid, "sum(num)").ToString();
+
+        string UPDATE_LIST_SQL = "UPDATE " + AppState["table_bbslist"] + " SET num_r=num_r+1, d_last=getdate() WHERE uid=" + bbsuid;
+        string UPDATE_MONTH_SQL = "UPDATE " + AppState["table_bbsmonth"] + " SET num=num+1 WHERE date='" + today_month + "' AND site=" + s + " AND bbs=" + bbsuid;
+        string UPDATE_DAY_SQL = "UPDATE " + AppState["table_bbsday"] + " SET num=num+1 WHERE date='" + today + "' AND site=" + s + " AND bbs=" + bbsuid;
+
+        @_DB.Execute(INSERT_SQL)
+        @_DB.Execute(INSERT_BBSIDX_SQL)
+        @_DB.Execute(UPDATE_LIST_SQL)
+        @_DB.Execute(UPDATE_MONTH_SQL)
+        @_DB.Execute(UPDATE_DAY_SQL)
+
+
+
+        LASTUID = _DB.GetDbData_S(AppState["table_bbsdata"].ToString(), "", "max(uid)").ToString();
+
+        if (c != null && c != "")
+        {
+            string UPDATE_MENU_SQL = "UPDATE " + AppState["table_s_menu"] + " SET num=" + Convert.ToInt32(month_num) + ", d_last=getdate() WHERE uid=" + c;
+            @_DB.Execute(UPDATE_MENU_SQL);
+        }
+
+        if (point1 > 0 && my["uid"] > 0)
+        {            
+            string INSERT_POINT_SQL = "INSERT INTO " + AppState["table_s_point"] + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES ('" + my["uid"] + "','0','" + point1 + "','게시물(" + _System.getStrCut(subject, 15, "") + ")포인트',getdate()";
+            string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET point=point+" + point1 + " WHERE memberuid=" + my["uid"];
+
+            _DB.Query(INSERT_POINT_SQL);
+            _DB.Query(UPDATE_MBR_SQL);
+        }
+    }
+
+    if (LASTUID != "")
+    {
+        NOWUID = LASTUID;
+    }
+    else
+    {
+        NOWUID = uid;
+    }
+
+    // 트랙백 처리 (진행 중)
+    if (trackback != "")
+    {
+
+    }
+
+    // 태그 처리 (진행 중)
+    if ((tag != null && tag != "") || R["tag"] != "")
+    {
+        string[] _tagarr1 = { };
+        string[] _tagarr2 = tag.Split(',');
+        string _tagdate = date["today"];
+
+        if (R["uid"] != 0 && (reply == null || reply != "Y"))
+        {
+            _tagdate = R["d_regis"].ToString("yyyyMMdd");
+            _tagarr1 = R["tag"].Split(',');
+            foreach (string _t in _tagarr1)
+            {
+                if (_t.Trim() == "" || _tagarr2.Contains(_t.Trim()))
+                {
+                    continue;
+                }
+
+                dynamic _TAG = _DB.GetDbData_M(AppState["table_s_tag"].ToString(), "site=" + R["site"] + " AND date='" + _tagdate + "' AND keyword='" + _t.Trim() + "'");
+
+                if (_TAG != null)
+                {
+                    if (_TAG["hit"] > 1)
+                    {
+                        string UPDATE_TAG_SQL = "UPDATE " + AppState["table_s_tag"] + " SET hit=hit-1 WHERE uid=" + _TAG["uid"];
+                        @_DB.Execute(UPDATE_TAG_SQL);
+                    }
+                    else
+                    {
+                        string DELETE_TAG_SQL = "DELETE " + AppState["table_s_tag"] + " WHERE uid=" + _TAG["uid"];
+                        @_DB.Execute(DELETE_TAG_SQL);
+                    }
+                }
+            }
+        }
+
+        foreach (string _t in _tagarr2)
+        {
+            if (_t.Trim() == "" || _tagarr1.Contains(_t.Trim()))
+            {
+                continue;
+            }
+
+            dynamic _TAG = _DB.GetDbData_M(AppState["table_s_tag"].ToString(), "site=" + R["site"] + " AND date='" + _tagdate + "' AND keyword='" + _t.Trim() + "'");
+
+            if (_TAG != null)
+            {
+                string UPDATE_TAG_SQL = "UPDATE " + AppState["table_s_tag"] + " SET hit=hit+1 WHERE uid=" + _TAG["uid"];
+                @_DB.Execute(UPDATE_TAG_SQL);
+            }
+            else
+            {
+                string INSERT_TAG_SQL = "INSERT INTO " + AppState["table_s_tag"] + " (site,date,keyword,hit) VALUES ('" + s + "','" + _tagdate + "','" + _t.Trim() + "','1')";
+                @_DB.Execute(INSERT_TAG_SQL);
+            }
+        }
+    }
+
+    // snsCallBack (진행 중)
+
+    Session["backtype"] = backtype;
+
+    if (backtype == "list")
+    {
+    	@_System.getLink(nlist, "parent.", "", "")
+        return;
+    }
+    else if (backtype == "view")
+    {
+	    @_System.getLink(nlist + "&mod=view&uid=" + NOWUID, "parent.", "", "")
+        return;
+    }
+    else
+    {
+	    @_System.getLink("reload", "parent.", "", "")
+        return;
+    }
+}

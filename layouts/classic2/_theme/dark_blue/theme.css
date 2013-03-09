@@ -1,0 +1,11 @@
+/* dark blue */
+#header .headertop {background:#464646;border-bottom:#C7C4CB solid 1px;}
+#header .logo h1 a {color:#ffffff;}
+#header .menutops {font-family:dotum;color:#666666;}
+#header .menutops a {color:#999999;}
+#header .menutabs li a {color:#999999;}
+#header .menutabs li a:hover {color:#ffffff;}
+#header .menutabs .on {color:#575654;background:#E4F2FD;border-top:#C7C4CB solid 1px;border-left:#C7C4CB solid 1px;border-right:#C7C4CB solid 1px;border-radius:4px 4px 0 0;text-shadow:1px 1px 1px #ffffff;}
+#header .menutabs .on:hover {color:#575654;}
+#container .mainbox {background:#E4F2FD;}
+#container .subbox {background:#E4F2FD;border-bottom:#DFDFDF solid 1px;}

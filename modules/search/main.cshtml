@@ -1,0 +1,107 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var my = PageData[1];
+    var _HM = PageData[2];
+    var _HP = PageData[3];
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var _HS = PageData[11];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    var front = PageData[16];
+    var _m = PageData[17];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+
+    dynamic d_search = _DB.Get_code("search");
+    
+    string _front = "";
+    string g_main = "";    
+    
+    if(where == null || where.Trim() == "") {
+        where = "main";
+    }
+    
+    if(g["mobile"] != "" && Session["pcmode"] != "Y") {
+        _front = "_mobile";        
+    }
+    else {
+        _front = "_pc";
+    }
+    
+    if(_HM["layout"] == "") {
+        _HM["layout"] = d_search["layout"];
+    }
+
+    g["dir_module_skin"] = g["dir_module"] + "pages\\" + _front + "\\";    
+    g["url_module_skin"] = g["url_module"] + "/pages/" + _front;
+    g["img_module_skin"] = g["url_module_skin"] + "/image";
+
+    g["dir_module_mode"] = g["dir_module_skin"] + where;
+    g["url_module_mode"] = g["url_module_skin"] + "/" + where;
+
+
+    
+    string modStr = "m=" + m;
+    string keyStr = "";
+    if(_mod != null && _mod != "") {
+        _mod = "mod=" + _mod;
+    }
+    
+    if(keyword != null && keyword != "") {
+        keyStr = "&keyword=" + HttpUtility.UrlEncode(keyword);
+    }
+    
+    g["url_reset"] = "?r=" + r + "&" + modStr + keyStr + "&where=";
+    
+
+    /*
+    if(d_search_sosokmenu != "") {
+        string[] _CA = d_search_sosokmenu.Split('/');
+        g["location"] = "<a href='" + _System.RW("", r, rewrite) + "'>HOME</a>";
+        int _tmp_count = _CA.Length;
+        string _tmp_split_id = "";
+        dynamic _tmp_location = "";
+        
+        for(int _i=0; _i<_tmp_count; _i++) {
+            _tmp_location = _DB.GetDbData_M(AppState["table_s_menu"].ToString(), "id='" + _CA[_i] + "'");
+            g["location"] += " &gt; <a href='" + _System.RW("c=" + _tmp_split_id, r, rewrite) + "'>" + _tmp_location["name"] + "</a>";
+        }
+        g["location"] += " &gt; <a href='" + _System.RW("mod=" + _HP["id"], r, rewrite) + "'>" + _HP["name"] + "</a>";
+    }
+    */
+    
+    // 모듈 메인화면
+    g_main = g["dir_module_mode"] + ".cshtml";
+
+    // 세션 생성.
+    Session["g"] = g;
+    Session["g_main"] = g_main;
+
+    //Session["mod"] = _mod;
+    //Session["referer"] = referer;    
+}

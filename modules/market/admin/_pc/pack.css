@@ -1,0 +1,43 @@
+
+#modulebox {padding:0 0 30px 0;}
+#modulebox .m_menu {height:31px;border-bottom:#dfdfdf solid 1px;}
+#modulebox .m_menu ul {padding:0;margin:0;}
+#modulebox .m_menu li {height:20px;float:left;list-style-type:none;background:#efefef;padding:10px 20px 0 20px;border-top:#dfdfdf solid 1px;border-right:#dfdfdf solid 1px;}
+#modulebox .m_menu li a {}
+#modulebox .m_menu .lside {border-left:#dfdfdf solid 1px;}
+#modulebox .m_menu .selected {background:#ffffff;font-weight:bold;height:21px;}
+#modulebox .m_menu .num {font-weight:bold;color:#ff0000;font-size:11px;font-family:verdana;}
+
+
+#modulebox .m_pack {padding:30px 0 0 0;}
+#modulebox .m_pack .msg {line-height:150%;}
+#modulebox .m_pack .upfile {border:#dfdfdf solid 1px;background:#ffffff;height:20px;}
+#modulebox .m_pack .btnblue {position:relative;top:1px;}
+#modulebox .m_pack .btnbox {padding:30px 0 0 0;}
+
+#modulebox .m_pack .themelist {border-top:#dfdfdf solid 1px;margin:30px 0 0 0;padding:20px 0 0 0;}
+#modulebox .m_pack .themelist .title {font-weight:bold;}
+#modulebox .m_pack .themelist .guide {color:#0000ff;line-height:150%;border-top:#dfdfdf solid 1px;border-bottom:#dfdfdf solid 1px;margin:15px 0 15px 0;padding:15px 0 15px 0;}
+#modulebox .m_pack .themelist .insfolder {font-weight:bold;color:#ff0000;}
+#modulebox .m_pack .themelist ul {padding:0 0 0 10px;margin:10px 0 0 0;}
+#modulebox .m_pack .themelist li {list-style-type:none;padding:4px 0 4px 0;}
+#modulebox .m_pack .themelist li span {font-family:arial;font-size:11px;color:#999999;}
+#modulebox .m_pack .themelist li a {padding:2px 10px 7px 10px;}
+
+#modulebox .m_pack .themelist .tree {margin:0;padding:12px 0 0 0;}
+#modulebox .m_pack .themelist .tree .dir01 {padding:1px 0 1px 0;}
+#modulebox .m_pack .themelist .tree .dir01 .alldir {color:#999999;}
+#modulebox .m_pack .themelist .tree .dir01 a .alldir {color:#000000;}
+#modulebox .m_pack .themelist .tree .dir01 .nowdir {font-weight:bold;color:#33C9FD;}
+#modulebox .m_pack .themelist .tree .dir01 img {position:relative;top:1px;}
+#modulebox .m_pack .themelist .tree .dir01 .del {position:relative;top:-4px;padding:2px 10px 7px 10px;}
+
+#modulebox .m_ready {padding:30px 0 0 0;margin:30px 0 0 0;border-top:#dfdfdf solid 1px;}
+#modulebox .m_ready .msg {line-height:150%;border-bottom:#dfdfdf dotted 1px;padding:0 0 20px 0;margin:0 0 30px 0;}
+#modulebox .m_ready .rbox {width:700px;}
+#modulebox .m_ready .rbox .rmodule {float:left;width:330px;height:70px;margin:0 10px 20px 0;}
+#modulebox .m_ready .rbox .rmodule .icon {float:left;width:60px;height:60px;border:#efefef solid 1px;margin-right:10px;}
+#modulebox .m_ready .rbox .rmodule .name {padding:5px 0 15px 0;}
+#modulebox .m_ready .rbox .rmodule .tool {}
+#modulebox .m_ready .none {color:#999999;font-size:11px;font-family:dotum;}
+#modulebox .m_ready .none img {position:relative;top:3px;}

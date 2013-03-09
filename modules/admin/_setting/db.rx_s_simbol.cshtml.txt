@@ -1,0 +1,7 @@
+﻿CREATE TABLE rx_s_simbol ( 
+uid  int  identity(1,1)  NOT NULL , 
+mbruid  int   NOT NULL , 
+gid  int   NOT NULL , 
+photo  nvarchar(100)   NOT NULL , 
+d_regis  datetime   ,
+PRIMARY KEY (uid));

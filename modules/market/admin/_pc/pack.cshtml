@@ -1,0 +1,581 @@
+﻿@using System;
+@using System.Collections;
+@using System.Web;
+
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    var insfolder = Request["insfolder"];
+    var mobile = Request["mobile"];
+    var option = Request["option"];
+    var subfolder = Request["subfolder"];
+    var front = Request["front"];
+    var file = Request["file"];
+    var pwd = Request["pwd"];
+    
+    string frame_name = "_action_frame_" + m;
+    string dirs = g["path_root_ps"] + g["path_module"];
+    
+    ArrayList arr_module_dir = new ArrayList();
+
+    foreach (string mdir in Directory.GetDirectories(dirs))
+    {
+        string folder_name = mdir.Substring(dirs.Length, mdir.Length - dirs.Length);
+
+        if (folder_name.Contains("."))
+        {
+            continue;
+        }
+        
+        dynamic TR = _DB.Get_module_data(AppState["table_s_module"], "id", folder_name);
+
+        if (TR["id"] == "")
+        {
+            arr_module_dir.Add(folder_name);
+        }
+    }
+    
+    if (type == null || type == "")
+    {
+        type = "layout";
+    }
+}
+
+
+<div id="modulebox">
+	<div class="m_menu">
+	<ul>
+	<li @Html.Raw(_System.isEqual(type, "layout", "class=\"lside selected\"", "class=\"lside\""))><a href="@g["adm_href"]&type=layout">레이아웃</a></li>
+        @if (arr_module_dir.Count != 0)
+        {
+            <li @Html.Raw(_System.isEqual(type, "module", "class=\"selected\"", ""))><a href="@g["adm_href"]&type=module">모듈<span class='num'>(@arr_module_dir.Count)</span></a></li>
+        }
+        else
+        {
+            <li @Html.Raw(_System.isEqual(type, "module", "class=\"selected\"", ""))><a href="@g["adm_href"]&type=module">모듈</a></li>        }
+	<li @Html.Raw(_System.isEqual(type, "widget", "class=\"selected\"", ""))><a href="@g["adm_href"]&type=widget">위젯</a></li>
+	<li @Html.Raw(_System.isEqual(type, "theme", "class=\"selected\"", ""))><a href="@g["adm_href"]&type=theme">게시판테마</a></li>
+	<li @Html.Raw(_System.isEqual(type, "etc", "class=\"selected\"", ""))><a href="@g["adm_href"]&type=etc">기타/업데이트</a></li>
+	</ul>
+	<div class="clear"></div>
+	</div>
+
+
+
+<!-- 모듈 -->
+
+@if (type == "module")
+{
+	<div class="m_pack">
+	<form name="procForm" action="@g["s"]/" method="post" enctype="multipart/form-data" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="module_pack_upload" />
+
+	
+	<div class="msg">
+		패키지파일을 선택하신 후 등록버튼을 클릭해 주세요.<br />
+		등록된 패키지는 아래의 대기리스트에서 확인하실 수 있으며 설치버튼을 클릭하셔야 사용가능한 정식모듈로 등록됩니다.<br />
+		모듈 패키지의 형식은 <span class="b">rb_module_압축폴더명.zip</span> 이어야 합니다.
+	</div>
+	
+	<div class="btnbox">
+	<input type="file" name="upfile" class="upfile" />
+	<input type="submit" value="등록하기" class="btnblue" />
+	</div>
+	
+
+	</form>
+	</div>
+
+	<div class="m_ready">
+
+	<div class="rbox">
+
+    @if (arr_module_dir.Count == 0)
+    {
+	    <div class="none">
+	    <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+	    설치 대기중인 모듈패키지가 없습니다.
+	    </div>            
+    }
+    else
+    {
+        foreach (string val in arr_module_dir)
+        {
+            if (val == "")
+            {
+                continue;
+            }
+                
+  	        <div class="rmodule">
+            <div class="icon" style="background:url('@g["path_module"].Replace("\\", "/")@val/icon.gif') center center no-repeat;"></div>
+	        <div class="name"><span class="b">@_System.getFolderName(dirs + val, "name.txt")</span>(@val)</div>
+	        <div class="tool">
+            <span class="btn01"><a href="@g["s"]/?r=@r&m=@module&a=module_setting&module=@val" target="@Html.Raw("_action_frame_"+m)" onclick="return mInstallCheck('@val');">설치 </a></span>
+	        <span class="btn01"><a href="@g["s"]/?r=@r&m=@module&a=pack_delete&type=module&pack=@val" target="@Html.Raw("_action_frame_"+m)" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제 </a></span>
+	        </div>
+	        </div>     
+        }
+    }
+
+	</div>
+
+
+	<div class="clear"></div>
+	</div>        
+}
+
+<!-- //모듈 -->
+
+
+
+<!-- 레이아웃 -->
+
+@if (type == "layout")
+{
+	<div class="m_pack">
+    <form name="procForm" action="@g["s"]/" method="post" enctype="multipart/form-data" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="pack_upload" />
+	<input type="hidden" name="type" value="layout" />
+	<input type="hidden" name="folder" value="@g["path_layout"]" />
+	
+	<div class="msg">
+		패키지파일을 선택하신 후 등록버튼을 클릭해 주세요.<br />
+		패키지는 /layouts/ 에 등록됩니다.<br />
+		레이아웃 패키지의 형식은 <span class="b">rb_layout_압축폴더명.zip</span> 이어야 합니다.
+	</div>
+	
+	<div class="btnbox">
+	<input type="file" name="upfile" class="upfile" />
+	<input type="submit" value="등록하기" class="btnblue" />
+	</div>
+	</form>
+
+	<div class="themelist">
+		<div class="title">
+			등록된 레이아웃들
+		</div>
+    @{
+    if (insfolder != null && insfolder != "")
+    {
+        if (File.Exists(g["path_root_ps"] + g["path_layout"] + insfolder + "\\main.cshtml"))
+        {
+            string ismobile = "PC웹";
+            if (mobile != null && mobile != "")
+            {
+                ismobile = "모바일웹";
+            }
+ 		        <div class="guide">
+			        마켓에서 <span class="b">@Html.Raw(ismobile)용 @_System.getFolderName(g["root_path_ps"]+g["path_layout"]+insfolder,"name.txt")<span>(@insfolder)</span></span> 레이아웃을 내려받으셨습니다.<br />
+			        이 레이아웃을 현재사이트(@_HS["name"])의 @ismobile 대표레이아웃으로 지정하시겠습니까?<br />
+                    
+                    @{
+            if (mobile != null && mobile != "")
+            {
+   			        @Html.Raw("모바일웹 미리보기를 하신 후에는 반드시 PC모드전환 버튼을 클릭해 주세요.\n");
+			        @Html.Raw("미리보기는 480*800(세로모드) 800*480(가로모드)로 확인할 수 있으며 실제 모바일기기 접속화면과 다를 수 있습니다.\n\n");
+			        <input type="button" value="480*800px" class="btngray" onclick="getSizeWin('@g["s"]/?r=@r&prelayout=@insfolder/main',480,800);" />
+			        <input type="button" value="800*480px" class="btngray" onclick="getSizeWin('@g["s"]/?r=@r&prelayout=@insfolder/main',800,480);" />
+			        <input type="button" value="모바일웹 대표레이아웃 지정" class="btnblue" onclick="siteLayoutAply('@insfolder','mobile');" />
+			        <input type="button" id="btnpcmodechange" class="btngray" value="PC모드전환" onclick="pcmodeChange();" />                         
+            }
+            else
+            {
+ 			        @Html.Raw("미리보기는 메인화면에 대해서만 가능합니다.\n");
+			        <br />
+			        <input type="button" value="미리보기" class="btngray" onclick="window.open('@g["s"]/?r=@r&prelayout=@insfolder/main');" />
+			        <input type="button" value="PC모드 대표레이아웃 지정" class="btnblue" onclick="siteLayoutAply('@insfolder','pc');" />                           
+            }
+                    }
+
+		        </div>               
+                
+        }
+    }
+    }
+
+		<ul>
+
+@{
+    int i = 0;
+    string tdir = g["path_root_ps"] + g["path_layout"];
+
+    foreach (string skin in Directory.GetDirectories(tdir))
+    {
+        string layout_name = skin.Substring(tdir.Length, skin.Length - tdir.Length);
+        if (layout_name == "." || layout_name == "..")
+        {
+            continue;
+        }
+        else if (File.Exists(skin))
+        {
+            continue;
+        }
+
+        i++;            
+
+        string insFD = "";
+        if (insfolder == layout_name)
+        {
+            insFD = "class='insfolder'";
+        }
+       
+        <li @insFD>
+ 			<img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+			@_System.getFolderName(skin, "name.txt")<span>(@layout_name)</span>           
+            @if (skin != "_blank")
+            {
+                <a href="?r=@r&m=@module&a=pack_delete&type=layout&pack=@layout_name" target="@Html.Raw("_action_frame_"+m)" onclick="return confirm('정말로 삭제하시겠습니까?    ');"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="" title="레이아웃삭제" /></a>
+            }
+                
+        </li>
+    }
+
+    if (i == 0)
+    {
+ 		<li class="none">
+			<img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+			등록된 레이아웃이 없습니다.
+		</li>           
+    }
+        
+}	  
+		</ul>
+	</div>
+
+	</div>        
+}
+
+<!-- //레이아웃 -->
+
+<!-- 위젯 -->
+
+@if (type == "widget")
+{
+    int step_start = 1;
+    string pwd_start = g["path_root_ps"] + g["path_widget"];
+    string swidget = "";
+
+    if (option != null && option != "")
+    {
+        string[] wdgvar = { };
+        string[] wdgvar2 = { };
+        string swvals = option.Replace("[!]", "&");
+        swvals = HttpUtility.UrlDecode(swvals);
+        //swvals = getKRtoUTF(swvals);
+        string[] swval = swvals.Split(',');
+        swidget = swval[0];
+        pwd = pwd_start + swidget + "\\";
+
+        foreach (string _cval in swval)
+        {
+            string[] _xval = _cval.Split('^');
+            wdgvar[0] = _xval[0];
+            wdgvar2[0] = _xval[1];
+            /*$wdgvar[$_xval[0]]=$_xval[1];*/
+        }
+    }
+    else
+    {              
+        if (pwd != null && pwd != "")
+        {
+            pwd = HttpUtility.UrlDecode(pwd);
+        }
+        else
+        {
+            pwd = pwd_start;
+        }
+
+        if (File.Exists(pwd + "main.cshtml"))
+        {
+            swidget = pwd.Replace(g["path_root_ps"] + g["path_widget"], "");
+        }
+        else
+        {
+            swidget = "";
+        }
+
+        if (swidget != "")
+        {
+            swidget = swidget.Substring(0, swidget.Length - 1);
+        }
+    }
+
+    if (pwd.Contains(".."))
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "close")
+        return;
+    }
+    if (!Directory.Exists(pwd))
+    {
+        @_System.getLink("", "", "존재하지 않는 폴더입니다.", "close")
+        return;
+    }
+        
+	<div class="m_pack">
+	<form name="procForm" action="@g["s"]/" method="post" enctype="multipart/form-data" target=@frame_name onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="pack_upload" />
+	<input type="hidden" name="type" value="widget" />
+	<input type="hidden" name="folder" value="@g["path_widget"]" />
+	<input type="hidden" name="subfolder" value="@pwd.Replace(g["path_root_ps"] + g["path_widget"], "")" />
+	
+	<div class="msg">
+		패키지파일을 선택하신 후 등록버튼을 클릭해 주세요.<br />
+		패키지는 /widgets/ 이하 선택된 폴더 밑에 등록됩니다.<br />
+		등록된 위젯들에서 등록할 폴더를 선택해 주세요.<br />
+		폴더를 선택하지 않으면 위젯 최상위폴더에 등록됩니다.
+		<a href="@g["s"]/?r=@r&m=@m&module=widget&front=main&widgetAdd=Y" class="u">새분류 등록</a><br />
+		위젯 패키지의 형식은 <span class="b">rb_widget_압축폴더명.zip</span> 이어야 합니다.
+	</div>
+	
+	<div class="btnbox">
+	등록위치 : @pwd
+	<input type="file" name="upfile" class="upfile" />
+	<input type="submit" value="등록하기" class="btnblue" />
+	</div>
+	</form>
+
+	<div class="themelist">
+		<div class="title">
+			등록된 위젯들
+		</div>
+
+		<div class="tree">            
+        @_Module_market.getDirlist(pwd_start, step_start, g, step_start)
+
+		</div>
+
+	</div>
+
+	</div>           
+}
+
+
+
+
+<!-- //위젯 -->
+
+
+<!-- 테마 -->
+@if (type == "theme")
+{
+    if (subfolder == null || subfolder == "")
+    {
+        subfolder = "_pc";
+    }
+        
+ 	<div class="m_pack">
+	<form name="procForm" action="@g["s"]/" method="post" enctype="multipart/form-data" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="pack_upload" />
+	<input type="hidden" name="type" value="bbstheme" />
+	<input type="hidden" name="folder" value="@g["path_module"]bbs/theme/" />
+
+	
+	<div class="msg">
+		패키지파일을 선택하신 후 등록버튼을 클릭해 주세요.<br />
+		패키지는 /modules/bbs/theme/(_pc/_mobile)/ 에 등록됩니다.<br />
+		게시판테마 패키지의 형식은 <span class="b">rb_bbstheme_압축폴더명.zip</span> 이어야 합니다.
+	</div>
+	
+	<div class="btnbox">
+	테마구분 :         
+	<input type="radio" name="subfolder" id="subfolder1" value="_pc/" @_System.getChkStr(subfolder, "_pc") onclick="goHref('@g["s"]/?r=@r&m=@m&module=@module&front=@front&type=@type&subfolder=_pc');" /><label for="subfolder1">PC모드용</label>
+	<input type="radio" name="subfolder" id="subfolder2" value="_mobile/" @_System.getChkStr(subfolder, "_mobile")  onclick="goHref('@g["s"]/?r=@r&m=@m&module=@module&front=@front&type=@type&subfolder=_mobile');" /><label for="subfolder2">모바일모드용</label>
+	<input type="file" name="upfile" class="upfile" />
+	<input type="submit" value="등록하기" class="btnblue" />
+	</div>
+	</form>
+
+
+	<div class="themelist">
+		<div class="title">
+			등록된 테마들
+		</div>
+		<ul>
+            
+    @{                
+        int i = 0;
+        string tdir_theme = g["path_root_ps"] + g["path_module"] + "bbs\\theme\\" + subfolder + "\\";
+            
+        foreach (string skin in Directory.GetDirectories(tdir_theme))
+        {
+            string theme_name = skin.Substring(tdir_theme.Length, skin.Length - tdir_theme.Length);
+            if (theme_name == "." || theme_name == "..")
+            {
+                continue;
+            }
+            else if (File.Exists(skin))
+            {
+                continue;
+            }
+
+            i++;
+       
+                <li @Html.Raw(_System.isEqual(insfolder, theme_name, "class=\"insfolder\"", ""))>                  
+			    <img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+			    @_System.getFolderName(skin, "name.txt")<span>(@theme_name)</span>
+			    <a href="@g["s"]/?r=@r&m=@module&a=pack_delete&type=bbstheme&pack=@subfolder/@theme_name" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?    ');"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="" title="테마삭제" /></a>
+		    </li>                    
+        }
+
+        if (i == 0)
+        {
+		    <li class="none">
+			    <img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+			    등록된 테마가 없습니다.
+		    </li>                    
+        }
+    }
+
+		    </ul>
+	    </div>
+	</div>        
+}
+
+<!-- //테마 -->
+
+
+<!-- 기타자료 -->
+@if (type == "etc")
+{
+	<div class="m_pack">
+    <form name="procForm" action="@g["s"]/" method="post" enctype="multipart/form-data" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="etc_pack_upload" />
+
+	
+	<div class="msg">
+		패키지파일을 선택하신 후 등록버튼을 클릭해 주세요.<br />
+		패키지는 최상위폴더 이하에 압축폴더 경로에 맞춰서 등록됩니다.<br />
+		동일명칭의 폴더나 파일이 존재할 경우 덧씌워지므로(업데이트) 주의하세요.<br />
+		기타자료 패키지의 형식은 <span class="b">rb_etc_자료코드.zip</span> 이어야 합니다.
+	</div>
+	
+	<div class="btnbox">
+	<input type="file" name="upfile" class="upfile" />
+	<input type="submit" value="등록하기" class="btnblue" />
+	</div>
+	</form>
+
+
+	</div>        
+}
+
+<!-- //기타자료 -->
+
+
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+var submitFlag = false;
+var minstall = '';
+function mInstallCheck(m)
+{
+	if (minstall.indexOf('['+m+']') != -1)
+	{
+		alert('설치중입니다. 잠시만 기다려 주세요.');
+		return false;
+	}
+	if(confirm('정말로 설치하시겠습니까?'))
+	{
+		minstall += '['+m+']';
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+function saveCheck(f)
+{
+	if (submitFlag == true)
+	{
+		alert('등록중입니다. 잠시만 기다려 주세요.');
+		return false;
+	}
+	if (f.upfile.value == '')
+	{
+		alert('패키지 파일을 선택해 주세요.');
+		f.upfile.focus();
+		return false;
+	}
+	var extarr = f.upfile.value.split('.');
+	var filext = extarr[extarr.length-1].toLowerCase();
+
+	if (filext != 'zip')
+	{
+		alert('패키지는 반드시 zip압축 포맷이어야 합니다.    ');
+		f.upfile.focus();
+		return false;
+	}
+
+	if(confirm('정말로 등록하시겠습니까?       '))
+	{
+		submitFlag = true;
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+function siteLayoutAply(layout,type)
+{
+	if (confirm('정말로 실행하시겠습니까?   '))
+	{
+		frames.@(frame_name).location.href = g["s"] + '/?r=@r&m=@module&a=layout_aply&layout=' + layout + '&type=' + type;
+	}
+}
+function pcmodeChange()
+{
+	frames.@(frame_name).location.href = g["s"] + '/?r=@r&m=mobile&a=mobilemode&value=X';
+	getId('btnpcmodechange').className = 'btngray';
+}
+function getSizeWin(url,x,y)
+{
+	frames.@(frame_name).location.href = g["s"] + '/?r=@r&m=mobile&a=mobilemode&value=E';
+	window.open(url,'','left=0,top=0,width='+x+'px,height='+y+'px,resizable=no,scrollbars=yes,status=yes');
+	getId('btnpcmodechange').className = 'btnblue';
+}
+//]]>
+</script>
+
+
+
+
+
+

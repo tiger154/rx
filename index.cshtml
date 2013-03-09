@@ -1,0 +1,760 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    dynamic g = new Dictionary<string, object>();
+    dynamic d = new Dictionary<string, object>();
+
+    dynamic my = new Dictionary<string, object>();
+    dynamic _HS = new Dictionary<string, object>();
+    dynamic _HM = new Dictionary<string, object>();
+    dynamic _HP = new Dictionary<string, object>();
+    dynamic _HH = new Dictionary<string, object>();
+    dynamic d_layout = new Dictionary<string, object>();    
+
+    string[] _CA = new string[10];
+
+    _HS = _DB.getFromDB(_HS, null, AppState["table_s_site"]);
+    _HM = _DB.getFromDB(_HM, null, AppState["table_s_menu"]);
+    _HP = _DB.getFromDB(_HP, null, AppState["table_s_page"]);
+    _HH = _DB.getFromDB(_HH, null, AppState["table_s_mobile"]);
+
+    my = _DB.getFromDB(my, null, AppState["table_s_mbrid"]);
+    my = _DB.getFromDB(my, null, AppState["table_s_mbrdata"]);
+
+    dynamic date = _System.GetVDate(0);    
+
+    var r = Request["r"];
+    var s = Request["s"].AsInt();
+    var a = Request["a"];
+    var c = Request["c"];
+    var m = Request["m"];
+    var _m = Request["_m"];
+    var mod = Request["mod"];
+    var _mod = Request["_mod"];
+    var system = Request["system"];
+    var bid = Request["bid"];
+    var front = Request["front"];
+    
+    var skin = Request["skin"];
+    var referer = Request["referer"];
+    var iframe = Request["iframe"];
+    var _page = Request["_page"];
+    var prelayout = Request["prelayout"];
+    var p = Request["p"].AsInt();
+
+    var keyword = "";
+    var _keyword = "";
+    
+    var http_prn = "http://";
+    var rStr = ".";
+    
+    // Session initialization
+    Session["g_main"] = null;
+    Session["url_reset"] = null;
+    Session["front"] = null;
+    Session["mod"] = null;
+    Session["iframe"] = null;
+    Session["widget_id"] = null;
+
+    if (Request.ServerVariables["HTTPS"] == "on")
+    {      // SSL 접속이면
+        http_prn = "https://";
+    }
+
+    //g.Add("url_root", @Href("~"));      // virtual directory
+    g.Add("url_root", @Href("~"));      // virtual directory
+    g.Add("url_root_ssl", @Href("~"));      // virtual directory    
+    g.Add("url_root_host", http_prn + Request.ServerVariables["HTTP_HOST"]);
+    g.Add("img_core", g["url_root"] + "/_core/image");
+    g.Add("path_root", "");
+    g.Add("path_root_ps", Request.PhysicalApplicationPath);
+    g.Add("path_core", g["path_root"] + "_core\\");
+    g.Add("path_var", g["path_root"] + "_var\\");
+    g.Add("path_tmp", g["path_root"] + "_tmp\\");
+    g.Add("path_layout", g["path_root"] + "layouts\\");
+    g.Add("path_module", g["path_root"] + "modules\\");
+    g.Add("path_module_url", g["path_root"] + "modules/");
+    g.Add("path_widget", g["path_root"] + "widgets\\");
+    g.Add("path_switch", g["path_root"] + "switchs\\");
+    g.Add("path_page", g["path_root"] + "pages\\");
+    g.Add("path_file", g["path_root"] + "files\\");
+    g.Add("sys_lang", "korean");
+    g.Add("path_install", g["path_root"] + "install\\");
+    g.Add("time_start", DateTime.Now.ToString("yyyyMMddHHmmss"));
+      
+    g.Add("_CA", null);
+
+    g.Add("dir_module", "");
+    g.Add("url_module", "");
+    g.Add("img_module", "");
+    g.Add("add_module", "");
+    g.Add("dir_module_skin", "");
+    g.Add("url_module_skin", "");
+    g.Add("img_module_skin", "");
+    g.Add("dir_module_mode", "");
+    g.Add("url_module_mode", "");
+    g.Add("dir_module_admin", "");
+    g.Add("url_module_admin", "");
+    g.Add("img_module_admin", "");
+    g.Add("adm_module", "");
+    g.Add("adm_module_varmenu", "");
+    g.Add("adm_href", "");
+
+    g.Add("s", "");
+    g.Add("r", "");
+    g.Add("sys_selectlang", "");
+    g.Add("location", "");
+    g.Add("browtitle", "");
+    g.Add("meta_sbj", "");
+    g.Add("meta_tit", "");
+    g.Add("meta_key", "");
+    g.Add("meta_des", "");
+    g.Add("sys_module", "");
+    g.Add("sys_action", false);
+    g.Add("magent", "");
+    g.Add("mobile", "");
+    d.Add("magent", "");
+
+    // header & footer
+    g.Add("add_header_inc", "");
+    g.Add("add_header_cod", "");
+    g.Add("add_header_img", "");
+    g.Add("add_footer_inc", "");
+    g.Add("add_footer_cod", "");
+    g.Add("add_footer_img", "");
+
+    d_layout.Add("cshtml", "");
+    d_layout.Add("dir", "");
+    d_layout.Add("str", "");
+    d_layout.Add("pwd", "");
+    d_layout.Add("var", "");
+    d_layout.Add("menunum", "8");
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Global System Setting
+    //////////////////////////////////////////////////////////////////
+    if (referer == null || referer == "")
+    {
+        referer = Request["HTTP_REFERER"];
+
+        if (referer == null || referer == "")
+        {
+            string referer_slash = "";
+
+            if (!Request["QUERY_STRING"].IsEmpty())
+            {
+                referer_slash = "?";
+            }
+            referer = g["url_root"] + referer_slash + Request["QUERY_STRING"];
+        }
+    }
+
+    d["magent"] = g["path_var"] + "mobile.agent.txt";
+    g["magent"] = g["path_var"] + "mobile.agent.txt";
+    g["mobile"] = _System.isMobileConnect(Request.UserAgent);
+
+    my = _System.assingVar(my, "level", 0);
+
+    string[] mysns = { "", "", "", "", "", "" };
+    // my variable setting
+    if (Session["mbr_uid"] != null && Session["mbr_uid"].ToString() != "")
+    {
+        my = _DB.getVar(my, AppState["table_s_mbrid"], "uid=" + Session["mbr_uid"]);
+        my = _DB.getVar(my, AppState["table_s_mbrdata"], "memberuid=" + my["uid"]);
+
+        if (my["pw"] != Session["mbr_pw"].ToString())
+        {
+            return;
+        }
+
+        for (int i = 0; i < my["sns"].Split('|').Length; i++)
+        {
+            mysns[i] = my["sns"].Split('|')[i];
+        }
+    }
+
+    g.Add("mysns", mysns);
+
+    // _HS variable setting
+    if (r != null && r != "")
+    {
+        _HS = _DB.getVar(_HS, AppState["table_s_site"], "id='" + r + "'");
+        s = _HS["uid"];
+    }
+
+    if (s == 0)
+    {
+        if (_HS["uid"] == 0)
+        {
+            dynamic _HD = _DB.GetDbData_M(AppState["table_s_domain"].ToString(), "name='" + Request["HTTP_HOST"].Replace("www.", "") + "'");
+
+            if (_HD != null)
+            {
+                _HS = _DB.GetDbData_M(AppState["table_s_site"].ToString(), "uid=" + _HD["site"]);
+            }
+            else
+            {
+                _HS = _DB.getTop1(_HS, AppState["table_s_site"], "gid", "ASC");
+            }
+        }
+
+        s = _HS["uid"];
+        r = _HS["id"];
+    }
+    else
+    {
+        _HS = _DB.getVar(_HS, AppState["table_s_site"], "uid='" + s + "'");
+    }
+
+    date = _System.GetVDate(_HS["timecal"]);
+
+    g["s"] = "http://" + Request.ServerVariables["HTTP_HOST"].Replace("/index.cshtml", "");
+    
+    g["r"] = _HS["rewrite"] == "1" ? g["s"] + (_HS["usescode"] == 1 ? "/" + r : "") : "."; 
+    g["img_core"] = g["url_root"] + "/_core/image";
+    g["sys_selectlang"] = _HS["lang"];
+    g["location"] = "<a href=\"./\">메인화면</a>";
+    g["browtitle"] = _HS["title"];
+    g["meta_sbj"] = _HS["title"];
+    g["meta_tit"] = "";
+    g["meta_key"] = "";
+    g["meta_des"] = "";
+    g["sys_module"] = "home";
+    g["sys_action"] = false;
+
+    if (a != null && a != "" && (c == "" || c == null))
+    {
+        g["sys_action"] = true;
+    }
+
+    if (m == null || m == "")
+    {
+        m = g["sys_module"];
+    }
+
+    if (g["sys_action"] == false && (system == null || system == ""))
+    {
+        if (c != null && c != "")
+        {
+            string tmp_id = c;
+            int tmp_count = 0;
+
+            if (c.Contains("/"))
+            {
+                for (int i = 0; i < c.Split('/').Length; i++)
+                {
+                    _CA[i] = c.Split('/')[i];
+                    tmp_count++;
+                }
+
+                tmp_id = _CA[tmp_count - 1];
+            }
+            else
+            {
+                _CA[0] = c;
+                tmp_id = c;
+            }
+
+            _HM = _DB.getVar(_HM, AppState["table_s_menu"], "id='" + tmp_id + "' AND site=" + s);
+
+            if (_HM["reject"] == "1" && my["admin"] != "1")
+            {
+                @_System.getLink("", "", "존재하지 않는 페이지 입니다.", "-1")
+                return;
+            }
+            if (_HM["site"] != _HS["uid"])
+            {
+                @_System.getLink("", "", "존재하지 않는 메뉴 입니다.", "-1")
+                return;
+            }
+
+            _HM = _System.assingVar(_HM, "incfile", g["path_page"] + "menu\\" + String.Format("{0:00000}", _HM["uid"]));
+
+            for (int _i = 0; _i < tmp_count - 1; _i++)
+            {
+                dynamic tmp_location = _DB.GetDbData_M(AppState["table_s_menu"].ToString(), "id='" + _CA[_i] + "'");
+                string tmp_split_id = "";
+
+                if (_i != 0)
+                {
+                    tmp_split_id += "/";
+                }
+
+                tmp_split_id += tmp_location["id"];
+
+                g["location"] += " &gt; <a href=" + _System.RW("c=" + tmp_split_id, g["r"], _HS) + ">" + tmp_location["name"] + "</a>";
+            }
+
+            g["location"] += " &gt; <a href=" + _System.RW("c=" + c, g["r"], _HS) + ">" + _HM["name"] + "</a>";
+
+            if (_HS["titlefix"] != "1")
+            {
+                g["browtitle"] = _HS["title"] + "-" + _HM["name"];
+            }
+            if (_HM["menutype"] == "1")
+            {
+                if (_HM["redirect"] == "1")
+                {
+                    @_System.getLink(_HM["joint"], "", "", "")
+                    return;
+                }
+
+                string[] _tmpexp = _HM["joint"].Split('?');
+
+                if (_tmpexp[1] != "")
+                {
+                    foreach (string _tmpval in _tmpexp[1].Split('&'))
+                    {
+                        if (_tmpval == "")
+                        {
+                            continue;
+                        }
+
+                        if (_tmpval.Contains("m="))
+                        {
+                            m = _tmpval.Split('=')[1];
+                        }
+                        else if (_tmpval.Contains("skin="))
+                        {
+                            skin = _tmpval.Split('=')[1];
+                        }
+                        else if (_tmpval.Contains("bid="))
+                        {
+                            bid = _tmpval.Split('=')[1];
+                        }
+                    }
+                }
+            }
+        }
+
+        if ((c == null || c == "") && m == g["sys_module"])
+        {
+            int startPage = _HS["startpage"];
+
+            if (g["mobile"] != "" && Session["pcmode"] != "Y" && _HS["m_startpage"] > 0)
+            {
+                startPage = _HS["m_startpage"];
+            }
+
+            if (mod == null || mod == "")
+            {
+                _HP = _DB.getVar(_HP, AppState["table_s_page"], "uid='" + startPage + "'");
+            }
+            else
+            {
+                _HP = _DB.getVar(_HP, AppState["table_s_page"], "id='" + mod + "'");
+            }
+
+            if (_HP["uid"] != 0 && _HP["layout"] != "")
+            {
+                _HM["layout"] = _HP["layout"];
+            }
+
+            if (_mod != null && _mod != "")
+            {
+                g["location"] += " &gt; <a href=" + _System.RW("mod=" + _HP["id"], g["r"], _HS) + ">" + _HP["name"] + "</a>";
+
+                if (_HS["titlefix"] != "1")
+                {
+                    g["browtitle"] = _HS["title"] + "-" + _HP["name"];
+                }
+            }
+
+            if (_HP["pagetype"].ToString() == "1")
+            {
+                _HM["layout"] = _HP["layout"];
+
+                string[] _tmpexp = _HP["joint"].Split('?');
+
+                if (_tmpexp[1] != "")
+                {
+                    foreach (string _tmpval in _tmpexp[1].Split('&'))
+                    {
+                        if (_tmpval == "")
+                        {
+                            continue;
+                        }
+
+                        if (_tmpval.Contains("m="))
+                        {
+                            m = _tmpval.Split('=')[1];
+                        }
+                        else if (_tmpval.Contains("skin="))
+                        {
+                            skin = _tmpval.Split('=')[1];
+                        }
+                        else if (_tmpval.Contains("bid="))
+                        {
+                            bid = _tmpval.Split('=')[1];
+                        }
+                        else if (_tmpval.Contains("front="))
+                        {
+                            front = _tmpval.Split('=')[1];
+                        }
+                    }
+
+                    if (_m == g["sys_module"])
+                    {
+                        _mod = "";
+                    }
+
+                    if (m != g["sys_module"])
+                    {
+                        mod = _mod;
+                    }
+                }
+            }
+        }
+    }
+
+    // Admin Account Check (for Install)
+    if (!_System.Admin_Account())
+    {
+        m = "admin";
+    }
+
+    if (Request["keyword"] != null && Request["keyword"] != "")
+    {
+        keyword = Request["keyword"].Trim();
+        _keyword = @_System.htmlspecialchars(_System.stripslashes(keyword));
+    }
+
+    if (p == 0)
+    {
+        p = 1;
+    }
+
+    if (!Directory.Exists(g["path_root_ps"] + g["path_module"] + m))
+    {
+        m = g["sys_module"];
+    }
+
+    //다국어 설정
+    /*
+    if (!Directory.Exists(g["path_root_ps"] + g["path_module"] + m + "\\lang." + _HS["lang"]))
+    {
+        _HS["lang"] = g["sys_lang"];
+    }*/
+
+    g["dir_module"] = g["path_module"] + m + "\\";
+    g["url_module"] = g["url_root"] + "/modules/" + m;
+    g["img_module"] = g["url_module"] + "/image";
+    g["add_module"] = g["dir_module"] + "_main.cshtml";
+
+    if (File.Exists(g["path_root_ps"] + g["add_module"]))
+    {
+        @RenderPage(g["add_module"])
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    // Action Engine
+    ////////////////////////////////////////////////////////////////////
+    if (a != null && a != "")
+    {
+        g.Add("act_module0", g["dir_module"] + a + ".cshtml");
+
+        g.Add("act_module1", g["dir_module"] + "action\\" + (a.Contains("/") ? a.Replace("/", "\\a.") : "a." + a) + ".cshtml");
+        //g.Add("act_module2", g["path_root_ps"] + g["dir_module"] + "action\\a." + a + ".cshtml");
+
+        if (File.Exists(g["path_root_ps"] + g["act_module0"]))
+        {
+            @RenderPage(g["act_module0"], my, g, s, referer, m, _HM, _HS, r, c, bid, date)
+            return;
+        }
+        if (File.Exists(g["path_root_ps"] + g["act_module1"]))
+        {
+            @RenderPage(g["act_module1"], my, g, s, referer, m, _HM, _HS, r, c, bid, date)
+            return;
+        }
+        /*
+        if (File.Exists(g["act_module2"]))
+        {
+            @RenderPage(g["act_module2"] + "action\\a." + a + ".cshtml", my, g, s, referer, m, _HM, _HS, r, c, bid, date)
+            return;
+        }*/
+    }
+
+    if (_HS["opend"] > 1)
+    {
+        if (m != "admin" && ((_HS["opend"] == 2 && my["admin"] != "1") || _HS["opend"] == 3))
+        {
+            iframe = "Y";
+        }
+
+        if (_HS["opend"] == 2)
+        {
+            if (my["admin"] != "1" && m != "admin" && system != "guide.stopsite")
+            {
+                @_System.getLink(g["s"] + "/?r=" + r + "&system=guide.stopsite", "", "", "")
+                return;
+            }
+        }
+        if (_HS["opend"] == 3)
+        {
+            if (m != "admin" && system != "guide.stopsite")
+            {
+                @_System.getLink(g["s"] + "/?r=" + r + "&system=guide.stopsite", "", "", "")
+                return;
+            }
+        }
+    }
+
+    if (Request["PATH_INFO"] != null && Request["PATH_INFO"] != "")
+    {
+        string tmp_path = Request["PATH_INFO"].Replace("/", "");
+
+        if (tmp_path != "")
+        {
+            @RenderPage(g["path_module"] + "trackback\\action\\a.rcv_trackback.cshtml")
+        }
+    }
+
+    if ((s == null || s == 0) && m != "admin")
+    {
+        @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=" + g["sys_module"] + "&nosite=Y", "", "", "")
+        return;
+    }
+
+        ////////////////////////////////////////////////////////////////////
+        /// Module Include
+        ////////////////////////////////////////////////////////////////////
+    @RenderPage(g["dir_module"] + "main.cshtml", g, my, _HM, _HP, system, _page, m, bid, _mod, referer, skin, _HS, s, c, p, r, front, _m, _CA)
+        
+    if (m == "admin" || iframe == "Y" || Session["iframe"] == "Y")
+    {
+        _HM["layout"] = "_blank\\main.cshtml";
+
+        d_layout["cshtml"] = _HM["layout"];
+    }
+    else
+    {
+        if (g["mobile"] == "" || Session["pcmode"] == "Y")
+        {
+            if (!prelayout.IsEmpty() && prelayout != "")
+            {
+                d_layout["cshtml"] = prelayout + ".cshtml";
+            }
+            else
+            {
+                if (_HM["layout"] != "")
+                {
+                    d_layout["cshtml"] = _HM["layout"];
+                }
+                else
+                {
+                    if (_HS["layout"] != "")
+                    {
+                        d_layout["cshtml"] = _HS["layout"];
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (!prelayout.IsEmpty() && prelayout != "")
+            {
+                d_layout["cshtml"] = prelayout + ".cshtml";
+            }
+            else
+            {
+                if (_HS["m_layout"] != "")
+                {
+                    d_layout["cshtml"] = _HS["m_layout"];
+                }
+                else
+                {
+                    if (_HS["layout"] != "")
+                    {
+                        d_layout["cshtml"] = _HS["layout"];
+                    }
+                }
+            }
+        }
+    }
+
+    d_layout["dir"] = d_layout["cshtml"].Split('\\')[0];
+    d_layout["dir"] = d_layout["dir"].Split('/')[0];
+    d_layout["str"] = d_layout["cshtml"].Replace(".cshtml", "");
+    d_layout["pwd"] = g["path_layout"] + d_layout["str"];
+    d_layout["var"] = g["path_layout"] + d_layout["dir"] + "\\_main.cshtml";        // New Theme (_main.cshtml)
+
+    g.Add("url_layout", g["url_root"] + "layouts/" + d_layout["dir"]);
+    g.Add("img_layout", g["url_layout"] + "/image");
+
+    if (File.Exists(g["path_root_ps"] + d_layout["var"]))
+    {
+        @RenderPage(d_layout["var"], g, my, s, r, _HS, _HP, d_layout, system, _HM)
+    }
+
+    var L_lang = _DB.GetDbData_S(AppState["table_code_g_lang"].ToString(), "nation='" + g["sys_lang"] + "' and id='lang'", "id_value").ToString();
+
+    if (mod == "rss")
+    {
+        return;
+    }
+
+    if (_HS["dtd"] == "xhtml_1")
+    {
+        @:<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        @:<html lang="@L_lang" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+    }
+    else
+    {
+        @:<!DOCTYPE html>
+        @:<html lang="@L_lang">
+    }
+}
+
+<head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<meta name="generator" content="kimsQ-RX" /> 
+    
+@if (_HS["headercode"] == "")
+{
+    <meta name="author" content="@Request["SERVER_NAME"]" /> 
+    <meta name="subject" content="@g["meta_sbj"]" /> 
+    <meta name="title" content="@g["meta_tit"]" /> 
+    <meta name="keywords" content="@g["meta_key"]" /> 
+    <meta name="description" content="@g["meta_des"]" />
+    <meta name="copyright" content="Copyrights © @date["year"] @Request["SERVER_NAME"] All Rights Reserved" />
+}
+
+@if (g["mobile"] != "" && Session["pcmode"] != "Y" && _HS["m_layout"] != "")
+{
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no" /> 
+}
+
+<title> @g["browtitle"]</title>
+
+@{
+    dynamic ADM_ARR = _DB.Get_code("admin");
+    dynamic LANG_ARR = _DB.Get_code_lang("korean");
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);
+
+        ////////////////////////////////////////////////////////////////////
+        /// Global CSS, Javascript Rendering
+        ////////////////////////////////////////////////////////////////////          
+    @RenderPage(g["path_core"] + "engine\\cssjs.engine.cshtml", g, r, m, my, LANG_ARR, d_layout, LAYOUT_ARR)
+}
+
+@_HS["headercode"]
+
+</head>
+<body>
+@{
+    if (ADM_ARR["hidepannel"] == "" && my["admin"] == "1" && iframe != "Y" && Session["iframe"] != "Y" && (g["mobile"] == "" || Session["pcmode"] == "Y"))
+    {
+        ////////////////////////////////////////////////////////////////////
+        /// Admin Bar Rendering
+        ////////////////////////////////////////////////////////////////////          
+        @RenderPage(g["path_core"] + "engine\\adminbar.engine.cshtml", g, r, system, _HM, _HP, _HS, my, ADM_ARR, LANG_ARR);
+    }
+
+        ////////////////////////////////////////////////////////////////////
+        /// Layout Rendering
+        ////////////////////////////////////////////////////////////////////          
+    @RenderPage(g["path_layout"] + d_layout["cshtml"], _HS, my, _CA, s, d_layout, g, keyword, p, system, _m, c, m, _mod, _keyword, _HM, r, bid, _HP, date, referer)
+
+    if (g["mobile"] != "" && Session["pcmode"] == "Y" && iframe != "Y")
+    {
+        string tmp_mtitle = "";
+
+        if (m == "admin")
+        {
+            tmp_mtitle = LANG_ARR["adminmode"];
+        }
+        else
+        {
+            tmp_mtitle = LANG_ARR["homepage"];
+        }
+        
+        <div id="pctomobile"><a href="@g["s"]/?r=@r&a=mobilemode">@Html.Raw(LANG_ARR["viewpcmode"] + "(" + tmp_mtitle + ")")</a></div>
+    }
+
+    string frame_name = "_action_frame_" + m;
+}
+
+<div id="_box_layer_"></div>
+<div id="_action_layer_"></div>
+<div id="_hidden_layer_"></div>
+<iframe name="@frame_name" width="0" height="0" frameborder="0" scrolling="no"></iframe>
+
+<script type="text/javascript">
+//<![CDATA[
+@{
+    if (m != "admin" && iframe != "Y" && Session["iframe"] != "Y" && g["mobile"] == "")
+    {
+        string POPUPS = "SELECT * FROM " + AppState["table_s_popup"] + " WHERE hidden='0'";
+
+        foreach (var POP in _DB.Query(POPUPS))
+        {
+            if (POP["term0"] < 1 && (POP["term1"] > date["totime"].ToString().AsDateTime() || POP["term2"] < date["totime"].ToString().AsDateTime()))
+            {
+                string POP_UPDATE_SQL = "UPDATE " + AppState["table_s_popup"] + " SET hidden='1' WHERE uid=" + POP["uid"];
+                @_DB.Execute(POP_UPDATE_SQL)
+
+                continue;
+            }
+
+            string dispagex = "_" + POP["dispage"];
+
+            if (dispagex.IndexOf("[c[" + _HS["uid"] + "]]") > -1)
+            {
+                continue;
+            }
+            if (dispagex.IndexOf("[s[" + _HS["uid"] + "]]") < 0 && dispagex.IndexOf("[m[" + _HS["uid"] + "]" + _HM["id"] + "]") < 0 && dispagex.IndexOf("[m[" + _HS["uid"] + "]" + _HP["id"] + "]") < 0)
+            {
+                continue;
+            }
+
+            @Html.Raw("if (getCookie('popview').indexOf('[" + POP["uid"] + "]') == -1)\n")
+	        @Html.Raw("{\n")
+
+            if (POP["type"] == "1")
+            {
+            	@Html.Raw("frames._action_frame_" + m + ".location.href='" + g["s"] + "/?r=" + r + "&system=popup.layer&uid=" + POP["uid"] + "&iframe=Y';\n")
+            }
+            else
+            {
+                string scrollbar = "no";
+
+                if (POP["scroll"] == "1")
+                {
+                    scrollbar = "yes";
+                }
+                
+	            @Html.Raw("window.open('" + g["s"] + "/?r=" + r + "&system=popup.window&uid=" + POP["uid"] + "&iframe=Y','popview_" + POP["uid"] + "','left=" + POP["pleft"] + ",top=" + POP["ptop"] + ",width=" + POP["width"] + ",height=" + POP["height"] + ",scrollbars=" + scrollbar + ",status=yes');\n")
+            }
+            
+            @Html.Raw("}\n")
+        }
+
+        if (my["is_paper"] == "1")
+        {
+            @Html.Raw("OpenWindow('" + g["s"] + "/?r=" + r + "&system=popup.paper&iframe=Y');\n")
+        }
+    }
+}
+
+document.body.onclick = closeMemberLayer;
+document.onkeydown = closeImgLayer;
+//]]>
+</script>
+</body>
+</html>
+    
+@{
+        //////////////////////////////////////////////////////
+        /// System Statistics Setting
+        //////////////////////////////////////////////////////
+    @RenderPage(g["path_core"] + "engine\\stat.engine.cshtml", g, m, s, my, iframe, system, date, _keyword, c);
+
+    Session["r"] = null;   
+}

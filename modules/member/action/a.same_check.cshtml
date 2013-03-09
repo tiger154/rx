@@ -1,0 +1,162 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var fname = Request["fname"];
+    var fvalue = Request["fvalue"];
+    var flayer = Request["flayer"];
+
+    dynamic d_member = _DB.Get_code("member");
+    
+    string resultmsg = "";
+    string isId = "";
+
+    int resultnum = 0;
+    
+    if(fname == null || fname == "" || fvalue == null || fvalue == "") 
+    {
+        return;
+	}
+
+    if(my["admin"] == "1") 
+    {
+        resultnum = 1;
+        resultmsg = "<span class='ok'>OK!</span>";
+	}
+    else 
+    {
+        if (fname == "id") 
+        {
+            if(_System.IsValue(d_member["join_cutid"], fvalue, ',') == true) 
+            {
+    			resultnum = 0;
+	    		resultmsg = "사용할 수 없는 아이디 입니다";                
+			}            
+            else 
+            {
+                isId = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "id='"+fvalue+"'", "count(*)").ToString();
+                
+                if (isId == "0") {
+                    if(d_member["join_rejoin"] == "0") {
+                        if(File.Exists((g["path_root_ps"]+g["path_tmp"]+"out\\"+fvalue+".txt").ToString()) == true) {
+        			        resultnum = 0;
+		        	        resultmsg = "사용할 수 없는 아이디 입니다";
+					    }
+                        else {
+		        		    resultnum = 1;
+        				    resultmsg = "<span class='ok'>OK!</span>";
+					    }
+				    }
+                    else {
+	        		    resultnum = 1;
+    				    resultmsg = "<span class='ok'>OK!</span>";                    
+				    }
+    			}
+			    else {
+			        resultnum = 0;
+			        resultmsg = "사용할 수 없는 아이디 입니다";
+		        } 
+		    }                
+        }
+
+        if (fname == "email") 
+        {
+            if (my["uid"] != 0) 
+            {
+                isId = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "email='"+fvalue+"' AND email <> '"+my["email"]+"'", "count(*)").ToString();
+            }
+            else 
+            {
+                isId = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "email='"+fvalue+"'", "count(*)").ToString();               
+			}
+            
+            if (isId == "0") 
+            {
+                resultnum = 1;
+                resultmsg = "<span class='ok'>OK!</span>";
+            }
+            else 
+            {
+                resultnum = 0;
+                resultmsg = "이미 존재하는 이메일입니다";
+            }      
+        }
+
+        if (fname == "nic") 
+        {
+            if(_System.IsValue(d_member["join_cutnic"], fvalue, ',') == true && my["admin"] != "1") 
+            {
+    			resultnum = 0;
+	    		resultmsg = "이미 존재하는 닉네임입니다";       
+			}
+            else 
+            {
+                if(my["admin"] == "1") 
+                {
+                    resultnum = 1;
+                    resultmsg = "<span class='ok'>OK!</span>";
+	            }
+                else 
+                {
+                    if(my["uid"] != 0) 
+                    {
+                        isId = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "nic='"+fvalue+"' AND nic<>'"+my["nic"]+"'", "count(*)").ToString();                        
+					}
+                    else 
+                    {
+                        isId = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "nic='"+fvalue+"'", "count(*)").ToString();
+					}
+
+                    if (isId == "0") 
+                    {
+					    resultnum = 1;
+					    resultmsg = "<span class='ok'>OK!</span>";
+				    }
+				    else 
+                    {
+					    resultnum = 0;
+					    resultmsg = "이미 존재하는 닉네임입니다";
+				    }                    
+				}
+			}
+            @resultmsg;
+		}
+	}
+}
+
+<script type="text/javascript">
+//<![CDATA[
+@{
+    if(resultnum == 0) {
+        @Html.Raw("parent.document.procForm."+fname+".focus();\n");
+	}
+    @Html.Raw("parent.document.procForm.check_"+fname+".value = '"+resultnum+"';\n");
+    @Html.Raw("parent.getId('"+flayer+"').innerHTML = \""+resultmsg+"\";\n");
+}
+//]]>
+</script>

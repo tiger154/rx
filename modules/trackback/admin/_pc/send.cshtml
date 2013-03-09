@@ -1,0 +1,410 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var year1 = Request["year1"];
+    var month1 = Request["month1"];
+    var day1 = Request["day1"];
+    var year2 = Request["year2"];
+    var month2 = Request["month2"];
+    var day2 = Request["day2"];
+    var sort = Request["sotr"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyw = Request["keyw"];
+    var account = Request["account"];
+    var front = Request["front"];
+
+    string accountQue = "";
+    string frame_name = "_action_frame_" + m;    
+    string SITES_sql = "SELECT * FROM " + AppState["table_s_site"].ToString() + " ORDER BY gid ASC";
+    int SITE_num = _DB.GetDbData_Count(AppState["table_s_site"].ToString(), "");
+
+    if (year1 == null || year1 == "")
+    {
+        year1 = date["year"];
+    }
+    if (month1 == null || month1 == "")
+    {
+        month1 = date["month"];
+    }
+    if (day1 == null || day1 == "")
+    {
+        day1 = "01";
+    }
+
+    if (year2 == null || year2 == "")
+    {
+        year2 = date["year"]; ;
+    }
+    if (month2 == null || month2 == "")
+    {
+        month2 = date["month"];
+    }
+    if (day2 == null || day2 == "")
+    {
+        day2 = date["day"];
+    }
+
+    if(sort==null || sort==""){
+        sort = "uid";
+    }
+    if(orderby==null || orderby=="") {
+        orderby = "asc";
+    }
+    
+    if(recnum==null || recnum == "" || recnum=="0" || Convert.ToInt32(recnum)>=200) {
+        recnum = "20";
+    }    
+    
+    if (account != null && account != "") {
+        accountQue = "type=2 and site=" + account + " and ";
+    }
+    else {
+        accountQue = "type=2 and ";
+    }
+
+    string _WHERE = accountQue + "d_regis BETWEEN '" + year1 + "-" + _System.DateSet(month1) + "-" + _System.DateSet(day1) + " 00:00:00' AND '" + year2 + "-" + _System.DateSet(month2) + "-" + _System.DateSet(day2) + " 23:59:59'"; 
+
+    if (where != "" && where != null) {
+        if (keyw != "" && keyw != null) {
+            if(keyw.Length > 2) {       // 2 byte over
+                _WHERE = _WHERE + _System.getSearchSql(where, keyw, "", "or");	
+            }
+            else {
+                @_System.getLink("", "", "검색어는 3자 이상 입니다.", "-1")
+                return;
+            }
+        }
+    }
+
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+    string RCD_sql = "SELECT * FROM " + AppState["table_s_trackback"] + " WHERE " + _WHERE + " order by " + sort + " " + orderby + " OFFSET " + list_start + " ROWS FETCH NEXT " + recnum + " ROWS ONLY";
+
+    int NUM = _DB.GetDbData_Count(AppState["table_s_trackback"].ToString(), _WHERE);
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+    
+    int _rec = 0;
+}
+
+<div id="bbslist">
+    <div class="sbox">
+		<form name="procForm" action="@g["s"]/" method="get">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="module" value="@module" />
+		<input type="hidden" name="front" value="@front" />
+
+        <select name="account" class="account" onchange="this.form.submit();">
+        <option value="">&nbsp;+ 전체사이트</option>
+        <option value="">---------------------------</option>
+        @{
+            if(SITE_num == 0) 
+            {
+                <option value="">등록된 사이트가 없습니다.</option>
+            }
+            else {
+                foreach(var S in _DB.Query(SITES_sql)) {
+                    string sltUid ="";
+                    
+                    if(account!="" && Convert.ToInt32(account)==S["uid"]) {
+                        sltUid = "selected='selected'";
+                    }
+                    
+                    <option value="@S["uid"]" @sltUid>ㆍ @S["name"]</option>
+                }
+            }
+        }
+        </select>
+    
+        <div>
+        <select name="year1">
+        @{
+            for (int i = Convert.ToInt32(date["year"]); i > 2000; i--) {
+                string yearSelect = "";
+                
+                if (Convert.ToInt32(year1) == i) {
+                    yearSelect = "selected='selected'";
+                }
+                    
+                <option value="@i" @yearSelect>@Html.Raw(i+"년")</option>
+            }   
+        }
+        </select>
+    
+        <select name="month1">
+        @{
+            for (int i = 1; i < 13; i++) {
+                string monthSelect = "";
+                    
+                if (Convert.ToInt32(month1) == i) {
+                    monthSelect = "selected='selected'";
+                }
+                    
+                <option value="@_System.DateSet(i)" @monthSelect>@_System.DateSet(i)월</option>
+            }   
+        }
+        </select>
+    
+        <select name="day1">
+        @{
+            for (int i = 1; i < 32; i++) {
+                string daySelect = "";
+                    
+                if (Convert.ToInt32(day1) == i) {
+                    daySelect = "selected='selected'";
+                }
+                    
+                <option value="@_System.DateSet(i)" @daySelect>@_System.DateSet(i)일</option>
+            }
+        }
+        </select>
+        ~
+        <select name="year2">
+        @{
+            for (int i = Convert.ToInt32(date["year"]); i > 2000; i--) {
+                string yearSelect = "";
+                    
+                if (Convert.ToInt32(year2) == i) {
+                    yearSelect = "selected='selected'";
+                }
+                    
+                <option value="@i" @yearSelect>@Html.Raw(i+"년")</option>
+            }   
+        }
+        </select>
+    
+        <select name="month2">
+        @{
+            for (int i = 1; i < 13; i++) {
+                string monthSelect = "";
+                    
+                if (Convert.ToInt32(month2) == i) {
+                    monthSelect = "selected='selected'";
+                }
+                    
+                <option value="@_System.DateSet(i)" @monthSelect>@_System.DateSet(i)월</option>
+            }   
+        }
+        </select>
+                
+        <select name="day2">
+        @{
+            for (int i = 1; i < 32; i++) {
+                string daySelect = "";
+                
+                if (Convert.ToInt32(day2) == i) {
+                    daySelect = "selected='selected'";
+                }
+                    
+                <option value="@_System.DateSet(i)" @daySelect>@_System.DateSet(i)일</option>
+            }   
+        }
+        </select>
+                
+        @{
+            DateTime now_date = date["totime"];
+    
+            DateTime yester1 = now_date.AddDays(-1);
+            DateTime week1 = now_date.AddDays(-7);
+            DateTime month1_1 = now_date.AddMonths(-1);
+            DateTime now_month1 = new DateTime(now_date.Year, now_date.Month, 1);
+            DateTime pre_month1 = now_month1.AddMonths(-1);
+            DateTime pre_month2 = (pre_month1.AddMonths(1)).AddDays(-1);  
+        }
+        <input type="button" class="btngray" value="기간적용" onclick="this.form.submit();" />
+        <input type="button" class="btngray" value="어제" onclick="dropDate('@yester1.ToString().Substring(0, 10)','@yester1.ToString().Substring(0, 10)');" />
+        <input type="button" class="btngray" value="오늘" onclick="dropDate('@now_date.ToString().Substring(0, 10)','@now_date.ToString().Substring(0, 10)');" />
+        <input type="button" class="btngray" value="일주" onclick="dropDate('@week1.ToString().Substring(0, 10)','@now_date.ToString().Substring(0, 10)');" />
+        <input type="button" class="btngray" value="한달" onclick="dropDate('@month1_1.ToString().Substring(0, 10)','@now_date.ToString().Substring(0, 10)');" />
+        <input type="button" class="btngray" value="당월" onclick="dropDate('@now_month1.ToString().Substring(0, 10)','@now_date.ToString().Substring(0, 10)');" />
+        <input type="button" class="btngray" value="전월" onclick="dropDate('@pre_month1.ToString().Substring(0, 10)','@pre_month2.ToString().Substring(0, 10)');" />
+        <input type="button" class="btngray" value="전체" onclick="dropDate('2009-01-01','@now_date.ToString().Substring(0, 10)');" />
+        </div>
+    
+        <div>
+        <select name="where">
+        @{
+            string sltUrl = "";
+        
+            if(where=="url"){
+                sltUrl = " selected='selected'";
+            }
+        }
+        <option value="url"@sltUrl>보낸주소</option>
+        </select>
+    
+        <input type="text" name="keyw" value="@_System.stripslashes(keyw)" class="input" />
+    
+        <input type="submit" value="검색" class="btnblue" />
+        <input type="button" value="리셋" class="btngray" onclick="location.href='@g["adm_href"]&account=@account';" />
+        </div>
+    
+        </form>
+ 	</div>
+
+	<form name="listForm" action="@g["s"]/" method="post" target="@Html.Raw("_action_frame_"+m)">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="" />
+
+	<div class="info">
+
+		<div class="article">
+			@string.Format("{0:#,0}", Convert.ToInt32(NUM))개(@p/@TPG 페이지)
+		</div>
+		
+		<div class="category"></div>
+		<div class="clear"></div>
+	</div>
+
+	<table summary="보낸 트랙백리스트 입니다.">
+	<caption>보낸 트랙백리스트</caption> 
+	<colgroup> 
+	<col width="30"> 
+	<col width="50"> 
+	<col width="400">
+	<col width="200"> 
+	<col width="80">
+	<col>
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" alt="선택/반전" class="hand" onclick="chkFlag('trackback1_members');" /></th>
+	<th scope="col">번호</th>
+	<th scope="col">보낸주소</th>
+	<th scope="col">보낸곳</th>
+	<th scope="col">날짜</th>
+	<th scope="col" class="side2"></th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @{
+        _HS["rewrite"] = "0";
+
+        if (NUM == 0)
+        {
+ 	        <tr>
+	        <td><input type="checkbox" disabled="disabled" /></td>
+	        <td>1</td>
+	        <td class="sbj1">보낸 트랙백이 없습니다.</td>
+	        <td class="hit b">-</td>
+	        <td class="hit b">-</td>
+	        <td></td>
+	        </tr>            
+        }
+        else
+        {
+            foreach (var R in _DB.Query(RCD_sql))
+            {
+ 	            <tr>
+	            <td><input type="checkbox" name="trackback1_members" value="@R["uid"]" /></td>
+	            <td>
+                @(NUM - (((p - 1) * Convert.ToInt32(recnum)) + _rec++))
+                </td>
+	            <td class="sbj">
+		            <a href="@R["url"]" target="_blank">@R["url"]</a>
+                    @{
+                if (_System.getNew(R["d_regis"].ToString(), 24) == true)
+                {
+                            <span class="new">new</span>
+                }
+                    }
+	            </td>
+	            <td class="name"><a href="@_System.getCyncURL(R["cync"], 3, '[', ',', ':')&TRACKBACK=@R["uid"]#TRACKBACK" target="_blank">확인하기</a></td>
+	            <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	            <td></td>
+	            </tr>            
+            }
+        }
+    }
+
+	</tbody>
+	</table>
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10,@p,@TPG,"@g["img_core"]/page/default");</script>
+	</div>
+
+	<div class="prebox">
+		<input type="button" class="btngray" value="선택/해제" onclick="chkFlag('trackback1_members');" />
+		<input type="button" class="btnblue" value="삭제" onclick="actQue('multi_trackback1_delete');" />
+	</div>
+	</form>
+
+</div>
+
+<div id="qTilePopDiv"></div>
+<script type="text/javascript">
+//<![CDATA[
+function dropDate(date1, date2) {
+    var f = document.procForm;
+
+    f.year1.value = date1.substring(0, 4);
+    f.month1.value = date1.substring(5, 7);
+    f.day1.value = date1.substring(8, 10);
+
+    f.year2.value = date2.substring(0, 4);
+    f.month2.value = date2.substring(5, 7);
+    f.day2.value = date2.substring(8, 10);
+
+    f.submit();
+}
+
+function actQue(flag) {
+    var f = document.listForm;
+    var l = document.getElementsByName('trackback1_members');
+    var n = l.length;
+    var i;
+    var j = 0;
+    var s = '';
+
+    for (i = 0; i < n; i++) {
+        if (l[i].checked == true) {
+            j++;
+            s += l[i].value + ',';
+        }
+    }
+    
+    if (!j) {
+        alert('보낸 트랙백을 선택해 주세요.     ');
+        return false;
+    }
+
+    if (flag == 'multi_trackback1_delete') {
+        if (!confirm('정말로 삭제하시겠습니까?     ')) {
+            return false;
+        }
+    }
+    
+    f.a.value = flag;
+    f.submit();
+}
+//]]>
+</script>

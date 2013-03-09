@@ -1,0 +1,150 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+    Cookie_svshop = Request.Cookies["id_save_Cookie"];
+
+    string cookie_id = "";
+    string cookie_pw = "";
+
+    if (Cookie_svshop != null && Cookie_svshop.Value != null)
+    {
+        if (Cookie_svshop.Value.Contains("|"))
+        {
+            cookie_id = Cookie_svshop.Value.Split('|')[0];
+            cookie_pw = Cookie_svshop.Value.Split('|')[1];
+        }
+        else
+        {
+            cookie_id = Cookie_svshop.Value;
+        }
+    }
+    
+    var m = PageData[3];
+    var my = PageData[6];
+    var r = PageData[12];
+    
+    dynamic g = Session["g"];
+    dynamic d_member = _DB.Get_code("member");
+    
+    var referer = Request["referer"];
+    
+    string frame_name = "_action_frame_" + m;
+    
+    if (my["uid"] != 0) 
+    {       // referer 가 없는 상태에서 로그인 된 경우는 메인화면으로 가야함.
+        @_System.getLink("./", "", "", "")
+        return;
+	}
+    
+    if (referer == null || referer == "")
+    {
+        referer = Request["HTTP_REFERER"];
+
+        if (referer == null || referer == "")
+        {
+            string referer_slash = "";
+
+            if (!Request["QUERY_STRING"].IsEmpty())
+            {
+                referer_slash = "?";
+            }
+            referer = g["url_root"] + referer_slash + Request["QUERY_STRING"];
+        }
+    }    
+    
+}
+
+
+<div id="m_loginbox">
+
+<form name="loginform" action="@g["s"]/" method="post" onsubmit="return loginCheck(this);">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="a" value="login" />
+<input type="hidden" name="referer" value="@referer" />
+<input type="hidden" name="usessl" value="@d_member["login_ssl"]" />
+
+<div class="xdiv"><input type="text" name="id" class="input xinput" value="@cookie_id" /></div>
+<div class="xdiv"><input type="password" name="pw" class="input xinput" value="@cookie_pw" /></div>
+<div class="xdiv">
+	<div class="xl xfont">
+        @{
+            string id_set = "아이디";
+
+            if (d_member["login_emailid"] == "1")
+            {
+                id_set = "이메일";
+            }
+        }
+
+		<input type="checkbox" name="idpwsave" value="checked"  @_System.getChkStr(Cookie_svshop != null && Cookie_svshop.Value != null, true) />@id_set/비번 기억
+			
+        @if (d_member["login_ssl"] == "1")
+        {
+            <br /><input type="checkbox" name="ssl" value="checked" />@:보안로그인(SSL)
+		}
+            
+	</div>
+	<div class="xr">
+		<input type="button" value="비번찾기" class="btngray xsubmit1" onclick="goHref('@g["url_reset"]&page=idpwsearch');" />
+		<input type="submit" value="로그인" class="btnblue xsubmit2" />
+	</div>
+	<div class="clear"></div>
+</div>
+
+</form>
+
+
+<form name="SSLLoginForm" action="@g["url_root_ssl"]" method="post" target="@frame_name">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="a" value="login" />
+<input type="hidden" name="referer" value="@referer>" />
+<input type="hidden" name="id" value="" />
+<input type="hidden" name="pw" value="" />
+<input type="hidden" name="idpwsave" value="" />
+</form>
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function loginCheck(f)
+{
+	if (f.id.value == '')
+	{
+    @{
+        string _id_set = "아이디를";
+        if (d_member["login_emailid"] == "1")
+        {
+            _id_set = "이메일을";
+        }
+    }
+		alert('@_id_set 입력해 주세요.');
+		f.id.focus();
+		return false;
+	}
+	if (f.pw.value == '')
+	{
+		alert('비밀번호를 입력해 주세요.');
+		f.pw.focus();
+		return false;
+	}
+	if (f.usessl.value == '1')
+	{
+		if (f.ssl.checked == true)
+		{
+			var fs = document.SSLLoginForm;
+			fs.id.value = f.id.value;
+			fs.pw.value = f.pw.value;
+			if(f.idpwsave.checked == true) fs.idpwsave.value
+			fs.submit();
+			return false;
+		}
+	}
+}
+//]]>
+</script>

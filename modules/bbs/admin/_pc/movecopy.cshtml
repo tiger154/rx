@@ -1,0 +1,299 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var _m = PageData[1];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+    var date = PageData[15];
+    var referer = PageData[16];
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var postuid = Request["postuid"];
+    var type = Request["type"];
+    var iframe = Request["iframe"];
+    var bid = Request["bid"];
+
+    string frame_name = "_action_frame_" + m;
+
+    string[] postarray = _System.getArrayString(postuid);
+
+    foreach (string val in postarray)
+    {
+        if (Session["BbsPost" + type] == null || !Session["BbsPost" + type].ToString().Contains("[" + val + "]"))
+        {
+            Session["BbsPost" + type] += "[" + val + "]";
+        }
+    }
+
+    string[] postarray2 = _System.getArrayString(Session["BbsPost" + type] != null ? Session["BbsPost" + type].ToString() : "");
+}
+
+<form name="procForm" action="@g["s"]/" method="post">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="m" value="@Request["module"]" />
+<input type="hidden" name="type" value="@type" />
+<input type="hidden" name="a" value="" />
+
+
+<div id="toolbox">
+
+	<div class="header">
+		<div class="xleft">
+			<ul>
+			<li @Html.Raw(type == "multi_move" ? "class=\"selected\"" : "")><a href="@g["adm_href"]&iframe=@iframe&type=multi_move">게시물이동</a></li>
+			<li @Html.Raw(type == "multi_copy" ? "class=\"selected\"" : "")><a href="@g["adm_href"]&iframe=@iframe&type=multi_copy">게시물복사</a></li>
+            </ul>
+		</div>
+		<div class="xright">
+			<img src="@g["img_core"]/_public/ico_notice.gif" alt="" /><a href="@g["s"]/?r=@r&m=@Request["module"]&a=multi_empty&type=@type" target="@frame_name" onclick="return confirm('정말로 대기리스트를 비우시겠습니까?       ');">비우기</a>
+		</div>
+		<div class="clear"></div>
+	</div>
+	
+	<div class="xbody">
+
+		<table summary="대기리스트 입니다.">
+		<caption>대기리스트</caption> 
+		<colgroup> 
+		<col width="30">
+		<col width="80">
+		<col> 
+		<col width="50">
+		<col width="90"> 
+		</colgroup> 
+		<thead>
+		<tr>
+		<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" class="hand" alt="" onclick="chkFlag('post_members');" /></th>
+		<th scope="col">게시판</th>
+		<th scope="col">제목</th>
+		<th scope="col">조회</th>
+		<th scope="col" class="side2">날짜</th>
+		</tr>
+		</thead>
+		<tbody>
+
+        @foreach (string val in postarray2)
+        {
+            dynamic R = _DB.getUidData(AppState["table_bbsdata"], val);
+            string R_mobile = _System.isMobileConnect(R["agent"]);
+
+            <tr>
+		    <td><input type="checkbox" name="post_members" value="@R["uid"]" checked="checked" /></td>
+		    <td class="bbsid">@R["bbsid"]</td>
+		    <td class="sbj">
+                
+            @{
+            if (R["notice"] != "0")
+            {
+                    <img src="@g["img_module_admin"]/ico_notice.gif" class="imgpos1" alt="공지글" title="공지글" />
+            }
+
+            if (R_mobile != "")
+            {
+                    <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@R["mobile"])로 등록된 글입니다" />
+            }
+
+            if (R["category"] != "")
+            {
+                    <span class="cat">[@R["category"]]</span>
+            }
+
+                <a href="@_System.getPostLink(s, R, g["r"], _HS)" target="_blank">@R["subject"]</a>
+           
+            if (R["content"].Contains(".jpg"))
+            {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+            }
+            if (R["upload"] != "")
+            {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+            }
+            if (R["hidden"] != "0")
+            {
+                    <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+            }
+            if (R["comment"] != 0)
+            {
+                    <span class="comment">[@R["comment"]@(R["oneline"] != 0 ? "+" + R["oneline"] : "")]</span>
+            }
+            if (R["trackback"] != 0)
+            {
+                    <span class="trackback">@R["trackback"]]</span>
+            }
+
+            if (_System.getNew(R["d_regis"].ToString(), 24))
+            {
+                    <span class="new">new</span>
+            }
+            }
+            </td>
+		    <td class="hit b">@R["hit"]</td>
+		    <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>    
+            </tr>
+        }        
+
+        @if (postarray2.Count() == 0)
+        {
+            <tr>
+		    <td><input type="checkbox" disabled="disabled" /></td>
+		    <td></td>
+		    <td class="sbj1">게시물이 없습니다.</td>
+		    <td class="hit b">-</td>
+		    <td>@date["totime"].ToString("yyyy.MM.dd hh:mm")</td>
+		    </tr> 
+        }        
+		</tbody>
+		</table>
+	</div>
+
+	<div class="footer">
+	@if (type == "multi_copy")
+ {
+        <table>
+		<tr>
+		<td class="td1">게시판 선택</td>
+		<td class="td2">:</td>
+		<td class="td3">		
+			<select name="bid">
+			<option value="">&nbsp;+ 선택하세요</option>
+			<option value="">---------------------------</option>
+
+        @{
+     string BBSLIST_sql = "SELECT * FROM " + AppState["table_bbslist"] + " ORDER BY gid ASC";
+     int BBSLIST_cnt = _DB.GetDbData_Count(AppState["table_bbslist"].ToString(), "");
+
+     foreach (var _B in _DB.Query(BBSLIST_sql))
+     {                
+                <option value="@_B["uid"]" @_System.getSltStr(_B["uid"], bid)>ㆍ @_B["name"] (@_B["id"] - @string.Format("{0:#,0}", Convert.ToInt32(_B["num_r"])))</option>
+     }
+
+     if (BBSLIST_cnt == 0)
+     {
+                <option value="">등록된 게시판이 없습니다.</option>
+     }
+        }
+			</select>
+		
+		    </td>
+		    </tr>
+		    <tr>
+		    <td class="td1">복사옵션</td>
+		    <td class="td2">:</td>
+		    <td class="td3 shift">
+			    <div class="shift">
+			    <input type="checkbox" name="inc_upload" value="1" checked="checked" />첨부파일포함
+			    <input type="checkbox" name="inc_comment" value="1" checked="checked" />댓글/한줄의견포함
+			
+			    <input type="button" value="복사" class="btnblue" onclick="actQue('multi_copy');" />
+			    <input type="button" value="닫기" class="btngray" onclick="top.close();" />
+			    </div>
+		    </td>
+		    </tr>
+		    </table>      
+ }
+ else
+ {
+        <table>
+	    <tr>
+	    <td class="td1">게시판 선택</td>
+	    <td class="td2">:</td>
+	    <td class="td3">		
+		    <select name="bid">
+		    <option value="">&nbsp;+ 선택하세요</option>
+		    <option value="">---------------------------</option>
+            @{
+     string BBSLIST_sql = "SELECT * FROM " + AppState["table_" + Request["module"] + "list"] + " ORDER BY gid ASC";
+
+     int BBSLIST_cnt = _DB.GetDbData_Count(AppState["table_bbslist"].ToString(), "");
+
+     foreach (var _B in _DB.Query(BBSLIST_sql))
+     {                
+                    <option value="@_B["uid"]" @_System.getSltStr(_B["uid"], bid)>ㆍ @_B["name"] (@_B["id"] - @string.Format("{0:#,0}", Convert.ToInt32(_B["num_r"])))</option>
+     }
+
+     if (BBSLIST_cnt == 0)
+     {
+                    <option value="">등록된 게시판이 없습니다.</option>
+     }                
+            }
+		    </select>
+		    <span class="s1">(동일게시판의 게시물은 제외됨)</span>		
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="td1"></td>
+	    <td class="td2"></td>
+	    <td class="td3">
+		    <input type="button" value="이동" class="btnblue" onclick="actQue('multi_move');" />
+		    <input type="button" value="닫기" class="btngray" onclick="top.close();" />
+	    </td>
+	    </tr>
+	    </table>
+ }
+    
+	</div>
+
+</div>
+
+</form>
+
+<script type="text/javascript">
+//<![CDATA[
+    function actQue(act) {
+        var f = document.procForm;
+        var l = document.getElementsByName("post_members");
+        var n = l.length;
+        var j = 0;
+        var i;
+
+        for (i = 0; i < n; i++) {
+            if (l[i].checked == true) {
+                j++;
+            }
+        }
+        if (!j) {
+            alert('선택된 게시물이 없습니다.      ');
+            return false;
+        }
+
+        if (f.bid.value == "") {
+            alert('게시판을 선택해 주세요.       ');
+            f.bid.focus();
+            return false;
+        }
+        if (confirm('정말로 실행하시겠습니까?    ')) {
+            f.a.value = act;
+            f.submit();
+        }
+        return false;
+    }
+
+    document.title = "게시물 @(type == "multi_move" ? "이동" : "복사")";
+    self.resizeTo(650, 650);
+//]]>
+</script>

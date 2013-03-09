@@ -1,0 +1,182 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var post_members = Request["post_members"];
+    var uid = Request["uid"];
+    var inc_comment = Request["inc_comment"];
+    var inc_upload = Request["inc_upload"];
+    var site = Request["site"];
+    var bbsuid = Request["bbsuid"];
+    var type = Request["type"];    
+    
+    dynamic R = null;
+    dynamic B = null;    
+    
+    string str_month = "";
+    string str_today = "";    
+
+    int gid = 99999999;  
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    B = _DB.GetDbData_M(AppState["table_" + m + "list"].ToString(), "uid=" + bid);
+
+    string[] post_mem = post_members.Split(',');
+    foreach (string val in post_mem)
+    {
+        R = _DB.GetDbData_M(AppState["table_" + m + "data"].ToString(), "uid=" + val);
+
+        if (R == null)
+        {
+            continue;
+        }
+        if (R["bbs"] == B["uid"])
+        {
+            continue;
+        }
+
+        string mingid = _DB.GetDbData_S(AppState["table_bbsdata"].ToString(), "", "min(convert(decimal(10,2),gid))").ToString();
+
+        if (mingid != null && mingid != "")
+        {
+            if (mingid.Contains("."))
+            {
+                mingid = mingid.Split('.')[0];
+            }
+            gid = Convert.ToInt32(mingid) - 1;
+        }
+
+        string month = R["d_regis"].ToString("yyyyMM");
+        string today = R["d_regis"].ToString("yyyyMMdd");
+
+        //게시물이동
+        string UPDATE_DT_SQL = "UPDATE " + AppState["table_" + m + "data"] + " SET gid='" + gid + "',bbs='" + B["uid"] + "',bbsid='" + B["id"] + "' WHERE uid=" + R["uid"];
+        string UPDATE_IDX_SQL = "UPDATE " + AppState["table_" + m + "idx"] + " SET bbs='" + B["uid"] + "',gid='" + gid + "' WHERE gid='" + R["gid"] + "'";
+        string UPDATE_LIST_SQL = "UPDATE " + AppState["table_" + m + "list"] + " SET num_r=num_r-1 WHERE uid=" + R["bbs"];
+        string UPDATE_LIST_SQL2 = "UPDATE " + AppState["table_" + m + "list"] + " SET num_r=num_r+1 WHERE uid=" + B["uid"];
+        string UPDATE_MON_SQL = "UPDATE " + AppState["table_" + m + "month"] + " SET num=num-1 WHERE date=" + month + " and site=" + R["site"] + " and bbs=" + R["bbs"];
+        string UPDATE_DAY_SQL = "UPDATE " + AppState["table_" + m + "day"] + " SET num=num-1 WHERE date=" + today + " and site=" + R["site"] + " and bbs=" + R["bbs"];
+
+        @_DB.Execute(UPDATE_DT_SQL);
+        @_DB.Execute(UPDATE_IDX_SQL);
+        @_DB.Execute(UPDATE_LIST_SQL);
+        @_DB.Execute(UPDATE_LIST_SQL2);
+        @_DB.Execute(UPDATE_MON_SQL);
+        @_DB.Execute(UPDATE_DAY_SQL);
+
+        if (!str_month.Contains("[" + month + "]"))
+        {
+            if (_DB.GetDbData_Count(AppState["table_" + m + "month"].ToString(), "date=" + month + " and site=" + R["site"] + " and bbs=" + B["uid"]) == 0)
+            {
+                string INSERT_M_SQL = "INSERT INTO " + AppState["table_" + m + "month"] + " (date,site,bbs,num) VALUES ('" + month + "','" + R["site"] + "','" + B["uid"] + "','1')";
+                @_DB.Execute(INSERT_M_SQL);
+                str_month = str_month + "[" + month + "]";
+            }
+        }
+        else
+        {
+            string UPDATE_M_SQL2 = "UPDATE " + AppState["table_" + m + "month"] + " SET num=num+1 WHERE date='" + month + "' and site='" + R["site"] + "' and bbs='" + B["uid"] + "'";
+            @_DB.Execute(UPDATE_M_SQL2);
+        }
+
+        if (!str_today.Contains("[" + today + "]"))
+        {
+            if (bbsuid != null && bbsuid != "")
+            {
+                if (_DB.GetDbData_Count(AppState["table_" + m + "day"].ToString(), "date=" + today + " and bbs=" + bbsuid) == 0)
+                {
+                    string INSERT_D_SQL = "INSERT INTO " + AppState["table_" + m + "day"] + " (date,site,bbs,num) VALUES ('" + today + "','" + R["site"] + "','" + B["uid"] + "','1')";
+                    @_DB.Execute(INSERT_D_SQL);
+                    str_month = str_month + "[" + today + "]";
+                }
+            }
+        }
+        else
+        {
+            string UPDATE_D_SQL2 = "UPDATE " + AppState["table_" + m + "day"] + " SET num=num+1 WHERE date='" + today + "' and site=" + R["site"] + " and bbs=" + B["uid"];
+            @_DB.Execute(UPDATE_D_SQL2);
+        }
+
+        //댓글이동
+        if (R["comment"] != 0)
+        {
+            string CCD_sql = "SELECT * FROM " + AppState["table_s_comment"].ToString() + " WHERE parent='" + m + R["uid"] + "' ORDER BY uid desc"; //OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY";
+            foreach (var _C in _DB.Query(CCD_sql))
+            {
+                string comment_cync = "[" + m + "][" + R["uid"] + "][uid,comment,oneline,d_comment][" + AppState["table_" + m + "data"] + "][" + _C["parentmbr"] + "][m:" + m + ",bid:" + B["id"] + ",uid:" + R["uid"] + "]";
+                string UPDATE_CMT_SQL = "UPDATE " + AppState["table_s_comment"] + " SET cync='" + comment_cync + "' WHERE uid=" + _C["uid"];
+                @_DB.Execute(UPDATE_CMT_SQL);
+
+                if (_C["upload"] != "")
+                {
+                    string[] UPFILES = _System.getArrayString(_C["upload"]);
+                    foreach (string _val in UPFILES)
+                    {
+                        if (_val.Trim() == "")
+                        {
+                            continue;
+                        }
+                        string c_U_uid = _DB.GetDbData_S(AppState["table_s_upload"].ToString(), "uid=" + _val, "uid").ToString();
+                        if (c_U_uid != null && c_U_uid != "")
+                        {
+                            string UPDATE_UP_SQL = "UPDATE " + AppState["table_s_upload"].ToString() + " SET cync='' WHERE uid=" + c_U_uid;
+                            @_DB.Execute(UPDATE_UP_SQL);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (R["upload"] != "")
+        {
+            string[] UPFILES = _System.getArrayString(R["upload"]);
+            foreach (string _val in UPFILES)
+            {
+                if (_val.Trim() == "")
+                {
+                    continue;
+                }
+
+                string U_uid = _DB.GetDbData_S(AppState["table_s_upload"].ToString(), "uid=" + _val, "uid").ToString();
+                if (U_uid != null && U_uid != "")
+                {
+                    string UPDATE_UP_SQL = "UPDATE " + AppState["table_s_upload"].ToString() + " SET cync='' WHERE uid=" + U_uid;
+                    @_DB.Execute(UPDATE_UP_SQL);
+                }
+            }
+        }
+
+        //SESSION
+        Session["BbsPost" + type] = Session["BbsPost" + type].ToString().Replace("[" + R["uid"] + "]", "");        
+    }
+
+    string referer = g["s"] + "/?r=" + r + "&iframe=Y&m=admin&module=" + m + "&front=movecopy&type=" + type;    
+    
+    @_System.getLink(referer, "parent.", "실행되었습니다.", "")
+    return;
+}

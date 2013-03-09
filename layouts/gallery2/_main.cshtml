@@ -1,0 +1,92 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var g = PageData[0];
+    var my = PageData[1];
+    var s = PageData[2];
+    var r = PageData[3];
+    var _HS = PageData[4];
+    var _HP = PageData[5];
+    var d_layout = PageData[6];
+    var system = PageData[7];
+    var _HM = PageData[8];
+    
+    string _themePage = Request["_themePage"];
+    string _themeConfig = Request["_themeConfig"];
+    string _layoutAction = Request["_layoutAction"];
+
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);
+
+    d_layout["_titlebg"] = "";
+    d_layout["_memberlink_color"] = "";
+    d_layout["_is_ownmain"] = "";
+    d_layout["_is_content"] = "";
+    
+    //////////////////////////////////////////////////////////
+    ///// Only Layout Action Rendering
+    //////////////////////////////////////////////////////////
+    if(_layoutAction != "" && _layoutAction != null) {
+        @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_action/a." + _layoutAction + ".cshtml", g, my, s, r, _HS, d_layout);            
+    }
+
+    if (LAYOUT_ARR["bg_use"] != "")
+    {
+        d_layout["_titlebg"] = " style=\"padding:'" + LAYOUT_ARR["title_padding_top"] + "px 0 " + LAYOUT_ARR["title_padding_btm"] + "px 0;background:url('./layouts/" + d_layout["dir"] + "/_var/" + LAYOUT_ARR["bg"] + "') " + LAYOUT_ARR["bg_o"] + ";\"";
+    }    
+    else
+    {
+        d_layout["_titlebg"] = "style='padding:" + LAYOUT_ARR["title_padding_top"] + "px 0 " + LAYOUT_ARR["title_padding_btm"] + "px 0;'";
+    }
+    
+    if (LAYOUT_ARR["memberlink_color"] != "")
+    {
+        d_layout["_memberlink_color"] = " style='color:" + LAYOUT_ARR["memberlink_color"] + ";'";
+    }
+
+    if(LAYOUT_ARR["mainType_layout"] != "" && (system == "" || system == null) && (_themePage == "" || _themePage == null) && _HP["id"] == "main")
+    {
+        d_layout["_is_ownmain"] = "1";
+    }
+    if(LAYOUT_ARR["mainType_rb"] != "" || (system != "" && system != null) || (_themePage != "" && _themePage != null) || _HP["id"] != "main")
+    {
+        d_layout["_is_content"] = "1";
+    }
+    
+    if(_themeConfig != "" && _themeConfig != null)
+    {
+        if(my["admin"] == "")
+        {
+            @_System.getLink(_System.RW("0", g["r"], _HS), "", "권한이 없습니다.", "")
+            return;
+        }
+        
+        g["main"] = g["path_layout"] + d_layout["dir"] + "/_admin/main.cshtml";
+        g["dir_module_mode"] = g["path_layout"] + d_layout["dir"] + "\\_admin/main";
+        g["url_module_mode"] = g["path_layout"] + d_layout["dir"] + "/_admin/main";
+
+        d_layout["_twhite"] = false;
+    }
+
+    //////////////////////////////////////////////////////////
+    ///// Ajax Rendering
+    //////////////////////////////////////////////////////////
+    if(_themePage != "" && _themePage != null) {
+    	g["main"] = g["path_layout"] + d_layout["dir"] + "\\_pages\\" + _themePage + ".cshtml";
+        
+        if(_themePage.IndexOf("ajax/") > -1) {
+            @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_pages/" + _themePage + ".cshtml", g, my, s, r, _HS, d_layout);            
+
+            return;
+        }
+        else {
+            g["dir_module_mode"] = g["path_layout"] + d_layout["dir"] + "\\_pages\\" + _themePage;
+            g["url_module_mode"] = g["path_layout"] + d_layout["dir"] + "/_pages/" + _themePage;
+        }
+    }    
+}

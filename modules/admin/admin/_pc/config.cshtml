@@ -1,0 +1,189 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+    
+    string frame_name = "_action_frame_" + m;
+
+    dynamic d_admin = _DB.Get_code("admin");
+
+    string dirs = "";
+}
+
+<div id="configbox">
+
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="email_check" />
+    
+	<div class="title">
+		시스템 환경
+	</div>
+
+	<table>
+		<tr>
+			<td class="td1">웹서버 (IIS)</td>
+			<td>:</td>
+			<td class="td2">
+			@Request.ServerVariables["SERVER_SOFTWARE"]
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">Webmatrix</td>
+			<td>:</td>
+			<td class="td2">
+			확인불가
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">SQL-CE</td>
+			<td>:</td>
+			<td class="td2">
+			확인불가
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">코어버젼</td>
+			<td>:</td>
+			<td class="td2">
+            kimsQ-RX @d_admin["version"]
+			</td>
+		</tr>
+        @*
+		<tr>
+			<td class="td1">이메일체크</td>
+			<td class="vt">:</td>
+			<td class="td2">
+				<input type="text" name="email" value="@my["email"]" class="input" />
+				<input type="submit" value="이메일 전송확인" class="btngray" />
+
+				<div class="guide">입력한 이메일주소로 전송이 되면 메일서버가 정상작동되는 상태입니다.</div>
+			</td>
+		</tr>*@
+	</table>
+
+	<br />
+	<br />
+
+    <form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="config" />
+
+	<div class="title">
+		시스템 테마
+	</div>
+
+	<table>
+		<tr>
+			<td class="td1">관리자테마</td>
+			<td class="td2">
+				<select name="themepc" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">------------------------------------</option>
+                @{
+                    dirs = g["path_root_ps"] + g["dir_module"] + "theme\\_pc";
+
+                    foreach (string tpl in Directory.GetDirectories(dirs)) 
+                    {
+                        string tpl_name = Path.GetFileName(tpl);
+        				<option value="@tpl_name" @_System.getSltStr(d_admin["themepc"], tpl_name)>ㆍ@(_System.getFolderName(tpl,"name.txt"))(@tpl_name.Replace(".cshtml", ""))</option>
+                    }
+                }
+				</select>
+
+			</td>
+		</tr>
+		<tr>
+			<td class="td1 m">
+				(모바일모드) 
+			</td>
+			<td class="td2">
+				
+				<select name="thememobile" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">------------------------------------</option>
+                @{
+                    dirs = g["path_root_ps"] + g["dir_module"] + "theme\\_mobile";
+
+                    foreach (string tpl in Directory.GetDirectories(dirs)) 
+                    {
+                        string tpl_name = Path.GetFileName(tpl);
+        				<option value="@tpl_name" @_System.getSltStr(d_admin["thememobile"], tpl_name)>ㆍ@(_System.getFolderName(tpl,"name.txt"))(@tpl_name.Replace(".cshtml", ""))</option>
+                    }
+                }
+				</select>
+
+				<div class="guide">모바일모드는 모바일뷰를 지원하도록 제작된 모듈만 지원됩니다.</div>
+			</td>
+		</tr>
+
+
+	</table>
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+    var sendFlag = false;
+    function sendCheck(f) {
+        if (sendFlag == true) {
+            alert('이메일전송 요청중에 있습니다. 잠시만 기다려 주세요.');
+            return false;
+        }
+        if (f.email.value == '') {
+            alert('전송할 이메일 주소를 입력해 주세요.       ');
+            f.email.focus();
+            return false;
+        }
+        if (confirm('정말로 실행하시겠습니까?         ')) {
+            sendFlag = true;
+            return true;
+        }
+    }
+    function saveCheck(f) {
+        if (f.themepc.value == '') {
+            alert('관리자테마를 선택해 주세요.       ');
+            f.themepc.focus();
+            return false;
+        }
+        if (f.thememobile.value == '') {
+            alert('모바일모드 관리자테마를 선택해 주세요.       ');
+            f.thememobile.focus();
+            return false;
+        }
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+//]]>
+</script>
+
+
+
+

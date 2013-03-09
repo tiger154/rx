@@ -1,0 +1,553 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var typeset = new Dictionary<string, string>();
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    string uid = Request["uid"];
+    
+    dynamic R = null;
+
+    string R_uid = "";
+    string R_dispage = "";
+    string R_name = "";
+    string R_type = "";
+    string R_scroll = "";
+    string R_hidden = "";
+    string R_term0 = "";
+    string R_width = "400";
+    string R_height = "400";
+    string R_ptop = "";
+    string R_pleft = "";
+    string R_center = "";
+    string R_html = "";
+    string R_content = "";
+    
+    string year1 = "";
+    string month1 = "";
+    string day1 = "";
+    string hour1 = "";
+    string min1 = "";
+    string year2 = "";
+    string month2 = "";
+    string day2 = "";
+    string hour2 = "";
+    string min2 = "";
+
+    string frame_name = "_action_frame_" + m;
+    string POP_sql = "SELECT * FROM " + AppState["table_s_popup"].ToString() + " ORDER BY uid asc";
+    int NUM = _DB.GetDbData_Count(AppState["table_s_popup"].ToString(), "");
+    
+    if(uid!=null && uid!=""){
+        R = _DB.GetDbData_M(AppState["table_s_popup"].ToString(), "uid=" + uid);
+    }
+
+    if (R!=null)
+    {
+        year1 = R["term1"].Year.ToString();
+        month1 = R["term1"].Month.ToString();
+        day1 = R["term1"].Day.ToString();
+        hour1 = R["term1"].Hour.ToString();
+        min1 = R["term1"].Minute.ToString();
+        year2 = R["term2"].Year.ToString();
+        month2 = R["term2"].Month.ToString();
+        day2 = R["term2"].Day.ToString();
+        hour2 = R["term2"].Hour.ToString();
+        min2 = R["term2"].Minute.ToString();
+
+
+        R_uid = R["uid"].ToString();
+        R_dispage = R["dispage"];
+        R_name = R["name"];
+        R_type = R["type"];
+        R_scroll = R["scroll"];
+        R_hidden = R["hidden"];
+        R_term0 = R["term0"].ToString();
+        R_width = R["width"].ToString();
+        R_height = R["height"].ToString();
+        R_ptop = R["ptop"].ToString();
+        R_pleft = R["pleft"].ToString();
+        R_center = R["center"].ToString();
+        R_html = R["html"];
+        R_content = R["content"];        
+    }
+    else{
+        year1 = date["totime"].Year.ToString();
+        month1 = date["totime"].Month.ToString();
+        day1 = date["totime"].Day.ToString();
+        hour1 = "00";
+        min1 = "00";
+        year2 = date["totime"].Year.ToString();
+        month2 = date["totime"].Month.ToString();
+        day2 = date["totime"].Day.ToString();
+        hour2 = "23";
+        min2 = "59";   
+    }
+        
+}
+
+<div id="catebody">
+	<div id="category">
+		<div class="title">
+			등록된 팝업들
+		</div>
+
+        @{
+            if(NUM!=0){
+		        <div class="tree">
+			        <ul>
+                    @{
+                        foreach(var PR in _DB.Query(POP_sql)){
+                            string OnStr = "";
+                            if(PR["uid"]==Convert.ToInt32(uid)){
+                                OnStr = " on";
+                            }
+                            <li><a href="@g["adm_href"]&amp;uid=@PR["uid"]"><span class="name @OnStr">@PR["name"]</span></a></li>
+                        }
+                    }
+			        </ul>
+		        </div>                
+            }
+            else{
+                <div class="none">등록된 팝업이 없습니다.</div>
+            }
+        }
+        </div>
+
+	<div id="catinfo">
+
+        <form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="regispopup" />
+		<input type="hidden" name="uid" value="@R_uid" />
+		<input type="hidden" name="dispage" value="@R_dispage" />
+            
+		<div class="title">
+			<div class="xleft">
+				팝업 등록정보
+			</div>
+			<div class="xright">
+				<a href="@g["adm_href"]&amp;newpop=Y">새팝업 등록</a>
+			</div>
+		</div>
+
+		<div class="notice">
+			팝업을 등록합니다.<br />
+			팝업 등록갯수는 제한이 없으나 적절히 조절해 주세요.
+		</div>
+
+
+		<table>
+			<tr>
+				<td class="td1">팝업타이틀</td>
+				<td class="td2">
+					<input type="text" name="name" value="@R_name" class="input sname" />
+                    @{
+                        if(R_uid!=null&&R_uid!=""){
+                            <span class="btn01"><a href="?m=@module&amp;a=deletepopup&amp;uid=@R_uid&amp;m_ori=@Request["m"]&amp;" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?     ')">삭제</a></span>
+                        }
+                    }
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">노 출 형 식</td>
+				<td class="td2 shift">
+                @{
+                    string chkPop = "";
+                    string chkLayer = "";
+                        
+                    if (R_type == "0") {
+                        chkPop = "checked='checked'";
+                    }
+                    else {
+                        chkLayer = "checked='checked'";
+                    }
+                }
+					<input type="radio" name="type" value="0" @chkPop />팝업창
+					<input type="radio" name="type" value="1" @chkLayer />레이어
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">노 출 옵 션</td>
+				<td class="td2 shift">
+                @{
+                    string chkScroll = "";
+                    string chkHidden = "";
+                    if(R_scroll == "1") {
+                        chkScroll = "checked='checked'";
+                    }
+                    if (R_hidden == "1") {
+                        chkHidden = "checked='checked'";
+                    }                   
+                }
+					<input type="checkbox" name="scroll" value="1" @chkScroll />스크롤
+					<input type="checkbox" name="hidden" value="1" @chkHidden />일시중지
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">노 출 기 간</td>
+				<td class="td2">
+                @{
+                    string chkTerm0 = "";
+                    if(R_term0 == "1"){
+                        chkTerm0 = "checked='checked'";
+                    }
+                }
+					<div class="shift"><input type="checkbox" name="term0" value="1" @chkTerm0 />제한없음</div>
+					<select name="year1">
+                    @{
+                        for(int i=Convert.ToInt32(date["year"]); i<Convert.ToInt32(date["year"])+2; i++){
+                            string sltY1 = "";                            
+                            if(Convert.ToInt32(year1)==i){
+                                sltY1 = "selected='selected'";
+                            }
+                            <option value="@i" @sltY1>@i</option>
+                        }
+                    }
+					</select>
+					<select name="month1">
+                    @{
+                        for(int i=1; i<13; i++){
+                            string sltM1 = "";                            
+                            if(Convert.ToInt32(month1)==i){
+                                sltM1 = "selected='selected'";
+                            }
+                            <option value="@_System.DateSet(i)" @sltM1>@_System.DateSet(i)</option>
+                        }
+                    }
+					</select>
+					<select name="day1">
+                    @{
+                        for(int i=1; i<32; i++){
+                            string sltD1 = "";                            
+                            if(Convert.ToInt32(day1)==i){
+                                sltD1 = "selected='selected'";
+                            }
+                            <option value="@_System.DateSet(i)" @sltD1>@_System.DateSet(i)</option>
+                        }
+                    }
+                    </select>
+					<select name="hour1">
+                    @{
+                        for(int i=0; i<24; i++){
+                            string sltH1 = "";                            
+                            if(Convert.ToInt32(hour1)==i){
+                                sltH1 = "selected='selected'";
+                            }
+                            <option value="@_System.DateSet(i)" @sltH1>@_System.DateSet(i)</option>
+                        }
+                    }
+					</select>:
+					<select name="min1">
+                    @{
+                        for(int i=0; i<60; i++){
+                            string sltm1 = "";                            
+                            if(Convert.ToInt32(min1)==i){
+                                sltm1 = "selected='selected'";
+                            }
+                            <option value="@_System.DateSet(i)" @sltm1>@_System.DateSet(i)</option>
+                        }
+                    }
+					</select>
+					부터<br />
+
+					<select name="year2">
+                    @{
+                        for(int i=Convert.ToInt32(date["year"]); i<Convert.ToInt32(date["year"])+2; i++){
+                            string sltY2 = "";                            
+                            if(Convert.ToInt32(year2)==i){
+                                sltY2 = "selected='selected'";
+                            }
+                            <option value="@i" @sltY2>@i</option>
+                        }
+                    }
+					</select>
+					<select name="month2">
+                    @{
+                        for(int i=1; i<13; i++){
+                            string sltM2 = "";                            
+                            if(Convert.ToInt32(month2)==i){
+                                sltM2 = "selected='selected'";
+                            }
+                            <option value="@_System.DateSet(i)" @sltM2>@_System.DateSet(i)</option>
+                        }
+                    }
+					</select>
+					<select name="day2">
+                    @{
+                        for(int i=1; i<32; i++){
+                            string sltD2 = "";                            
+                            if(Convert.ToInt32(day2)==i){
+                                sltD2 = "selected='selected'";
+                            }
+                            <option value="@_System.DateSet(i)" @sltD2>@_System.DateSet(i)</option>
+                        }
+                    }
+                    </select>
+					<select name="hour2">
+                    @{
+                        for(int i=1; i<24; i++){
+                            string sltH2 = "";                            
+                            if(Convert.ToInt32(hour2)==i){
+                                sltH2 = "selected='selected'";
+                            }
+                            <option value="@_System.DateSet(i)" @sltH2>@_System.DateSet(i)</option>
+                        }
+                    }
+					</select>:
+					<select name="min2">
+                    @{
+                        for(int i=0; i<60; i++){
+                            string sltm2 = "";                            
+                            if(Convert.ToInt32(min2)==i){
+                                sltm2 = "selected='selected'";
+                            }
+                            <option value="@_System.DateSet(i)" @sltm2>@_System.DateSet(i)</option>
+                        }
+                    }
+					</select>
+					까지
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">노 출 크 기</td>
+				<td class="td2 sf">
+					<input type="text" name="width" value="@R_width" size="3" class="input" /> *
+					<input type="text" name="height" value="@R_height" size="3" class="input" />
+					(가로/세로 , 단위:픽셀)
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">노 출 위 치</td>
+				<td class="td2 sf">
+                @{
+                    string ptopVal = "0";
+                    string pleftVal = "0";
+                    string chkCenter = "";
+                    if(R_ptop!=null && R_ptop!=""){
+                        ptopVal = R_ptop;
+                    }
+                    if (R_pleft != null && R_pleft != "")
+                    {
+                        pleftVal = R_pleft;
+                    }
+                    if (R_center == "1")
+                    {
+                        chkCenter = "checked='chkecked'";
+                    }
+                }
+					<input type="text" name="ptop" value="@ptopVal" size="3" class="input" /> *
+					<input type="text" name="pleft" value="@pleftVal" size="3" class="input" /> 
+					(위쪽/왼쪽 , 단위:픽셀)
+					<input type="checkbox" name="center" value="1" @chkCenter>중앙에서 위치계산
+				</td>
+			</tr>
+
+			<tr>
+				<td class="td1">노출사이트</td>
+				<td class="td2 sf1">
+					사이트별로 노출페이지 및 메뉴를 지정할 수 있습니다.<br />
+					특정페이지만 출력시 : <span class="b">[페이지ID][페이지ID]...</span> 의 형식으로 출력페이지를 등록<br />
+					특정메뉴만 출력시 : <span class="b">[메뉴코드][메뉴코드]...</span> 의 형식으로 출력메뉴를 등록<br />
+					전체차단 체크없이 공백으로 두시면 모든페이지에 대해서 팝업이 출력됩니다.<br />
+				</td>
+			</tr>
+			
+            @{
+                int j = 0;
+                string[] dispagex = R_dispage.Split('|');
+
+                string SITES_sql = "SELECT * FROM " + AppState["table_s_site"].ToString() + " ORDER BY gid asc";
+                foreach(var S in _DB.Query(SITES_sql)){
+  			        <tr>
+				        <td class="td1">@S["name"]</td>
+				        <td class="td2">
+                            @{  
+                                string str = "";
+                                string chkCutMem = "";
+                    
+                                if(uid != null && uid != "") {
+                                    str = dispagex[j];
+                                    str = str.Replace("[c[" + S["uid"] + "]]","");
+                                    str = str.Replace("[s[" + S["uid"] + "]]", "");
+                                    str = str.Replace("m[" + S["uid"] + "]", "");                            
+        
+                                    if(dispagex[j].Contains("[c["+S["uid"]+"]]")){
+                                        chkCutMem = "checked='checked'";
+                                    }
+
+                                    j++;                                    
+                                }
+                            }
+
+                            <input type="checkbox" name="sitemembers" value="[@S["uid"]]" class="hide" checked="checked" />
+        					<input type="text" name="pagemembers" value="@str" size="50" class="input" />
+					        <input type="checkbox" name="cutmembers" value="[@S["uid"]]" @chkCutMem />전체차단
+				        </td>
+			        </tr>			                        
+                }
+            }
+		</table>
+		
+		<div class="iconbox">
+			<a class="hand" onclick="window.open('?m=@m&module=filemanager&front=main&fileupload=Y&iframe=Y&pwd=./files/_etc/&pwd1=popup');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" />이미지 첨부하기</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="OpenWindow('?system=popup.image&folder=./files/_etc/&sfolder=popup&iframe=Y');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" />이미지 불러오기</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('layout');">레이아웃</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('table');">테이블</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('box');">박스</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('link');">링크</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('icon');">아이콘</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="frames.editFrame.ToolboxShowHide(0);" /><img src="@g["img_core"]/_public/ico_edit.gif" alt="" />편집</a>
+		</div>
+
+        @{
+            string htmlStr = "HTML";
+            if(R_html!=null && R_html!=""){
+                htmlStr = R_html;
+            }
+        }
+
+        <input type="hidden" name="html" id="editFrameHtml" value="@htmlStr" />
+		<input type="hidden" name="content" id="editFrameContent" value="@Html.Raw(R_content)" />
+		<iframe name="editFrame" id="editFrame" src="?m=editor&amp;toolbox=Y" width="100%" height="450" frameborder="0" scrolling="no"></iframe>
+
+        <div class="submitbox">
+            @{
+                string sendStr = "새 팝업 등록";
+                if(R_uid!=null && R_uid!=""){
+                    sendStr = "팝업속성 변경";
+                    <input type="button" class="btngray" value="팝업보기" onclick="showPopup();" />
+                }
+            }
+			<input type="submit" class="btnblue" value="@sendStr" />
+			<div class="clear"></div>
+		</div>
+
+		</form>
+		
+
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+function ToolCheck(compo)
+{
+	frames.editFrame.showCompo();
+	frames.editFrame.EditBox(compo);
+}
+function showPopup()
+{
+    if(R_scroll != ''){
+    window.open('?r=@r&system=popup.window&uid=@R_uid&iframe=Y','@Html.Raw("popview_"+R_uid)','left=@R_pleft,top=@R_ptop,width=@R_width,height=@R_height,scrollbars=yes,status=yes');
+    }
+    else{
+    window.open('?r=@r&system=popup.window&uid=@R_uid&iframe=Y','@Html.Raw("popview_"+R_uid)','left=@R_pleft,top=@R_ptop,width=@R_width,height=@R_height,scrollbars=no,status=yes');
+    }
+}
+function saveCheck(f)
+{
+	if (f.name.value == '')
+	{
+		alert('팝업타이틀을 입력해 주세요.      ');
+		f.name.focus();
+		return false;
+	}
+	if (f.width.value == '')
+	{
+		alert('팝업창의 가로폭을 입력해 주세요.');
+		f.width.focus();
+		return false;
+	}
+	if (f.height.value == '')
+	{
+		alert('팝업창의 세로폭을 입력해 주세요.');
+		f.height.focus();
+		return false;
+	}
+	
+	
+    var s = document.getElementsByName('sitemembers');
+    var c = document.getElementsByName('cutmembers');
+    var l = document.getElementsByName('pagemembers');
+    var n = l.length;
+    var i;
+	var cs = '';
+
+    for (i = 0; i < n; i++)
+	{
+		if (c[i].checked == true)
+		{
+			cs += '[c'+s[i].value+']';
+		}
+		if (l[i].value == '')
+		{
+			cs += '[s'+s[i].value+']' + '|';
+		}
+		else {
+			cs += l[i].value.replace(/\[/g,'[m'+s[i].value) + '|';
+		}
+	}
+
+    f.dispage.value = cs;
+
+    frames.editFrame.getEditCode(f.content,f.html);
+	if (f.content.value == '')
+	{
+		alert('내용을 입력해 주세요.       ');
+		frames.editFrame.getEditFocus();
+		return false;
+	}
+
+
+	return confirm('정말로 실행하시겠습니까?         ');
+}
+
+
+if(newpop=="Y"){
+    @Html.Raw("document.procForm.name.focus();");
+}
+
+
+//]]>
+</script>
+
+
+
+
+

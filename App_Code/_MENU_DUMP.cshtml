@@ -1,0 +1,257 @@
+﻿@helper getMenuXml(int site, object table, int j, int parent, int depth, int uid, string code, string r, dynamic _HS)
+    {
+    
+
+    string result = "";
+    string where = "";
+
+    int xdepth = depth + 1;
+
+    if (site != null && site != 0)
+    {
+        where = "site=" + site + " AND ";
+    }
+
+    where += "depth='" + xdepth + "' AND parent='" + parent + "' AND hidden=0 ORDER BY gid ASC";
+    string CD_sql = "SELECT * FROM " + table.ToString() + " WHERE " + where;
+
+
+    foreach (var C in _DB.Query(CD_sql))
+    {
+        j++;
+        code = code + C["id"] + "/";
+        string _code = code.Substring(0, code.Length - 1);
+
+        if (xdepth == 1)
+        {         
+            @:<!-- @C["name"] -->@(Html.Raw("\t"))
+        }
+        else
+        {
+            for (int i = 0; i < xdepth; i++)
+            {
+                @Html.Raw("\t")
+            }
+        }
+        
+        if (Convert.ToInt32(C["isson"]) > 0)
+        {
+            @:<depth@(xdepth) name="@C["name"]" ename="@C["id"]" link="@_System.RW("c=" + _code, "", _HS)" target="@C["target"]">
+
+            @getMenuXml(site, table, j, C["uid"], C["depth"], uid, code, r, _HS)
+
+            for (int i = 0; i < xdepth; i++)
+            {         
+            @:</depth@(xdepth)>
+            }
+        }
+        else
+        {
+            @:<depth@(xdepth) name="@C["name"]" ename="@C["id"]" link="@_System.RW("c=" + _code, "", _HS)" target="@C["target"]" />
+        }
+
+        if (xdepth == 1)
+        {
+            @:
+        }
+
+        code = "";
+    }
+}
+
+@helper getMenuXls(int site, object table, int j, int parent, int depth, int uid, string[] mset, string code, string r, dynamic _HS)
+{    
+            
+    
+    string where = "";
+    
+    int xdepth = depth + 1;           
+
+    if (site != null && site != 0)
+    {
+        where = "site=" + site + " AND ";
+    }
+
+    where += "depth='" + xdepth + "' AND parent='" + parent + "' AND hidden=0 ORDER BY gid ASC";
+    string CD_sql = "SELECT * FROM " + table.ToString() + " WHERE " + where;
+
+
+    foreach (var C in _DB.Query(CD_sql))
+    {
+        string result = "";
+        j++;
+        code = code + C["id"] + "/";
+        string _code = code.Substring(0, code.Length - 1);
+
+@:         
+@:@Html.Raw("<tr>")
+@:<td>@(xdepth)</td>
+@:<td>@Html.Raw(_System.isEqual(xdepth, 1, C["name"], ""))</td>
+@:<td>@Html.Raw(_System.isEqual(xdepth, 2, C["name"], ""))</td>
+@:<td>@Html.Raw(_System.isEqual(xdepth, 3, C["name"], ""))</td>
+@:<td>@Html.Raw(_System.isEqual(xdepth, 4, C["name"], ""))</td>
+@:<td>@Html.Raw(_System.isEqual(xdepth, 5, C["name"], ""))</td>
+@:<td>@(C["uid"])</td>
+@:<td>@(C["id"])</td>
+@:<td>@(_System.RW("c=" + _code, "", _HS))</td>
+@:<td>./index.cshtml?r=@(r)&c=@(_code)</td>
+@:<td>@(mset[Convert.ToInt32(C["menutype"])])</td>     
+@:<td>@Html.Raw(_System.isEqual(C["mobile"], 1, "Y", ""))</td>   
+@:<td>@Html.Raw(_System.isEqual(C["target"], 1, "Y", ""))</td>   
+@:<td>@Html.Raw(_System.isEqual(C["hidden"], 1, "Y", ""))</td>   
+@:<td>@Html.Raw(_System.isEqual(C["reject"], 1, "Y", ""))</td>   
+@:<td>@(C["joint"])</td>
+@:@Html.Raw("</tr>")
+
+        if (Convert.ToInt32(C["isson"]) > 0)
+        {
+            @getMenuXls(site, table, j, C["uid"], C["depth"], uid, mset, code, r, _HS)
+        }
+        
+    }
+}
+        
+}
+@helper getMenuTxt(int site, object table, int j, int parent, int depth, int uid, string code, string r, dynamic _HS)
+    {
+    
+
+
+    string where = "";
+
+    int xdepth = depth + 1;
+
+    bool rewrite = false;
+
+    if (_HS["rewrite"] == "1")
+    {
+        rewrite = true;
+    }
+
+    if (site != null && site != 0)
+    {
+        where = "site=" + site + " AND ";
+    }
+
+    where += "depth='" + xdepth + "' AND parent='" + parent + "' AND hidden=0 ORDER BY gid ASC";
+    string CD_sql = "SELECT * FROM " + table.ToString() + " WHERE " + where;
+
+
+    foreach (var C in _DB.Query(CD_sql))
+    {
+        string result = "";
+        j++;
+        code = code + C["id"] + "/";
+        string _code = code.Substring(0, code.Length - 1);
+
+        for (int i = 0; i < depth; i++)
+        {
+            result += "\t";
+        }
+
+        result += "[" + xdepth.ToString() + "]";
+
+        if (C["hidden"] == "1")
+        {
+            result += "[숨김]";
+        }
+
+        if (C["reject"] == "1")
+        {
+            result += "[차단]";
+        }
+
+        if (C["target"] != "")
+        {
+            result += "[새창]";
+        }
+
+        result += C["name"] + " = " + _System.RW("c=" + _code, "", _HS) + "\r";
+        
+@:@(result)
+        
+        if (Convert.ToInt32(C["isson"]) > 0)
+        {
+            @getMenuTxt(site, table, j, C["uid"], C["depth"], uid, code, r, _HS)
+        }
+
+        if (xdepth == 1)
+        {
+            //result += "\r\n";
+            @:@("\r")
+        }
+
+        code = "";
+    }
+}       
+    
+
+    
+@*functions {
+    public static string getMenuTxt(int site, object table, int j, int parent, int depth, int uid, string code, string r, dynamic _HS) 
+    {
+        
+        
+        string result = "";
+        string where = "";
+    
+        int xdepth = depth + 1;
+        
+        bool rewrite = false;
+
+        if (_HS["rewrite"].ToString() == "1")
+        {
+            rewrite = true;
+        }
+
+        if (site != null && site != 0)
+        {
+            where = "site=" + site + " AND ";
+        }
+
+        where += "depth='" + xdepth + "' AND parent='" + parent + "' AND hidden=0 ORDER BY gid ASC";
+        string CD_sql = "SELECT * FROM " + table.ToString() + " WHERE " + where;
+
+
+        foreach (var C in _DB.Query(CD_sql))
+        {
+            j++;
+            code = code + C["id"] + "/";
+            string _code = code.Substring(0, code.Length - 1);
+        
+            result += "[" + xdepth.ToString() + "]";
+        
+            if (C["hidden"] == "1")
+            {
+                result += "[숨김]";
+            }
+        
+            if (C["reject"] == "1")
+            {
+                result += "[차단]";
+            }
+        
+            if (C["target"] != "")
+            {
+                result += "[새창]";
+            }
+        
+            result += C["name"] + "=" + _System.RW("c=" + _code, "", rewrite) + "\r\n";
+        
+        
+            if (Convert.ToInt32(C["isson"]) > 0)
+            {
+                result += getMenuTxt(site, table, j, C["uid"], C["depth"], uid, code, r, _HS);
+            }
+        
+            if (xdepth == 1)
+            {
+                result += "\r\n";
+            }
+        
+            code = "";
+        }    
+    
+        return result;
+    }       
+}*@

@@ -1,0 +1,150 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var my = PageData[1];
+    var _HM = PageData[2];
+    var _HP = PageData[3];
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var _HS = PageData[11];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    var front = PageData[16];
+    var _m = PageData[17];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var iframe = Request["iframe"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var cync = Request["cync"];
+        
+    dynamic d_trackback = _DB.Get_code("trackback");
+    
+    if (cync !=null && cync != "")
+    {
+        Session[m + "cync"] = cync;
+    }
+    
+    if (Session[m + "cync"] == null || Session[m + "cync"].ToString() == "")
+    {
+        @_System.getLink(_System.RW("", g["r"], _HS), "", "동기화코드가 지정되지 않았습니다.", "")
+        return;
+    }
+
+    string[] cyncArr = _System.getArrayString(Session[m + "cync"]);
+ 
+    string mod = "main";
+    string skin_set = "";
+    string bbs_reset = "./?";
+    string filterUrl = "";
+    
+    if (sort == null || sort == "")
+    {
+        sort = "uid";
+    }
+    
+    if (orderby == null || orderby == "")
+    {
+        orderby = "asc";
+    }
+    
+    if (recnum == null || recnum == "" || recnum == "0" || Convert.ToInt32(recnum) > 200)
+    {
+        recnum = d_trackback["recnum"];
+    }
+
+    var cmentque = "parent='" + cyncArr[0] + cyncArr[1] + "' AND type=1";
+    
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);      // list count per page
+    
+    string TCD_sql = _System.GetQuery(AppState["table_s_trackback"].ToString(), "", cmentque, sort, orderby, list_start, recnum);
+    int NUM = _DB.GetDbData_Count(AppState["table_s_trackback"].ToString(), cmentque);    
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+
+    string RCD_sql = TCD_sql;
+    int RCD_cnt = NUM;
+    
+    
+    if (g["mobile"] != "" && Session["pcmode"] != "Y")
+    {
+        skin_set = d_trackback["skin_mobile"];        
+    }
+    else
+    {
+        if (skin != null && skin != "")
+        {
+            skin_set = skin;
+        }
+        else
+        {
+            skin_set = d_trackback["skin_main"];
+        }        
+    }    
+
+
+    // bbs_reset variable setting
+    if (_HS["usescode"] == 1)
+    {
+        bbs_reset += "r=" + r + "&";
+    }
+
+    if (c != "" && c != null)
+    {
+        bbs_reset += "c=" + c;
+    }
+    else
+    {
+        bbs_reset += "m=" + m;
+        filterUrl = _System.getLinkFilter("skin|iframe", skin + "|" + iframe);
+        bbs_reset += filterUrl;
+    }
+
+    g["RCD_sql"] = RCD_sql;
+    g["RCD_cnt"] = RCD_cnt;
+    g["NUM"] = NUM;
+    g["TPG"] = TPG;
+
+    g["track_reset"] = bbs_reset;
+    g["track_list"] = g["track_reset"] + _System.getLinkFilter("p|sort|orderby|recnum|where|keyword", p + "|" + sort + "|" + orderby + "|" + recnum + "|" + where + "|" + keyword);
+    g["track_action"] = g["track_list"] + "&a=";
+    g["track_delete"] = g["track_action"] + "delete&uid=";
+
+
+    g["dir_module_skin"] = g["dir_module"] + "theme\\" + skin_set + "\\";
+    g["url_module_skin"] = g["url_module"] + "/theme/" + skin_set;
+    g["img_module_skin"] = g["url_module_skin"] + "/image";
+
+    g["dir_module_mode"] = g["dir_module_skin"] + mod;
+    g["url_module_mode"] = g["url_module_skin"] + "/" + mod;
+
+    g["main"] = g["dir_module_mode"] + ".cshtml";
+
+    Session["g"] = g;
+    Session["g_main"] = g["main"];
+   
+}
+

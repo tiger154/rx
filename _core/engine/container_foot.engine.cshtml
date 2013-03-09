@@ -1,0 +1,44 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+
+    dynamic g = PageData[0];
+    dynamic _HM = PageData[1];
+    
+    var system = PageData[2];
+
+    string _HM_incfile = "";
+
+    if (_HM["putfoot"] == "1")    {
+        
+	    if ((system == "" || system ==null) && g["mobile"] == "")
+        {
+            _HM_incfile = g["path_page"] + "menu\\" + String.Format("{0:00000}", Convert.ToInt32(_HM["uid"]));     
+            
+            if (File.Exists(g["path_root_ps"] + _HM_incfile + ".footer.cshtml"))
+            {
+                <div>
+                    @RenderPage("../../" + _HM_incfile + ".footer.cshtml")
+                </div>
+            }
+            if (_HM["imgfoot"] != "")
+            {
+                if (_HM["imgfoot"].Contains("swf"))
+                {
+				    <div><embed id="swf_menu_header" src="@g["url_root"]/_var/menu/@_HM["imgfoot"]"></embed></div>
+                }
+                else
+                {
+				        <div><img id="img_menu_header" src="@g["url_root"]/_var/menu/@_HM["imgfoot"]" alt="" /></div>
+                }                
+            }
+
+		}
+	}
+    }

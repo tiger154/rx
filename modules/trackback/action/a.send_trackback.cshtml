@@ -1,0 +1,99 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    
+    var my = PageData[0];
+    var s = PageData[2];
+    var m = PageData[4];
+    var r = PageData[7];
+
+    dynamic g = PageData[1];
+    var _HS = PageData[6];
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    
+    dynamic d_trackback = _DB.Get_code("trackback");
+
+    var trackback = Request["trackback"];
+        
+    int uid = 0;   
+
+    if (Convert.ToInt32(d_trackback["perm_write"]) > my["level"])
+    {
+        if (my["admin"] != "1")
+        {
+            @_System.getLink("", "", "권한이 없습니다.", "")
+            return;
+        }
+    }
+    
+    if (trackback != null && trackback != "")
+    {
+        string[] cyncArr = _System.getArrayString(Session[m + "cync"]);
+        trackback = trackback.Trim();
+        
+        var compaurl = "http://" + Request.ServerVariables["HTTP_HOST"] + Request.ServerVariables["SCRIPT_NAME"] + "/" + r + "/" + cyncArr[0] + "/" + cyncArr[1];
+        
+        if (trackback == compaurl)
+        {
+            @_System.getLink("", "", "지정된 주소는 원본글의 트랙백주소입니다.", "")
+            return;
+        }
+        
+        dynamic R = _DB.Get_module_data(AppState["table_" + cyncArr[0] + "data"], "uid", cyncArr[1]);
+        
+	    
+        if (R["uid"] != 0)
+        {
+            string orignurl = g["url_root"] + "/?r=" + r + "&m=" + cyncArr[0] + "&bid="  + R["bbsid"] + "&uid=" + R["uid"];
+            bool result = _System.putTracback(trackback,  orignurl, R["subject"], _HS["nametype"], _System.Strip_tags(R["content"]), 0); 
+            
+            //함수구현중                
+		    //$result = putTrackback($trackback,$orignurl,getUTFtoKR($R['subject']),getUTFtoKR($R[$_HS['nametype']]),getUTFtoKR(strip_tags($R['content'])),0);
+                
+            
+            if (result)
+            {
+                string minuid = _DB.GetDbData_S(AppState["table_s_trackback"].ToString(), "", "min(convert(decimal(10,2),uid))").ToString();
+                
+                
+                if (minuid != "")
+                {
+                    if (minuid.Contains("."))
+                    {
+                        minuid = minuid.Split('.')[0];
+                    }
+                    uid = Convert.ToInt32(minuid) - 1;
+                }
+                else
+                {
+                    uid = 99999999;
+                }                
+                
+                string QKEY = "uid,site,type,parent,parentmbr,url,name,subject,content,d_regis,d_modify,cync";
+                string QVAL = "'" + uid + "','" + s + "','2','" + cyncArr[0] + R["uid"] + "','" + my["uid"] + "','" + trackback + "','','','','" + date["insert"] + "','','" + Session[m + "cync"] + "'";
+
+                string INSERT_TB_SQL = "INSERT INTO " + AppState["table_s_trackback"] + " (" + QKEY + ") VALUES (" + QVAL + ")";
+                string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET sndtrack=sndtrack+1 WHERE date=getdate() AND site='" + s + "'";
+
+
+                @_DB.Execute(INSERT_TB_SQL);
+                @_DB.Execute(UPDATE_NUM_SQL);
+
+                //if ($uid == 100000000) db_query("OPTIMIZE TABLE ".$table['s_trackback'],$DB_CONNECT);
+            }
+            else
+            {
+                @_System.getLink("", "", "트랙백서버가 동작하지 않거나 정상적인 주소가 아닙니다.", "")
+                return;
+            }
+        }
+    }
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+    
+}

@@ -1,0 +1,135 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+    
+    string frame_name = "_action_frame_" + m;    
+}    
+
+@if(!_isDragScript) 
+{
+    <script type="text/javascript" src="@g["s"]/_core/opensrc/tool-man/core.js"></script>
+    <script type="text/javascript" src="@g["s"]/_core/opensrc/tool-man/events.js"></script>
+    <script type="text/javascript" src="@g["s"]/_core/opensrc/tool-man/css.js"></script>
+    <script type="text/javascript" src="@g["s"]/_core/opensrc/tool-man/coordinates.js"></script>
+    <script type="text/javascript" src="@g["s"]/_core/opensrc/tool-man/drag.js"></script>
+    <script type="text/javascript" src="@g["s"]/_core/opensrc/tool-man/dragsort.js"></script>
+    
+    <script type="text/javascript">
+    //<![CDATA[
+    var dragsort = ToolMan.dragsort();
+    //]]>
+    </script>
+}
+
+<div id="catebody">
+	<div id="category">
+		<form name="procForm" action="@g["s"]/" method="post" target="@frame_name">
+        <input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="" />
+
+		<div class="title">
+			즐겨찾는 페이지
+		</div>
+		
+		<div class="tree">
+			<ul id="moduleorder3">
+			@{
+                string ADMPAGE_sql = "SELECT * FROM " + AppState["table_s_admpage"] + " WHERE memberuid=" + my["uid"] + " ORDER BY gid ASC";
+                int ADMPAGE_cnt = _DB.GetDbData_Count(AppState["table_s_admpage"], "memberuid=" + my["uid"]);
+
+                foreach(var R in _DB.Query(ADMPAGE_sql)) 
+                {
+			        <li class="move">
+				    <input type="checkbox" name="bookmark_pages" value="@R["uid"]" checked="checked" />
+				    <span>@R["name"]</span>
+			        </li>                        
+				}
+                
+                if (ADMPAGE_cnt == 0)
+                {
+			        <li>
+				    <input type="checkbox" disabled="disabled" />등록된 페이지가 없습니다.
+			        </li>
+                }
+			}
+			</ul>
+		</div>
+
+		</form>
+	</div>
+
+	<div id="catinfo">
+		<ul>
+		<li><input type="button" value="순서변경" class="btnblue" onclick="actQue('bookmark_order');" /> : 즐겨찾는 페이지의 순서를 드래그한 후 클릭해주세요.</li>
+		<li><input type="button" value="제외하기" class="btnblue" onclick="actQue('bookmark_delete');" /> : 페이지의 체크를 해제한 후 클릭해주세요.</li>
+		</ul>
+	</div>
+	<div class="clear"></div>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function actQue(act)
+{
+	var f  = document.procForm;
+    var l = document.getElementsByName('bookmark_pages');
+    var n = l.length;
+    var i;
+	var j=0;
+
+	if (act == 'bookmark_order')
+	{
+		if (confirm('정말로 이 순서를 저장하시겠습니까?     '))
+		{
+
+			for	(i = 0; i < n; i++)
+			{
+				l[i].checked = true;
+			}
+
+			f.a.value = act;
+			f.submit();
+		}
+	}
+	if (act == 'bookmark_delete')
+	{
+		for	(i = 0; i < n; i++)
+		{
+			if (l[i].checked == true)
+			{
+				l[i].checked = false;
+			}
+			else {
+				l[i].checked = true;
+			}
+		}
+
+		f.a.value = act;
+		f.submit();
+	}
+}
+dragsort.makeListSortable(getId("moduleorder3"));
+//]]>
+</script>

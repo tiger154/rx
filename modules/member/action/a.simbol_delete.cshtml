@@ -1,0 +1,57 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+
+    string delPath = g["path_root_ps"] + g["path_var"] + "simbol\\";
+    string oriFile = my["photo"].Replace(".", "_ori.");
+    
+    if (my["uid"] == 0)
+    {  
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+
+    //프로필 사진 삭제
+    if (File.Exists(delPath + my["photo"])) 
+    {
+        File.Delete(delPath + my["photo"]);
+    }
+    
+    //프로필 원본사진 삭제
+    if(File.Exists(delPath + oriFile)) 
+    {
+        File.Delete(delPath + oriFile);
+    }
+
+    string UPDATE_MBRDT_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET photo='' WHERE memberuid=" + my["uid"]; 
+    @_DB.Execute(UPDATE_MBRDT_SQL);
+    
+    @_System.getLink("reload", "parent.", "", "")                                                
+    return;
+}

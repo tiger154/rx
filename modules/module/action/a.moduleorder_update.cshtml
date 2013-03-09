@@ -1,0 +1,76 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    string modulemembers1 = Request["modulemembers1"];
+    string modulemembers2 = Request["modulemembers2"];
+    string modulemembers3 = Request["modulemembers3"];
+    string modulemembers4 = Request["modulemembers4"];
+    string modulemembers5 = Request["modulemembers5"];
+    string fnum = Request["fnum"];
+
+    string[] strArray = {}; 
+    
+    switch (fnum)
+    {
+        case "1" :
+            strArray = modulemembers1.Split(',');
+            break;
+            
+        case "2" :
+            strArray = modulemembers2.Split(',');
+            break;
+
+        case "3":
+            strArray = modulemembers3.Split(',');
+            break;
+
+        case "4":
+            strArray = modulemembers4.Split(',');
+            break;
+
+        case "5":
+            strArray = modulemembers5.Split(',');
+            break;
+    }       
+
+    int i = 0;
+    
+    @_System.checkAdmin(my["admin"], 0);        // 관리자 체크
+
+    foreach(var val in strArray) {
+        string order_update = "UPDATE " + AppState["table_s_module"] + " SET gid=" + i + " WHERE id='" + val + "'";
+        
+        @_DB.Execute(order_update);
+
+        i++;
+    }
+
+    @_System.getLink("reload","parent.","","")
+    return;
+}

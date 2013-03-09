@@ -1,0 +1,267 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    
+
+    var p = PageData[4];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var _m = PageData[1];
+    var m = PageData[3];
+    
+    dynamic g = PageData[0];   
+    dynamic _HS = PageData[5];
+
+    string r = Request["r"];
+    string uid = Request["uid"];
+    string id = Request["id"];
+
+    dynamic d_member = _DB.Get_code("member");    
+    dynamic R = null;
+    dynamic M = null;
+    dynamic M1 = null;
+
+    var frame_name = "_action_frame_" + m;
+    
+    
+    if (my["uid"] == 0) 
+    {
+        @_System.getLink("", "", "권한이 없습니다.", "close")
+        return;
+    }
+
+
+    if (uid != null && uid != "" && uid != "0")
+    {
+        R = _DB.GetDbData_M(AppState["table_s_paper"].ToString(), "uid=" + uid + " AND my_mbruid=" + my["uid"]);
+        if (R == null || R["by_mbruid"] < 1)
+        {            
+            @_System.getLink("", "", "", "close")
+            return;
+        }
+
+        M = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", R["by_mbruid"]);
+        
+        if (M["memberuid"] == 0) 
+        {
+            @_System.getLink("", "", "존재하지 않거나 탈퇴한 회원입니다.", "close")
+            return;
+        }
+        else {
+            M1 = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "uid=" + M["memberuid"]);
+        }
+    }
+
+    string R_uid = "";    
+    if (R != null) {
+        R_uid = R["uid"].ToString();
+    }    
+}
+                    
+<div id="paperbox">
+    <form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return submitCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="member" />
+	<input type="hidden" name="a" value="paper_send" />        
+	<input type="hidden" name="parent" value="@R_uid" />
+        
+    
+    @{        
+        string clsString = "";
+        string clsString2 = "";
+        if (R == null)
+        {
+            clsString = "1";
+        }      
+    }
+
+	<div class="@Html.Raw("direct" + clsString)">            
+    <!-- Session["pcmode"]는  module/home/ac.pcmode.cshtml에서 작동함-->                
+    @if (g["mobile"] == "" || Session["pcmode"] == "Y") {
+        <a href="#" onclick="directMsg();">쪽지함 바로가기</a>  
+    }
+    </div>       
+        
+	<div class="line1"></div>
+	<div class="line2"></div>
+	<div class="line3"></div>
+	
+    <div class="wrap">    
+
+        @if (g["mobile"] != "" && Session["pcmode"] != "Y") {
+            clsString2 = "1";
+        }
+        
+        <div class="@Html.Raw("i1" + clsString2)">            
+        @{
+            if (uid != null && uid != "")
+            {
+                <span class="b">받는사람</span> @Html.Raw(" : " + M["name"] + "(" + M["nic"] + ")")
+                
+                string valStr = "";
+                if (d_member["login_emailid"] == "1")
+                {
+                    valStr = M["email"];
+                }
+                else
+                {
+                    valStr = M1["id"];
+                }         
+                <input type="hidden" name="id" value= "@valStr" />             
+            }
+            else
+            {               
+            
+                <div>          
+                <span class="b">내친구들 리스트</span> :    
+                @{  
+
+                string FLIST_sql = "SELECT * FROM " + AppState["table_s_friend"] + " WHERE by_mbruid='" + my["uid"] + "' ORDER BY uid desc";
+                int FLIST_cnt = _DB.GetDbData_Count(AppState["table_s_friend"].ToString(), "by_mbruid='" + my["uid"] + "'");
+                }
+                <select onchange="friendSelect(this);">
+                <option value="">&nbsp @Html.Raw("팔로워 (" + FLIST_cnt + "명) 선택하기")</option>
+                <option value="">----------------------------------------------</option>
+
+                @{                      
+                    foreach (var F in _DB.Query(FLIST_sql)) {
+                        dynamic FM1 = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "uid=" + F["my_mbruid"]);
+
+                        if(FM1==null) {
+                            break;
+                        }
+
+                        dynamic FM2 = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + FM1["uid"]);
+
+                        string valString = "";
+                        string optString = "";
+
+                        if (d_member["login_emailid"] == "1") 
+                        {
+                            valString = FM2["email"];
+                            optString = FM2["email"];
+                        }
+                        else {
+                            valString = FM1["id"];
+                            optString = FM1["id"];
+                        }
+                            <option value="@valString">ㆍ @FM2[_HS["nametype"]] (@optString)</option>               
+                    }
+                }
+                </select>
+                </div>         
+                
+            
+                <div>
+                @{
+                string rcvString = "";
+                if (d_member["login_emailid"] == "1")
+                {
+                    rcvString = "이메일";
+                }
+                else
+                {
+                    rcvString = "아이디";
+                }
+                }    
+                    
+                <span class="b">받는사람 @rcvString</span> : 
+                <input type="text" name="id" value="@id" class="input" title="여러사람에게 보내시려면 콤마(,)로 구분해 주세요." />
+                </div>
+            
+                    
+            }
+        }
+        </div>
+            @{
+                string msgString = "";
+                if (g["mobile"] != "" && Session["pcmode"] == "Y")
+                {
+                    msgString = "1";
+                }
+            }
+            <textarea name="msg" rows="10" cols="50" class="@Html.Raw("msg" + msgString)"></textarea>
+        
+		    <div class="footer">
+			<input type="submit" value=" 보내기 " class="btnblue b" onclick="" />
+			<input type="button" value=" 취소 " class="btngray" onclick="top.close();" />
+		    </div>
+        
+    </div>
+        
+	</form>
+    
+</div>
+
+    
+    
+    
+<script type="text/javascript">
+//<![CDATA[
+
+function directMsg()
+{
+	var x = opener.frames.name == '' ? opener : opener.parent;
+	x.location.href = '@g["s"]/?r=@r&mod=mypage&page=paper';
+    top.close();
+}
+function friendSelect(obj)
+{
+	var f = obj.form;
+	var i = f.id;
+
+	if (obj.value != "")
+	{
+		if ((","+i.value+",").indexOf(obj.value) == -1)
+		{
+			i.value = obj.value + "," +i.value;
+		}
+		obj.value = "";
+	}
+}
+function submitCheck(f)
+{
+	if (f.id.value == "")
+	{
+		alert('받는사람 아이디를 입력해 주세요.    ');
+		f.id.focus();
+		return false;
+	}
+	if (f.msg.value == "")
+	{
+		alert('메세지를 입력해 주세요.    ');
+		f.msg.focus();
+		return false;
+	}
+}
+
+@{
+    if (g["mobile"] != "" && Session["pcmode"] != "Y")
+    {
+        @Html.Raw("top.resizeTo(330,360);\n");
+    }
+    else
+    {
+        if (R != null)
+        {
+            @Html.Raw("top.resizeTo(430,360);\n");
+        }
+        else
+        {
+            @Html.Raw("top.resizeTo(430,410);\n");        
+        }
+    }     
+}
+
+document.title = "쪽지보내기";
+
+
+//]]>
+</script> 
+ 

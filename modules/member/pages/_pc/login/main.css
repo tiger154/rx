@@ -1,0 +1,21 @@
+﻿#pages_login {}
+
+#pages_login h2 {font-family:"malgun gothic",dotum;font-size:20px;padding:0 0 10px 0;margin:0;border-bottom:#999999 solid 3px;}
+#pages_login .msg {color:#1C5B8C;font-family:dotum;line-height:150%;padding:30px 0 30px 0;}
+#pages_login .msg a {color:#999999;font-size:11px;font-family:dotum;}
+
+#pages_login .tab {height:28px;}
+#pages_login .tab ul {position:relative;top:1px;padding:0;margin:0;}
+#pages_login .tab li {float:left;width:125px;text-align:center;list-style-type:none;border-top:#dfdfdf solid 1px;border-right:#dfdfdf solid 1px;border-bottom:#dfdfdf solid 1px;padding:7px 7px 7px 7px;background:#efefef;cursor:pointer;color:#666666;}
+#pages_login .tab .selected {background:#ffffff;color:#000000;border-top:#dfdfdf solid 1px;border-right:#dfdfdf solid 1px;border-bottom:#ffffff solid 1px;}
+#pages_login .tab .lside {border-left:#dfdfdf solid 1px;}
+
+#pages_login .agreebox {border:#dfdfdf solid 1px;padding:30px 30px 30px 30px;}
+#pages_login .agreebox .tblbox {padding:15px;background:#efefef;}
+#pages_login .agreebox table {width:100%;}
+#pages_login .agreebox .key {width:75px;padding:10px 10px 10px 0;color:#666666;letter-spacing:-1px;text-align:right;}
+#pages_login .agreebox .xfont {color:#999999;}
+#pages_login .agreebox .input {width:200px;}
+#pages_login .agreebox .submitbox {padding:20px 0 0 108px;}
+#pages_login .agreebox .submitbox .btngray {height:25px;}
+#pages_login .agreebox .submitbox .btnblue {width:100px;height:25px;}

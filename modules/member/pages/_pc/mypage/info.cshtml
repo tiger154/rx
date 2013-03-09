@@ -1,0 +1,675 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    var g = PageData[0];
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var r = PageData[12];
+
+    dynamic d_member = _DB.Get_code("member");
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+
+    var qa_p_conf = "";
+    var job_p_conf = "";
+    var marr_p_conf = "";
+    
+    string frame_name = "_action_frame_"+m;
+    string nic_set = "0";
+    string email_set = "0";
+
+    int now_year = Convert.ToInt32(date["year"]);
+    int now_month = Convert.ToInt32(date["month"]);
+    int now_day = Convert.ToInt32(date["day"]);
+
+    // 개별 페이지 상단 메뉴부
+    @RenderPage("_menu.cshtml", g, m)
+}
+
+<div id="pages_join">
+
+    <form name="procForm" action="@g["s"]/" method="post" target='@frame_name' onsubmit="return saveCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@m" />
+	<input type="hidden" name="front" value="mypage" />     
+	<input type="hidden" name="a" value="info_update" />
+	<input type="hidden" name="check_nic" value="@Html.Raw(_System.isEqual(my["nic"] != "", true, "1", "0"))" />
+	<input type="hidden" name="check_email" value="@Html.Raw(_System.isEqual(my["email"] != "", true, "1", "0"))" />
+
+	<div class="msg">
+		<span class="b">(*)</span> 표시가 있는 항목은 반드시 입력해야 합니다.<br />
+		허위로 작성된 정보일 경우 승인이 보류되거나 임의로 삭제처리될 수 있으니 주의해 주세요.
+	</div>
+
+
+	<table summary="회원가입 기본정보를 입력받는 표입니다.">
+	<caption>회원가입 기본정보</caption> 
+	<colgroup> 
+	<col width="100"> 
+	<col> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col"></th>
+	<th scope="col"></th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+	<td class="key">이름(실명)<span>*</span></td>
+	<td>
+		<input type="text" name="name" value="@my["name"]" maxlength="10" class="input" />
+	</td>
+	</tr>
+
+	<tr>
+	<td class="key">닉네임<span>*</span></td>
+	<td>
+		<input type="text" name="nic" value="@my["nic"]" maxlength="20" class="input" onblur="sameCheck(this,'hLayernic');" />
+		<span class="hmsg" id="hLayernic"></span>
+		<div>닉네임은 자신을 표현할 수 있는 단어로 20자까지 자유롭게 사용할 수 있습니다.</div>
+	</td>
+	</tr>
+
+	<tr>
+	<td class="key">생년월일/성별<span>*</span></td>
+	<td>
+		<select name="birth_1">
+		<option value="">년도</option>
+		@{        
+            for (var i = now_year; i > 1930; i--) 
+            {
+                <option value="@i" @_System.getSltStr(my["birth1"], i)>@i</option>
+			}
+		}
+		</select>
+
+        <select name="birth_2">
+		<option value="">월</option>
+		@{
+            for(var i = 1; i < 13; i++) {
+                var month_selected = "";
+                var tmp_i = i.ToString();
+                
+                if(tmp_i.Length == 1) {
+                    tmp_i = "0"+tmp_i;
+				}
+
+                if(my["birth2"] != "" && my["birth2"].Substring(0, 2) == tmp_i.ToString()) {
+                    month_selected = "selected='selected'";
+				}                
+        		<option value="@i" @Html.Raw(@month_selected)>@i</option>
+            }            
+		}
+		</select>
+        
+		<select name="birth_3">
+		<option value="">일</option>
+		@{
+            for(var i = 1; i < 32; i++) {
+                var day_selected = "";
+                var tmp_i = i.ToString();
+                
+                if(tmp_i.Length == 1) {
+                    tmp_i = "0"+tmp_i;
+				}
+
+                if(my["birth2"] != "" && my["birth2"].Substring(2, 2) == tmp_i.ToString()) {
+                   day_selected = "selected='selected'";
+        		}
+        		<option value="@i" @Html.Raw(@day_selected)>@i</option>
+            }            
+		}
+        </select>
+
+		<input type="checkbox" name="birthtype" value="1" @_System.getChkStr(my["birthtype"], 1)/>음력
+		<input type="radio" name="sex" value="1" @_System.getChkStr(my["sex"], 1) />남성
+		<input type="radio" name="sex" value="2" @_System.getChkStr(my["sex"], 2) />여성
+	</td>
+	</tr>
+
+	@{
+        if(d_member["form_qa"] == "1") 
+        {            
+	        <tr>
+	        <td class="key">비번찾기 질문 @Html.Raw(_System.isEqual(d_member["form_qa_p"], 1, "<span>*</span>", ""))</td>
+	        <td><input type="text" name="pw_q" value="@my["pw_q"]" class="input pw_q2" /></td>
+	        </tr>            
+
+	        <tr>
+	        <td class="key">비번찾기 답변 @Html.Raw(qa_p_conf)</td>
+	        <td>
+		    <input type="text" name="pw_a" value="@my["pw_a"]" class="input" />
+		    <div>
+		    비밀번호찾기 질문에 대한 답변을 혼자만 알 수 있는 단어나 기호로 입력해 주세요.<br />
+		    비밀번호를 찾을 때 필요하므로 반드시 기억해 주세요.
+		    </div>
+	        </td>
+	        </tr>
+		}
+    }
+
+	<tr>
+	<td class="key">이메일<span>*</span></td>
+	<td>
+		<input type="text" name="email" value="@my["email"]" size="35" class="input" onblur="sameCheck(this,'hLayeremail');" />
+		<span class="hmsg" id="hLayeremail"></span>
+		<div>주로 사용하는 이메일 주소를 입력해 주세요. 비밀번호 잊어버렸을 때 확인 받을 수 있습니다.</div>
+		<div class="remail"><input type="checkbox" name="remail" value="1" @_System.getChkStr(my["mailing"], 1) />뉴스레터나 공지이메일을 수신받겠습니다.</div>
+	</td>
+	</tr>
+
+		@{
+            if(d_member["form_home"] == "1") 
+            {   
+                <tr>
+                <td class="key">홈페이지 @Html.Raw(_System.isEqual(d_member["form_home_p"], 1, "<span>*</span>", ""))</td>
+                <td><input type="text" name="home" value="" size="35" class="input" /></td>
+                </tr>
+            }
+
+            if(d_member["form_tel2"] == "1") {    
+                string sms_check = "";
+                string tel2_p_conf = "";
+                string tel2_1 = "";
+                string tel2_2 = "";
+                string tel2_3 = "";
+                
+                if(d_member["form_tel2"] == "1") 
+                {
+            	    <tr>
+	                <td class="key">휴대전화 @Html.Raw(_System.isEqual(d_member["form_tel2_p"], 1, "<span>*</span>", ""))</td>
+            	    <td>
+
+                    @if (my["tel2"] != "") 
+                    {
+                        string[] tel2 = my["tel2"].Split('-');
+
+                        tel2_1 = tel2[0];
+                        tel2_2 = tel2[1];
+                        tel2_3 = tel2[2];
+					}
+
+		            <input type="text" name="tel2_1" value="@tel2_1" maxlength="3" size="4" class="input" />-
+		            <input type="text" name="tel2_2" value="@tel2_2" maxlength="4" size="4" class="input" />-
+		            <input type="text" name="tel2_3" value="@tel2_3" maxlength="4" size="4" class="input" />
+		            <div class="remail"><input type="checkbox" name="sms" value="1" @_System.getChkStr(my["sms"], 1) />알림문자를 받겠습니다.</div>
+	                </td>
+	                </tr>
+                }
+            }
+        }
+
+
+		@{
+            if (d_member["form_tel1"] == "1") 
+            {
+                string tel1_1 = "";
+                string tel1_2 = "";
+                string tel1_3 = "";
+
+                <tr>
+	            <td class="key">전화번호 @Html.Raw(_System.isEqual(d_member["form_tel1_p"], 1, "<span>*</span>", ""))</td>
+	            <td>
+
+                @if (my["tel2"] != "")
+                {
+                    string[] tel1 = my["tel1"].Split('-');
+
+                    tel1_1 = tel1[0];
+                    tel1_2 = tel1[1];
+                    tel1_3 = tel1[2];
+                }
+
+                <input type="text" name="tel1_1" value="@tel1_1" maxlength="3" size="4" class="input" />-
+		        <input type="text" name="tel1_2" value="@tel1_2" maxlength="4" size="4" class="input" />-
+		        <input type="text" name="tel1_3" value="@tel1_3" maxlength="4" size="4" class="input" />
+	            </td>
+	            </tr>
+            }
+        }
+
+
+		@{
+            if (d_member["form_addr"] == "1")
+            {                
+                string zip_1 = "";
+                string zip_2 = "";                
+
+                if (my["zip"] != "")
+                {
+                    zip_1 = my["zip"].Substring(0, 3);
+                    zip_2 = my["zip"].Substring(3, 3);
+                }
+                
+	            <tr>
+	            <td class="key">주소 @Html.Raw(_System.isEqual(d_member["form_addr_p"], 1, "<span>*</span>", ""))</td>
+	            <td>
+		            <div id="addrbox" @Html.Raw(_System.isEqual(my["addr0"], "해외", "class='hide'", ""))>
+		                <div>
+		                <input type="text" name="zip_1" id="zip1" value="@zip_1" maxlength="3" size="3" readonly="readonly" class="input" />-		                
+		                <input type="text" name="zip_2" id="zip2" value="@zip_2" maxlength="3" size="3" readonly="readonly" class="input" />	                
+		                <input type="button" value="우편번호" class="btngray btn" onclick="OpenWindow('./?m=zipsearch&zip1=zip2&zip2=zip2&addr1=addr1&focusfield=addr2');" />
+		                </div>
+		                <div><input type="text" name="addr1" id="addr1" value="@my["addr1"]" size="55" readonly="readonly" class="input" /></div>
+		                <div><input type="text" name="addr2" id="addr2" value="@my["addr2"]" size="55" class="input" /></div>
+		            </div>
+                
+    	    	    <div class="remail shift">
+
+                    @if (d_member["form_foreign"] == "1")
+                    {
+                        if (my["addr0"] == "해외")
+                        {
+                  		        <input type="checkbox" name="foreign" value="1" checked="checked" onclick="foreignChk(this);" /><span id="foreign_ment">해외거주자 입니다.</span>
+                        }
+                        else
+                        {
+                                <input type="checkbox" name="foreign" value="1" onclick="foreignChk(this);" /><span id="foreign_ment">해외거주자일 경우 체크해 주세요.</span>
+                        }
+                    }
+                    
+		            </div>
+	        </td>
+	        </tr>
+            }
+        }
+
+
+
+		@{
+            if (d_member["form_job"] == "1")
+            {
+                string dataFile = g["path_root_ps"] + g["dir_module"] + "\\var\\job.txt";
+                Array userData = null;
+                userData = File.ReadAllLines(dataFile);
+                
+	            <tr>
+	            <td class="key">직업 @Html.Raw(_System.isEqual(d_member["form_job_p"], 1, "<span>*</span>", ""))</td>
+	            <td>
+		            <select name="job">
+		            <option value="">&nbsp;+ 선택하세요</option>
+		            <option value="">------------------</option>
+                    @foreach (string dataLine in userData)
+                    {
+                        <option value="@dataLine" @_System.getSltStr(dataLine, my["job"])>ㆍ @dataLine</option>             
+                    }
+		            </select>
+	            </td>
+	            </tr>
+            }
+        }
+
+		@{
+            if (d_member["form_marr"] == "1")
+            {
+                string marr1_select = "";
+                string marr2_select = "";
+
+
+                if (my["marr1"] != "")
+                {
+
+                }
+	            
+                <tr>
+	            <td class="key">결혼기념일 @Html.Raw(_System.isEqual(d_member["form_marr_p"], 1, "<span>*</span>", ""))</td>
+	            <td>
+		        <select name="marr_1">
+		        <option value="">년도</option>
+                @for (var i = now_year; i > 1930; i--)
+                {
+                    var year_selected = "";
+                    var tmp_i = i.ToString();
+
+                    if (tmp_i == my["marr1"])
+                    {
+                        year_selected = "selected='selected'";
+                    }
+                    <option value="@i" @Html.Raw(@year_selected)>@i</option>
+                }
+                </select>
+
+                <select name="marr_2">
+		        <option value="">월</option>
+                @for (var i = 1; i < 13; i++)
+                {
+                    var month_selected = "";
+                    var tmp_i = i.ToString();
+
+                    if (tmp_i.Length == 1)
+                    {
+                        tmp_i = "0" + tmp_i;
+                    }
+
+                    if (my["marr2"] != "" && tmp_i == my["marr1"])
+                    {
+                        month_selected = "selected='selected'";
+                    }
+                    <option value="@i" @Html.Raw(@month_selected)>@i</option>
+                }            
+        		</select>
+                    
+        		<select name="marr_3">
+		        <option value="">일</option>
+		        @for (var i = 1; i < 32; i++)
+          {
+              var day_selected = "";
+              var tmp_i = i.ToString();
+
+              if (tmp_i.Length == 1)
+              {
+                  tmp_i = "0" + tmp_i;
+              }
+
+              if (my["marr2"] != "" && tmp_i == my["marr1"])
+              {
+                  day_selected = "selected='selected'";
+              }
+        		    <option value="@i" @Html.Raw(@day_selected)>@i</option>
+          }
+		        </select>
+            
+                </td>
+            	</tr>
+            }
+        }
+
+	    </tbody>
+	    </table>
+
+	<div class="submitbox">
+		<input type="submit" value="정보수정" class="btnblue" />
+	</div>
+	
+	</form>
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function foreignChk(obj)
+{
+	if (obj.checked == true)
+	{
+		getId('addrbox').style.display = 'none';
+		getId('foreign_ment').innerHTML= '해외거주자 입니다.';
+	}
+	else {
+		getId('addrbox').style.display = 'block';
+		getId('foreign_ment').innerHTML= '해외거주자일 경우 체크해 주세요.';
+	}
+}
+function sameCheck(obj,layer)
+{
+
+	if (!obj.value)
+	{
+		eval('obj.form.check_'+obj.name).value = '0';
+		getId(layer).innerHTML = '';
+	}
+	else
+	{
+		if (obj.name == 'id')
+		{
+			if (obj.value.length < 4 || obj.value.length > 12 || !chkIdValue(obj.value))
+			{
+				obj.form.check_id.value = '0';
+				obj.focus();
+				getId(layer).innerHTML = '사용할 수 없는 아이디입니다.';
+				return false;
+			}
+		}
+		if (obj.name == 'email')
+		{
+			if (!chkEmailAddr(obj.value))
+			{
+				obj.form.check_email.value = '0';
+				obj.focus();
+				getId(layer).innerHTML = '이메일형식이 아닙니다.';
+				return false;
+			}
+		}
+        
+        @{
+            var k = "frames." + frame_name + ".location.href = encodeURI('./?m=" + @m + "&a=same_check&fname=' + obj.name + '&fvalue=' + obj.value + '&flayer=' + layer);\n";
+                //var k = "location.href = encodeURI('./?m="+Request["m_ori"]+"&a=same_check&fname=' + obj.name + '&fvalue=' + obj.value + '&flayer=' + layer);\n";
+		    @Html.Raw(@k);
+        }
+	}
+}
+
+function saveCheck(f)
+{
+	if (f.name.value == '')
+	{
+		alert('이름을 입력해 주세요.');
+		f.name.focus();
+		return false;
+	}
+	if (f.check_nic.value == '0')
+	{
+		alert('닉네임을 확인해 주세요.');
+		f.nic.focus();
+		return false;
+	}
+	if (f.birth_1.value == '')
+	{
+		alert('생년월일을 지정해 주세요.');
+		f.birth_1.focus();
+		return false;
+	}
+	if (f.birth_2.value == '')
+	{
+		alert('생년월일을 지정해 주세요.');
+		f.birth_2.focus();
+		return false;
+	}
+	if (f.birth_3.value == '')
+	{
+		alert('생년월일을 지정해 주세요.');
+		f.birth_3.focus();
+		return false;
+	}
+
+	@{
+        if (d_member["form_qa"] == "1" && d_member["form_qa_p"] == "1")
+        {
+	        @Html.Raw("if (f.pw_q.value == '')	{\n");
+		    @Html.Raw("alert('비밀번호 찾기 질문을 입력해 주세요.');\n");
+		    @Html.Raw("f.pw_q.focus();\n");
+		    @Html.Raw("return false;\n");
+	        @Html.Raw("}\n\n");
+            
+	        @Html.Raw("if (f.pw_a.value == '')  {\n");
+		    @Html.Raw("alert('비밀번호 찾기 답변을 입력해 주세요.');\n");
+		    @Html.Raw("f.pw_a.focus();\n");
+		    @Html.Raw("return false;\n");
+	        @Html.Raw("}\n\n");
+        }
+    }
+
+	if (f.check_email.value == '0')
+	{
+		alert('이메일을 확인해 주세요.');
+		f.email.focus();
+		return false;
+	}
+
+	@{
+        if (d_member["form_home"] == "1" && d_member["form_home_p"] == "1")
+        {
+	         @Html.Raw("if (f.home.value == '') {\n");
+             @Html.Raw("alert('홈페이지 주소를 입력해 주세요.');\n");
+             @Html.Raw("f.home.focus();\n");
+             @Html.Raw("return false;\n");
+	         @Html.Raw("}\n\n");
+        }
+    }
+
+	@{
+        if (d_member["form_tel2"] == "1" && d_member["form_tel2_p"] == "1")
+        {
+	        @Html.Raw("if (f.tel2_1.value == '')    {\n");
+            @Html.Raw("alert('휴대폰번호를 입력해 주세요.');\n");
+            @Html.Raw("f.tel2_1.focus();\n");
+            @Html.Raw("return false;\n");
+	        @Html.Raw("}\n\n");
+            
+	        @Html.Raw("if (f.tel2_2.value == '')    {\n");
+            @Html.Raw("alert('휴대폰번호를 입력해 주세요.');\n");
+            @Html.Raw("f.tel2_2.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.tel2_3.value == '')    {\n");
+            @Html.Raw("alert('휴대폰번호를 입력해 주세요.');\n");
+            @Html.Raw("f.tel2_3.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+        }
+    }
+
+	@{
+        if (d_member["form_tel1"] == "1" && d_member["form_tel1_p"] == "1")
+        {
+             @Html.Raw("if (f.tel1_1.value == '')   {\n");
+             @Html.Raw("alert('전화번호를 입력해 주세요.');\n");
+             @Html.Raw("f.tel1_1.focus();\n");
+             @Html.Raw("return false;\n");
+             @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.tel1_2.value == '')    {\n");
+            @Html.Raw("alert('전화번호를 입력해 주세요.');\n");
+            @Html.Raw("f.tel1_2.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.tel1_3.value == '')    {\n");
+            @Html.Raw("alert('전화번호를 입력해 주세요.');\n");
+            @Html.Raw("f.tel1_3.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+        }
+    }
+
+	@{
+        if (d_member["form_addr"] == "1" && d_member["form_addr_p"] == "1")
+        {
+            @Html.Raw("if (!f.foreign || f.foreign.checked == false) {\n");
+            @Html.Raw("if (f.addr1.value == ''||f.addr2.value == '') {\n");
+			@Html.Raw("alert('주소를 입력해 주세요.');\n");
+			@Html.Raw("f.addr2.focus();\n");
+			@Html.Raw("return false;\n");
+		    @Html.Raw("}\n");
+	        @Html.Raw("}\n\n");
+        }
+    }
+
+	@{
+        if (d_member["form_job"] == "1" && d_member["form_job_p"] == "1")
+        {
+	        @Html.Raw("if (f.job.value == '')   {\n");
+		    @Html.Raw("alert('직업을 선택해 주세요.');\n");
+		    @Html.Raw("f.job.focus();\n");
+		    @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+        }
+    }
+
+	@{
+        if (d_member["form_marr"] == "1" && d_member["form_marr_p"] == "1")
+        {
+	        @Html.Raw("if (f.marr_1.value == '')    {\n");
+            @Html.Raw("alert('결혼기념일을 지정해 주세요.');\n");
+            @Html.Raw("f.marr_1.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+	        @Html.Raw("if (f.marr_2.value == '')  {\n");
+            @Html.Raw("alert('결혼기념일을 지정해 주세요.');\n");
+            @Html.Raw("f.marr_2.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n");
+            
+	        @Html.Raw("if (f.marr_3.value == '')    {\n");
+		    @Html.Raw("alert('결혼기념일을 지정해 주세요.');\n");
+		    @Html.Raw("f.marr_3.focus();\n");
+		    @Html.Raw("return false;\n");
+	        @Html.Raw("}\n\n");
+        }
+    }
+
+	@{
+        if (d_member["form_comp"] == "1" && Convert.ToInt32(Request["comp"]) > 0)
+        {        
+	        @Html.Raw("if (f.comp_num_1.value == '')    {\n");
+            @Html.Raw("alert('사업자등록번호를 입력해 주세요.     ');\n");
+            @Html.Raw("f.comp_num_1.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.comp_num_2.value == '')    {\n");
+            @Html.Raw("alert('사업자등록번호를 입력해 주세요.     ');\n");
+            @Html.Raw("f.comp_num_2.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.comp_num_3.value == '')    {\n");
+            @Html.Raw("alert('사업자등록번호를 입력해 주세요.     ');\n");
+            @Html.Raw("f.comp_num_3.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+
+            @Html.Raw("if (f.comp_name.value == '')     {\n");
+            @Html.Raw("alert('회사명을 입력해 주세요.     ');\n");
+            @Html.Raw("f.comp_name.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.comp_ceo.value == '')      {\n");
+            @Html.Raw("alert('대표자명을 입력해 주세요.     ');\n");
+            @Html.Raw("f.comp_ceo.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.comp_upte.value == '')     {\n");
+            @Html.Raw("alert('업태를 입력해 주세요.     ');\n");
+            @Html.Raw("f.comp_upte.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.comp_jongmok.value == '')     {\n");
+            @Html.Raw("alert('종목을 입력해 주세요.     ');\n");
+            @Html.Raw("f.comp_jongmok.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.comp_tel_1.value == '')    {\n");
+            @Html.Raw("alert('대표전화번호를 입력해 주세요.');\n");
+            @Html.Raw("f.comp_tel_1.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+            
+            @Html.Raw("if (f.comp_tel_2.value == '')    {\n");
+            @Html.Raw("alert('대표전화번호를 입력해 주세요.');\n");
+            @Html.Raw("f.comp_tel_2.focus();\n");
+            @Html.Raw("return false;\n");
+            @Html.Raw("}\n\n");
+
+	        @Html.Raw("if (f.comp_addr1.value == '')   {\n");
+		    @Html.Raw("alert('사업장주소를 입력해 주세요.');\n");
+		    @Html.Raw("f.comp_addr2.focus();\n");
+		    @Html.Raw("return false;\n");
+	        @Html.Raw("}\n\n");
+		}
+    }
+
+	return confirm('정말로 수정하시겠습니까?       ');
+}
+//]]>
+</script>
+

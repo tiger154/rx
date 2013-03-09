@@ -1,0 +1,31 @@
+/* list */
+#pointlist {margin:auto;padding:0 0 30px 0;}
+
+#pointlist .sbox {padding:0 0 15px 0;}
+#pointlist .sbox .btngray {margin:0;height:17px;}
+#pointlist .sbox .btnblue {margin:0;height:17px;}
+#pointlist .sbox .account {width:192px;}
+#pointlist .sbox .input {height:14px;}
+#pointlist .sbox .input:focus {border:#dfdfdf solid 1px;margin:1px;}
+#pointlist .sbox div {padding:10px 0 0 0;}
+
+#pointlist .info {height:28px;}
+#pointlist .info .article {float:left;font-size:11px;font-family:gothic,dotum;color:#c0c0c0;padding:5px 0 0 5px;}
+#pointlist .info .article .tx {padding-left:10px;font-size:12px;}
+
+#pointlist .info .category {float:right;}
+#pointlist .info .category select .sline {color:#c0c0c0;}
+#pointlist table {width:100%;_width:99.6%;border-spacing:0px;border-collapse:collapse;}
+#pointlist table caption {display:none;}
+#pointlist thead th {height:28px;border-top:#D2D2D2 solid 1px;border-bottom:#D2D2D2 solid 1px;background:url('../../../../../_core/image/_public/bg_list_tt.jpg');font-size:11px;font-family:dotum;font-weight:normal;color:#787878;}
+#pointlist thead .side1 {border-left:#D2D2D2 solid 1px;}
+#pointlist thead .side2 {border-right:#D2D2D2 solid 1px;}
+#pointlist tbody .noticetr td {background:url('');background:#FAFAFA;border-bottom:#EBEBEB solid 1px;}
+#pointlist tbody .noticetr td a {font-weight:bold;}
+#pointlist tbody td {text-align:center;color:#888888;font-family:arial;font-size:10px;border-bottom:#E6E6E6 solid 1px;letter-spacing:-1px;}
+#pointlist .sbj {text-align:left;padding:5px 0 3px 10px;font-size:12px;font-family:gothic,gulim;color:#222222;text-decoration:none;line-height:150%;}
+#pointlist .sbj1 {text-align:left;padding:5px 0 3px 10px;font-size:12px;font-family:gothic,gulim;color:#222222;line-height:150%;}
+#pointlist .price1 {font-size:11px;color:#ff0000;}
+#pointlist .price2 {font-size:11px;color:#0000ff;}
+#pointlist .pagebox01 {padding:20px 0 20px 0;}
+/* @list */

@@ -1,0 +1,130 @@
+﻿@using System.Drawing;
+@using System.Drawing.Imaging;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var my = PageData[1];
+    var d_layout = PageData[5];
+
+    string nowLayout = Request["nowLayout"];
+    string imgType = Request["imgType"];
+    string imglogo_SQL = "";
+    string imglogo_w_SQL = "";
+    string imglogo_h_SQL = "";
+    string imglogo_use_SQL = "";
+    string bgtitle_SQL = "";
+    string bgtitle_use_SQL = "";
+    string ad_img_SQL = "";
+    string ad_swf_SQL = "";
+    string _WHERE = " layout='" + nowLayout + "'";
+
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);   
+    
+    @_System.checkAdmin(my["admin"], 0)     // 관리자 체크
+    
+    if (nowLayout == "" || nowLayout == null)
+    {
+        return;
+    }        
+
+    if (imgType == "logo")
+    {
+        string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["imglogo"];
+            
+        if(File.Exists(saveFile) == true)
+        {
+            // Process Unlock
+            using (Image Img = Image.FromFile(saveFile)){
+                using(Image thumbImg = new Bitmap(Img)) {
+                    thumbImg.Dispose();
+                }
+            }
+                
+            File.Delete(saveFile);
+        }
+        
+        imglogo_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='' WHERE " + _WHERE + " AND id='imglogo'";
+        imglogo_w_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='0' WHERE " + _WHERE + " AND id='imglogo_w'";
+        imglogo_h_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='0' WHERE " + _WHERE + " AND id='imglogo_h'";
+        imglogo_use_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='' WHERE " + _WHERE + " AND id='imglogo_use'";
+
+        @_DB.Execute(imglogo_SQL);
+        @_DB.Execute(imglogo_w_SQL);
+        @_DB.Execute(imglogo_h_SQL);              
+        @_DB.Execute(imglogo_use_SQL);
+    }
+
+    if (imgType == "bg")
+    {
+        string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["bg"];
+            
+        if(File.Exists(saveFile) == true)
+        {
+            // Process Unlock
+            using (Image Img = Image.FromFile(saveFile)){
+                using(Image thumbImg = new Bitmap(Img)) {
+                    thumbImg.Dispose();
+                }
+            }
+                
+            File.Delete(saveFile);
+        }
+        
+        bgtitle_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='' WHERE " + _WHERE + " AND id='bg'";
+        bgtitle_use_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='' WHERE " + _WHERE + " AND id='bg_use'";
+
+        @_DB.Execute(bgtitle_SQL);
+        @_DB.Execute(bgtitle_use_SQL);
+    }    
+
+    if (imgType == "ad_img")
+    {
+        string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["ad_img"];
+            
+        if(File.Exists(saveFile) == true)
+        {
+            // Process Unlock
+            using (Image Img = Image.FromFile(saveFile)){
+                using(Image thumbImg = new Bitmap(Img)) {
+                    thumbImg.Dispose();
+                }
+            }
+                
+            File.Delete(saveFile);
+        }
+        
+        ad_img_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='' WHERE " + _WHERE + " AND id='ad_img'";
+
+        @_DB.Execute(ad_img_SQL);
+    }
+
+    if (imgType == "ad_swf")
+    {
+        string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["ad_swf"];
+            
+        if(File.Exists(saveFile) == true)
+        {
+            // Process Unlock
+            using (Image Img = Image.FromFile(saveFile)){
+                using(Image thumbImg = new Bitmap(Img)) {
+                    thumbImg.Dispose();
+                }
+            }
+                
+            File.Delete(saveFile);
+        }
+
+        ad_swf_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='' WHERE " + _WHERE + " AND id='ad_swf'";
+
+        @_DB.Execute(ad_swf_SQL);
+    }
+    
+    @_System.getLink("reload", "parent.", "", "");
+}

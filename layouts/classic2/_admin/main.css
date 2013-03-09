@@ -1,0 +1,44 @@
+﻿
+#content {width:100%;padding:0;}
+
+#container .subsnb {float:left;width:200px;padding:20px 0 20px 0;}
+#container .subsnb .submenu {padding:0;margin:0;list-style-type:none;}
+#container .subsnb .submenu li {background:url('../image/arr_plus.gif') left 9px no-repeat;padding:7px 0 7px 17px;line-height:140%;}
+#container .subsnb .submenu li a {font-weight:bold;color:#707070;}
+#container .subsnb .submenu .on {background:url('../image/arr_minus.gif') left 9px no-repeat;}
+#container .subsnb .submenu .on a {color:#3B82BA;}
+
+#container .subsnb .info {border:#dfdfdf solid 2px;padding:7px;margin:20px 0 20px 0;line-height:160%;letter-spacing:-1px;}
+
+#subcontent {float:left;width:720px;padding:20px 5px 20px 25px;}
+#subcontent .guide {line-height:160%;letter-spacing:-1px;border-bottom:#dfdfdf dotted 2px;padding:0 0 20px 0;margin:0 0 20px 0;}
+#subcontent .guide .emp {color:#ff0000;}
+#subcontent .more {line-height:160%;letter-spacing:-1px;padding:20px 0 20px 0;color:#666;}
+
+#subcontent .t1 {padding:8px 10px 8px 0;color:#666666;width:120px;line-height:130%;}
+#subcontent .t2 {padding:0 5px 0 5px;text-align:center;}
+#subcontent .t3 {}
+#subcontent .t3 .input {width:200px;}
+#subcontent .t3 .post {width:400px;}
+#subcontent .t3 .file {width:205px;border:#dfdfdf solid 1px;background:#ffffff;padding:2px;}
+#subcontent .t3 .sf {width:25px;}
+#subcontent .t3 .sf1 {width:70px;}
+#subcontent .t3 .select1 {width:255px;}
+#subcontent .t3 a {text-decoration:underline;font-size:11px;font-family:dotum;color:#666666;}
+#subcontent .t4 {padding:3px 0 0 30px;}
+#subcontent .help {line-height:160%;letter-spacing:-1px;color:#666;}
+#subcontent .small {line-height:160%;letter-spacing:-1px;color:#666;font-size:11px;font-family:dotum;}
+#subcontent textarea {padding:5px;margin:0;overflow-x:hidden;overflow-y:auto;line-height:150%;color:#000000;font-family:Courier new, arial, dotum;font-size:9pt;text-align:left;}
+#subcontent label input {position:relative;top:4px;}
+
+#subcontent .pagetable {}
+#subcontent .pagetable thead {}
+#subcontent .pagetable thead th {border-bottom:#c0c0c0 solid 2px;padding:8px 0 8px 0;text-align:center;}
+#subcontent .pagetable tbody {}
+#subcontent .pagetable tbody td {padding:5px 0 5px 5px;border-bottom:#dfdfdf solid 1px;}
+#subcontent .pagetable tbody td img {margin-bottom:-3px;}
+#subcontent .pagetable tbody td i {font-style:normal;font-size:11px;font-family:arial;color:#999999;}
+#subcontent .pagetable tbody .p1 {width:190px;}
+#subcontent .pagetable tbody .p2 {width:190px;}
+#subcontent .pagetable tbody .p3 {width:110px;text-align:center;}
+#subcontent .pagetable tbody .none {text-align:center;color:#444444;padding:20px 0 20px 0;}

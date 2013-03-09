@@ -1,0 +1,42 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];  
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var bookmark_pages = Request["bookmark_pages"];
+    
+    @_System.checkAdmin(my["admin"], 0)     // 관리자 체크
+    
+    foreach (var val in bookmark_pages.Split(','))
+    {
+        string DELETE_ADMPAGE_SQL = "DELETE FROM " + AppState["table_s_admpage"] + " WHERE uid=" + val + " and memberuid=" + my["uid"];
+        @_DB.Execute(DELETE_ADMPAGE_SQL);
+    }
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

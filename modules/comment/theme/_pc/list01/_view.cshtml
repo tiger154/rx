@@ -1,0 +1,219 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var _keyword = PageData[10];
+    var r = PageData[12];
+    var R = PageData[15];
+    var member = PageData[16];
+    var OCD = PageData[17];
+
+    //dynamic d_upload = Session["d_upload"];
+
+    string uid = g["uid"];
+    string skin = g["skin"];
+    string iframe = g["iframe"];
+    string sort = g["sort"];
+    string orderby = g["orderby"];
+    string recnum = g["recnum"];
+    string where = g["where"];
+    string frame_name = "_action_frame_" + m;
+    
+    int _oi = 0;
+}
+
+<div id="cview">
+
+	<div class="box">
+		<div class="icon hand" onclick="getMemberLayer('@R["mbruid"]',event);">
+        		
+        @if (member["photo"] != "")
+        {
+            <img src="@g["url_root"]/_var/simbol/@member["photo"]" alt="" />
+        }
+        
+        </div>
+        
+		<div class="subject">
+			<a name="@Html.Raw("CMT" + R["uid"])">@R["subject"]</a>
+		</div>
+		<div class="info">
+			<div class="xleft">
+				<span class="han">@R[_HS["nametype"]]</span> <span class="split">|</span> 
+				@R["d_regis"].ToString("yyyy.MM.dd HH:mm") <span class="split">|</span> 
+				<span class="han">조회</span> <span class="num">@R["hit"]</span> <span class="split">|</span> 
+				<span class="han">공감</span> <span class="num">@R["score1"]</span> <span class="split">|</span> 
+				<span class="han">비공감</span> <span class="num">@R["score2"]</span>
+			</div>
+			<div class="xright">
+				<a href="@Html.Raw(g["cment_action"] + "scrap&uid=" + R["uid"])" target="@frame_name" onclick="return isLogin();"><img src="@g["img_core"]/_public/b_scrap.gif" alt="스크랩" title="스크랩" />스크랩</a>
+				<a href="@Html.Raw(g["cment_modify"] + R["uid"])" onclick="return cmentModify('@R["uid"]',event);"><img src="@g["img_module_skin"]/btn_modify.gif" alt="수정" title="수정" />수정</a>
+				<a href="@Html.Raw(g["cment_delete"] + R["uid"])" target="@frame_name" onclick="return cmentDel('@R["id"]',event);"><img src="@g["img_module_skin"]/btn_delete.gif" alt="삭제" title="삭제" />삭제</a>
+				<a href="@Html.Raw(g["cment_action"] + "singo&uid=" + R["uid"])" target="@frame_name" onclick="return confirm('정말로 신고하시겠습니까?   ');"><img src="@g["img_module_skin"]/btn_cop.gif" alt="신고" title="신고" />신고</a>
+			</div>
+			<div class="clear"></div>
+		</div>
+
+		<div id="vContent" class="content">
+                @Html.Raw(_System.getContents(R["content"], R["html"]))
+		</div>
+		<div class="scorebtn">
+			<a href="@g["cment_action"]score&value=good&uid=@R["uid"]" target="@frame_name" onclick="return confirm('정말로 평가하시겠습니까?');"><img src="@g["img_module_skin"]/btn_s_1.gif" alt="공감" /></a>
+			<a href="@g["cment_action"]score&value=bad&uid=@R["uid"]" target="@frame_name" onclick="return confirm('정말로 평가하시겠습니까?');"><img src="@g["img_module_skin"]/btn_s_2.gif" alt="비공감" /></a>
+            
+        @if (R["upload"] != "") 
+        {            
+            string[] uploads = _System.getArrayString(R["upload"]);
+
+                
+ 			<div class="attach">
+			<ul>
+
+            @foreach (string d_upload in uploads)
+            {
+                dynamic _u = _DB.Get_module_data(AppState["table_s_upload"], "uid", d_upload);
+                
+                if (_u["hidden"] == 1)
+                {
+                    continue;
+                }
+                    
+                <li>
+                    <a href="@g["s"]/?r=@r&m=upload&a=download&uid=@_u["uid"]" title="@_u["caption"]">@_u["name"]</a>
+                    <span class="size">@Html.Raw("(" + _System.getSizeFormat(_u["size"]) + ")")</span>
+                    <span class="down">@Html.Raw("(" + string.Format("{0:#,0}", Convert.ToInt32(_u["down"])) + ")")</span>
+                </li>
+                    
+            }
+			</ul>
+			</div>
+        }
+           
+		</div>
+		
+		<div class="ttone">
+			한줄의견 @Html.Raw(R["oneline"] + "개")
+		</div>
+
+		<div class="onebox">
+
+        @foreach (var O in OCD)
+        {
+            string none_sel = "";
+            string mobile_chk = _System.isMobileConnect(O["agent"]);
+            
+            string member_photo = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "memberuid=" + O["mbruid"], "photo").ToString();
+            
+            if (R["oneline"] == ++_oi)
+            {
+                none_sel = " none";
+            }
+                        
+			<div class="oneline@(none_sel)">
+				<div class="name">
+
+					<div class="icon hand" onclick="getMemberLayer('@O["mbruid"]',event);">
+
+                @if (member_photo != "")
+                {
+                    <img src="@g["url_root"]/_var/simbol/@member_photo" alt="" />
+                }
+					</div>
+				</div>
+                                    
+				<div class="cont">@_System.getContents(O["content"], O["html"])
+                
+					<div>
+					            
+                    @if (mobile_chk != "")
+                    {
+                        <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@mobile_chk)로 등록된 글입니다" />
+                    }
+					            
+                    @R[_HS["nametype"]] | @O["d_regis"].ToString("yyyy.MM.dd HH:mm")
+					            
+                    @if (_System.getNew(O["d_regis"].ToString(), 24))
+                    {
+                        <span class="new">new</span>
+                    }
+                    
+                    <a href="@Html.Raw(g["cment_odelete"] + O["uid"])" target="@frame_name" onclick="return oneDel('@O["id"]');"><img src="@g["img_module_skin"]/btn_delete_one.gif" alt="삭제" title="삭제" /></a>
+					<a href="@Html.Raw(g["cment_action"] + "singo_oneline&uid=" + O["uid"])" target="@frame_name" onclick="return confirm('정말로 신고하시겠습니까?   ');"><img src="@g["img_module_skin"]/btn_cop_one.gif" alt="신고" title="신고" /></a>
+					</div>
+				</div>
+				<div class="clear"></div>
+			</div>                    
+        }
+
+			<div class="wbox">
+
+				<form name="writeForm" method="post" target="@frame_name" action="@g["s"]/" onsubmit="return oneCheck(this);">
+				<input type="hidden" name="r" value="@r" />
+				<input type="hidden" name="a" value="oneline_write" />
+				<input type="hidden" name="m" value="@m" />
+				<input type="hidden" name="parent" value="@R["uid"]" />
+				<input type="hidden" name="hidden" value="@R["hidden"]" />
+				<input type="hidden" name="c" value="@c" />
+				<input type="hidden" name="iframe" value="@iframe" />
+
+				<table>
+				<tr>
+                    
+				<td width="100%"><textarea name="content" id="oneline_comment">@Html.Raw(_System.isEqual(my["uid"], 0, "로그인하셔야 이용하실 수 있습니다.", ""))</textarea></td>				
+                <td valign="bottom"><input type="image" src="@g["img_module_skin"]/btn_onewrite.gif" alt="등록" /></td>
+				</tr>
+				</table>
+
+				</form>
+
+				<div id="oneline_comment_str" class="boxresize" onclick="oneline_comment_flag();">입력상자 늘리기</div>
+
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<div id="pwbox">
+	<div id="chkbox">
+
+		<div class="msg">
+			<h3><img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> 비밀번호 확인</h3>
+			<div>댓글 등록시에 입력했던 비밀번호를 입력해 주세요.</div>
+		</div>
+
+		<form name="checkForm" method="post" action="@g["s"]/" onsubmit="return permCheck(this);">        
+		<input type="hidden" name="a" value="" />
+        <input type="hidden" name="type" value="" />
+		<input type="hidden" name="c" value="@c" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="skin" value="@skin" />
+		<input type="hidden" name="iframe" value="@iframe" />
+		<input type="hidden" name="p" value="@p" />
+		<input type="hidden" name="sort" value="@sort" />
+		<input type="hidden" name="orderby" value="@orderby" />
+		<input type="hidden" name="recnum" value="@recnum" />		
+		<input type="hidden" name="where" value="@where" />
+		<input type="hidden" name="keyword" value="@_keyword" />
+		<input type="hidden" name="uid" value="@R["uid"]" />
+
+		<div class="ibox">
+			<input type="password" name="pw" class="input" />
+			<input type="submit" value=" 확인 " class="btnblue" />
+			<input type="button" value=" 취소 " class="btngray" onclick="cmentDelClose();" />
+		</div>
+
+		</form>
+	</div>
+</div>

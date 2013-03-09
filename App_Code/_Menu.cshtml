@@ -1,0 +1,475 @@
+﻿@helper getMenuShow(int site, string table, int j, int parent, int depth, int uid, System.Collections.ArrayList CXA, string hidden, dynamic g) {
+    
+
+    //Session["numhidden"] = "";
+    //Session["headfoot"] = "";
+    //Session["MenuOpen"] = "";
+    //Session["checkbox"] = "";
+    //Session["result"] = "";
+    
+    if (Session["MenuOpen"] == null)
+    {
+        Session["MenuOpen"] = "";
+    }
+    
+    // global
+    var numhidden = Session["numhidden"];
+    var headfoot = Session["headfoot"];
+    //var MenuOpen = Session["MenuOpen"];
+    var checkbox = Session["checkbox"];
+    var result = Session["result"];
+
+    var cat = Request["cat"];
+        
+    string site_sql = "";
+    string hidden_sql = "";
+
+    int depth_add = depth + 1;    
+      
+    // array value
+    string C_name = "";
+        
+    if (site != null && site != 0) {
+        site_sql = "site=" + site + " AND ";
+    }
+    if (hidden == "1") {
+        hidden_sql = " AND hidden='0'";
+    }
+    
+    string CD_sql = "SELECT * FROM " + table + " WHERE " + site_sql + "depth=" + depth_add.ToString() + " AND parent=" + parent + hidden_sql + " ORDER BY gid ASC";
+
+    foreach(var C in _DB.Query(CD_sql)) {
+        string numprintx = "";
+        string name = "";
+        string icon1 = "";
+        string icon2 = "";
+        string icon3 = "";
+        string hidden_prn;
+
+        if (Session["j"] == null)
+        {
+            Session["j"] = j;
+        }
+
+        j = Convert.ToInt32(Session["j"]) + 1;
+        
+        Session["j"] = j;
+        
+        hidden_prn = "";
+        
+        if(CXA != null && CXA.Contains(C["uid"].ToString())) 
+        {
+            //_System.getLink("", "", "sdfs", "")
+            //MenuOpen += "trees[0].tmB(" + j + ");";       // temp
+            Session["MenuOpen"] += "trees[0].tmB(" + j + ");";
+        }
+    
+        if(numhidden == "" && C["num"] > 0) {
+            //numprintx = "&lt;span class="+Html.Raw("\"")+"num"+Html.Raw("\"")+"&gt;("+C["num"]+")&lt;/span&gt;";
+            numprintx = "<span class=\"num\">(" + C["num"] + ")</span>";
+        }
+            
+        if(headfoot != "" && (C["imghead"] != "" || C["imgfoot"] != "")) {
+            //C_name = "&lt;b&gt;"+C["name"]+"&lt;b&gt;";
+            C_name = "<b>" + C["name"] + "</b>";
+        }
+        else {
+            C_name = C["name"];                
+        }
+        
+        if (C["uid"].ToString() != cat) {
+            name = C_name;
+        }
+        else {
+            //name = "&lt;span class=" + Html.Raw("\"") + "on" + Html.Raw("\"") + "&gt;" + C_name + "&lt;/span&gt;";
+            name = "<span class=\"on\">" + C_name + "</span>";
+        }
+        
+        if(C["hidden"] == "1" || C["reject"] == "1") {
+            hidden_prn = "hidden ";
+        }
+        
+        //name = "&lt;span class="+Html.Raw("\"")+"ticon tdepth"+C["depth"]+Html.Raw("\"")+"&gt;&lt;/span&gt;&lt;span class="+Html.Raw("\"")+"name "+hidden_prn+"ndepth"+C["depth"]+Html.Raw("\"")+"&gt;"+ _System.htmlspecialchars(name)+"&lt;/span&gt;";
+        name = "<span class=\"ticon tdepth" + C["depth"] + "\"></span><span class=\"name " + hidden_prn + "ndepth" + C["depth"] + "\">" + name + "</span>";
+        
+        if (checkbox != null && checkbox != "")
+        {
+            //icon1 = "&lt;input type='checkbox' name='members' value='"+C["uid"]+"' /&gt;";
+            icon1 = "<input type=\"checkbox\" name=\"members\" value=\"" + C["uid"] + "\">";
+        }
+        if(C["mobile"] == "1") {
+            icon2 = " <img src=\"" + g["img_core"] + "/_public/ico_mobile.gif\" class=\"mobile\" alt=\"\" >";
+        }
+        if(C["reject"] == "1") {
+            icon3 = " <img src=\"" + g["img_core"] + "/_public/ico_hidden.gif\" class=\"hidden\" alt=\"숨김상태\" >";
+        }
+        
+    	if(C["isson"] != "0") {
+            @Html.Raw("['" + icon1 + name + icon2 + numprintx + "','" + C["uid"] + "',")@getMenuShow(site, table, j, C["uid"], C["depth"], uid, CXA, hidden, g)@Html.Raw("],\n")
+        }
+        else
+        {
+            result = "['" + icon1 + name + icon2 + icon3 + numprintx + "','" + C["uid"] + "',''],\n";
+            
+            @Html.Raw(result.ToString())
+        }
+    }
+
+    
+}
+
+@helper getMenuShow_Domain(int site, string table, int j, int parent, int depth, int uid, dynamic CXA, string hidden, dynamic g)
+    {
+    
+
+    if (Session["MenuOpen"] == null)
+    {
+        Session["MenuOpen"] = "";
+    }
+    if (Session["numhidden"] == null)
+    {
+        Session["numhidden"] = "";
+    }
+
+    // global
+    var numhidden = Session["numhidden"];
+    var headfoot = Session["headfoot"];
+    var MenuOpen = Session["MenuOpen"];
+    var checkbox = Session["checkbox"];
+    var result = Session["result"];
+
+    string site_sql = "";
+    string hidden_sql = "";
+
+
+    int depth_add = depth + 1;
+
+    // array value
+    string C_name = "";
+
+    if (site != null && site != 0)
+    {
+        site_sql = "site=" + site + " AND ";
+    }
+    if (hidden == "1")
+    {
+        hidden_sql = " AND hidden='0'";
+    }
+
+    string CD_sql = "SELECT * FROM " + table + " WHERE " + site_sql + "depth=" + depth_add.ToString() + " AND parent=" + parent + hidden_sql + " ORDER BY gid ASC";
+
+    foreach (var C in _DB.Query(CD_sql))
+    {
+        string numprintx = "";
+        string name = "";
+        string icon1 = "";
+        string icon2 = "";
+        string icon3 = "";
+        string hidden_prn;
+
+        j++;
+        hidden_prn = "";
+
+        if (CXA != null && CXA[1] != "")
+        {
+            MenuOpen = MenuOpen + "trees[0].tmB(" + j + ");";       // temp
+        }
+        else
+        {
+            MenuOpen = "";
+        }
+
+        if (numhidden == "")
+        {
+            numprintx = "&lt;span class=" + Html.Raw("\"") + "num" + Html.Raw("\"") + "&gt;&lt;/span&gt;";
+        }
+
+        C_name = C["name"];
+
+        if (C["uid"] != uid)
+        {
+            name = C["name"];
+        }
+        else
+        {
+            name = "&lt;span class=" + Html.Raw("\"") + "on" + Html.Raw("\"") + "&gt;" + C["name"] + "&lt;/span&gt;";
+        }
+
+        name = "&lt;span class=" + Html.Raw("\"") + "ticon tdepth" + C["depth"] + Html.Raw("\"") + "&gt;&lt;/span&gt;&lt;span class=" + Html.Raw("\"") + "name " + hidden_prn + "ndepth" + C["depth"] + Html.Raw("\"") + "&gt;" + name + "&lt;/span&gt;";
+
+        if (checkbox != null)
+        {
+            icon1 = "&lt;input type='checkbox' name='members' value='" + C["uid"] + "' /&gt;";
+        }
+
+        if (C["isson"] == "1")
+        {
+            result = "['" + icon1 + name + icon2 + numprintx + "','" + C["uid"] + "',";
+            
+            @Html.Raw(result.ToString());
+		    @_Menu.getMenuShow_Domain(site, table, j, C["uid"], C["depth"], uid, CXA, hidden, g)
+            result = "],\n";
+            @Html.Raw(result.ToString());
+        }
+        else
+        {
+            result = "['" + icon1 + name + icon2 + icon3 + numprintx + "','" + C["uid"] + "',''],\n";
+            
+            @Html.Raw(result.ToString());
+        }
+    }
+
+    Session["MenuOpen"] = MenuOpen;
+}
+
+@helper getMenuShowSelect(string site, string table, int j, int parent, int depth, int uid, string hidden, string id, dynamic g, string cat)
+    {
+    
+
+    string site_sql = "";
+    string hidden_sql = "";
+    string numprintx = "";
+    string name = "";
+    string nId = "";
+
+    int depth_add = depth + 1;
+
+    if (site != "" && site != null)
+    {
+        site_sql = "site=" + site + " AND ";
+    }
+    if (hidden != "0")
+    {
+        hidden_sql = " AND hidden='0'";
+    }
+
+    string CD_sql = "SELECT * FROM " + table + " WHERE " + site_sql + "depth=" + depth_add + " AND parent=" + parent + hidden_sql + " ORDER BY gid ASC";
+
+    foreach (var C in _DB.Query(CD_sql))
+    {
+        string nId_sel = "";
+        string cnum_prn = "";
+
+        if (id != "")
+        {
+            nId = id + "/";
+        }
+
+        nId += C["id"];
+
+        if (nId == cat)
+        {
+            nId_sel = " selected='selected'";
+        }
+
+        j++;
+        
+		@Html.Raw("<option class='selectcat" + C["depth"] + "' value='" + nId + "'" + nId_sel + ">");
+
+                                                                                              if (depth > 0)
+                                                                                              {
+            @:ㆍ
+        }
+
+                                                                                              for (int i = 1; i < C["depth"]; i++)
+                                                                                              {
+            @:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        }
+
+                                                                                              if (C["depth"] > 1)
+                                                                                              {
+            @:ㄴ
+        }
+
+                                                                                              if (C["num"] > 0)
+                                                                                              {
+                                                                                                  cnum_prn = "(" + C["num"] + ")";
+                                                                                              }
+        
+        @Html.Raw(C["name"] + cnum_prn + "</option>");
+
+                                                     if (Convert.ToInt32(C["isson"]) > 0)
+                                                     {
+            @_Menu.getMenuShowSelect(site, table, j, C["uid"], C["depth"], uid, hidden, nId, g, cat);
+                                                     }
+    }
+}
+
+@helper getMenuCodeToPath(string table, string cat, int j)
+{
+    
+    dynamic R = _DB.Get_module_data(table, "uid", cat);
+
+    var arr_uid = "";
+    Session["MenuOpen"] = null;
+         
+    if (Session["arr_uid"] != null && Session["arr_uid"] != "")
+    {
+        arr_uid = Session["arr_uid"].ToString();
+    }
+
+    if (R["parent"] > 0)
+    {
+        @_Menu.getMenuCodeToPath(table, R["parent"].ToString(), j++)
+        Session["arr_uid"] += R["uid"] + "," + R["name"] + "," + R["id"] + "|";
+    }
+    else
+    {
+        dynamic C = _DB.GetDbData_M(table, "uid=" + cat);
+
+        Session["arr_uid"] += C["uid"] + "," + C["name"] + "," + C["id"] + "|";
+    }
+}
+
+@helper getMenuCodeToPath_Domain(string table, string cat, int j)
+    {
+        
+        dynamic R = _DB.GetDbData_M(table, "uid=" + cat);
+
+        if (Session["arr_uid"] == null)
+        {
+            Session["arr_uid"] = "";
+        }
+
+        var arr_uid = Session["arr_uid"];
+
+        if (R["parent"] > 0)
+        {
+            Session["arr_uid"] = arr_uid.ToString() + j.ToString() + "," + cat + "," + R["name"] + "," + R["parent"] + "|";
+            j++;
+
+        @_Menu.getMenuCodeToPath_Domain(table, R["parent"].ToString(), j + 1);
+        }
+        else
+        {
+            dynamic C = _DB.GetDbData_M(table, "uid=" + cat);
+
+            Session["arr_uid"] = arr_uid.ToString() + j.ToString() + "," + cat + "," + C["name"] + "," + C["parent"] + "|";
+        }
+}
+
+@helper getMenuCodeToSql(string table, string cat, string f)
+    {
+        
+        dynamic R = _DB.GetDbData_M(table, "uid=" + cat);
+
+        if (Session["arr_sql"] == null)
+        {
+            Session["arr_sql"] = "";
+        }
+
+        var arr_sql = Session["arr_sql"];
+
+        if (R["uid"] > 0)
+        {
+            Session["arr_sql"] = arr_sql.ToString() + f + "=" + R["uid"] + " or ";
+        }
+        if (R["isson"] != "")
+        {
+            string RDATA_sql = "select * from " + table + " where parent=" + R["uid"];
+
+            foreach (var C in _DB.Query(RDATA_sql))
+            {
+            @_Menu.getMenuCodeToSql(table, C["uid"].ToString(), f);
+            }
+        }
+}
+
+
+@helper getLayoutMenuShow(int site, object table, int j, int parent, int depth, int uid, System.Collections.ArrayList CXA, string ncpath, int HM_uid)
+{
+    
+    
+    //Session["MenuOpen"] = null;
+    //Session["numhidden"] = null;
+    
+    if (Session["MenuOpen"] == null)
+    {
+        Session["MenuOpen"] = "";
+    }
+    if (Session["numhidden"] == null)
+    {
+        Session["numhidden"] = "";
+    }
+
+    string CD_sql = "SELECT * FROM " + table + " WHERE " + ((site != null && site != 0) ? "site=" + site.ToString() + " AND " : "") + "depth=" + (depth + 1).ToString()
+         + " AND parent=" + parent + " AND hidden=0 ORDER BY gid ASC";
+         
+
+    foreach (var C in _DB.Query(CD_sql))
+    {
+        string numprintx = "";
+        string name = "";
+
+        if (Session["j"] == null)
+        {
+            Session["j"] = j;
+        }
+
+        j = Convert.ToInt32(Session["j"]) + 1;
+
+        Session["j"] = j;
+        
+        if (CXA != null && CXA.Contains(C["uid"].ToString()))
+        {
+            Session["MenuOpen"] += "trees[0].tmB(" + j + ");";
+        }
+        
+        if ((Session["numhidden"] == null || Session["numhidden"] == "") && C["num"]!= 0)
+        {
+            numprintx = "<span class=\"num\">(" + C["num"].ToString() + ")</span>";
+        }
+        
+        if (C["uid"] != HM_uid)
+        {
+            name = _System.addslashes(C["name"]);
+        }
+        else
+        {
+            name = "<span class=\"on\">" + _System.addslashes(C["name"]) + "</span>";
+        }
+        
+        if (C["isson"] == "1")
+        {
+            @Html.Raw("['" + name + numprintx + "','" + ncpath + C["id"] + "',")
+            @_Menu.getLayoutMenuShow(site, table, j, C["uid"], C["depth"], uid, CXA, ncpath + C["id"] + "/", HM_uid)
+            @Html.Raw("],")
+        }
+        else
+        {
+            @Html.Raw("['" + name + numprintx + "','" + ncpath + C["id"] + "',''],")
+        }
+    }
+}
+
+
+@functions {
+    public static string[] getLayoutMenuCodeToPath(object table, int cat, int j)
+    {
+        if (Session["arr_uid"] == null)
+        {
+            Session["arr_uid"] = "";
+        }
+
+        string arr_uid = Session["arr_uid"].ToString();
+            
+        dynamic R = _DB.Get_module_data(table, "uid", cat);
+
+        if (R["parent"] != 0)
+        {
+            arr_uid = R["uid"].ToString() + "," + arr_uid;
+            Session["arr_uid"] = arr_uid;
+            getLayoutMenuCodeToPath(table,  R["parent"], j+1);
+        }
+        else
+        {            
+            dynamic C = _DB.Get_module_data(table, "uid", cat);
+            arr_uid = C["uid"].ToString() + "," + arr_uid;
+            Session["arr_uid"] = arr_uid;
+        }
+
+        string[] arr = (Session["arr_uid"].ToString()).Split(',');
+        return arr;
+    }
+    
+}

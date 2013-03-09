@@ -1,0 +1,13 @@
+#configbox {}
+#configbox table {margin:0 0 20px 0;}
+#configbox td {padding:7px 0 7px 0;}
+#configbox .title {font-weight:bold;padding:10px 0 15px 0;margin:0 0 20px 0;border-bottom:#dfdfdf solid 1px;}
+#configbox .notice {padding:5px 0 20px 15px;margin:0 0 20px 0;font-size:12px;font-family:dotum;color:#02B6D6;border-bottom:#efefef solid 1px;line-height:150%;}
+#configbox .td1 {padding-left:20px;width:100px;}
+#configbox .td2 {padding-left:10px;color:#999;}
+#configbox .td2 textarea {overflow:auto;border:#EFEFEF solid 1px;padding:6px 0 6px 10px;line-height:150%;width:350px;height:100px;}
+#configbox .td2 .guide {padding:10px 0 0 0;line-height:150%;font-family:dotum;font-size:11px;color:#888888;}
+#configbox .td2 .select1 {width:180px;letter-spacing:-1px;}
+#configbox .m {font-size:11px;font-family:dotum;color:#888;letter-spacing:-1px;}
+
+#configbox .submitbox {margin:20px 0 20px 0;padding:15px 0 0 135px;border-top:#efefef solid 1px;}

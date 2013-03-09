@@ -1,0 +1,335 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var my = PageData[1];
+    var r = PageData[2];
+    var s = PageData[3];
+    var _HP = PageData[4];
+    var _CA = PageData[5];
+    var _HS = PageData[6];
+    var d_layout = PageData[7];
+    var LAYOUT_ARR = PageData[8];    
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    string _RCD = null;
+    dynamic _R = null;
+    
+    char[] delimiter = { ',' };
+    
+    DateTime _date = date["totime"];
+    
+    if(LAYOUT_ARR["bbs1"] != "0")
+    {
+        string[] _sort = LAYOUT_ARR["sort1"].Split(delimiter);
+        int bbs1_num = 0;
+                
+        if(Convert.ToInt32(LAYOUT_ARR["bbs1_num"]) > 0)
+        {
+            bbs1_num = Convert.ToInt32(LAYOUT_ARR["bbs1_num"]) - 1;
+        }
+        if(LAYOUT_ARR["bbs1_day"] != "")
+        {
+            string m_date = "-" + LAYOUT_ARR["bbs1_day"];
+                
+            _date = _date.AddDays(Convert.ToInt32(m_date));
+        }
+
+        string _WHERE = "bbs=" + LAYOUT_ARR["bbs1"] + " AND display='1' AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "'";
+        var _B = _DB.GetDbData_M(AppState["table_bbslist"].ToString(), "uid=" + LAYOUT_ARR["bbs1"]);
+        decimal _TPG = _System.getTotalPage(Convert.ToDecimal(_B["num_r"]), Convert.ToDecimal(LAYOUT_ARR["bbs1_num"]));    // total pages count
+    
+        _RCD = "SELECT TOP " + bbs1_num + " * FROM " + AppState["table_bbsdata"] + " WHERE " + _sort[0] + " not in (SELECT TOP 1 " + _sort[0] + " FROM " + AppState["table_bbsdata"] + " ORDER BY " + _sort[0] + " " + _sort[1] + ") AND " + _WHERE + " ORDER BY " + _sort[0] + " " + _sort[1];
+        _R = _DB.GetDbData_M(AppState["table_bbsdata"].ToString(), _WHERE + " ORDER BY " + _sort[0] + " " + _sort[1]);
+
+        <div id="_MainBox_" class="mainbox">
+        
+        @if(_R != null)
+        {
+            string _thumbimg = _System.getUploadImage(_R["upload"], _R["d_regis"].ToString("yyyyMMdd"), _R["content"], "jpg|jpeg", g);
+            string class_prn = "nothumb";
+            string thumb_prn = "";
+            string s_prn = "";
+            string mNext_prn = "-1";
+            
+            int _R_cmt_cnt = _R["comment"] + _R["oneline"];
+
+            if(_R_cmt_cnt > 1)
+            {
+                s_prn = "s";
+            }
+            
+            if(_thumbimg != "")
+            {
+                class_prn = "";
+                thumb_prn = _thumbimg;
+            }
+
+            <div class="posttop">
+                <div class="p1"><i>@string.Format("{0:#,0}", Convert.ToInt32(_R["hit"]))</i></div>
+                <div class="p2 @class_prn">
+                    <span class="title"><a href="@_System.getPostLink(s, _R, g["r"], _HS)">@_R["subject"]</a></span>
+                    <p>@Html.Raw(_System.nl2br(_System.getStrCut(_System.Strip_tags(_R["content"]), 100, "..")))</p>
+                    <span class="info">
+                    @_R[_HS["nametype"]] | @_R["d_regis"].ToString("yyyy.MM.dd HH:mm") | 
+                    @Html.Raw(_R_cmt_cnt.ToString() + " Comment" + s_prn)
+                    </span>
+                </div>
+                
+                @if(_thumbimg != "")
+                {
+                    <div class="p3">
+                        <div class="picbox"><img src="@thumb_prn" alt="" /></div>
+                    </div>
+                }
+                
+                <div class="clear"></div>
+            </div>            
+
+            foreach (var _R1 in _DB.Query(_RCD))
+            {
+                int _R_cmt_cnt1 = _R1["comment"] + _R1["oneline"];
+                string _R_cmt_prn = "";
+                
+                if(_R_cmt_cnt1 > 0)
+                {
+                    _R_cmt_prn = "<i>(" + _R_cmt_cnt1.ToString() + ")</i>";
+                }
+                
+                <div class="post">
+                    <div class="p1"><i>@string.Format("{0:#,0}", Convert.ToInt32(_R1["hit"]))</i></div>
+                    <div class="p2"><a href="@_System.getPostLink(s, _R1, g["r"], _HS)">@_R1["subject"]</a>@Html.Raw(_R_cmt_prn)</div>
+                    <div class="p3">@_R1[_HS["nametype"]]</div>
+                    <div class="p4">@_R1["d_regis"].ToString("yyyy.MM.dd HH:mm")</div>
+                    <div class="clear"></div>
+                </div>
+            }
+            
+            if(_TPG > 1)
+            {
+                mNext_prn = "2";
+            }
+            
+            <div class="skip">
+            <img src="@g["img_layout"]/btn_prev.gif" alt="" title="이전" onclick="mNext(0);" /><img src="@g["img_layout"]/btn_next.gif" alt="" title="다음" onclick="mNext(@mNext_prn)" />
+            </div>
+        }
+        else
+        {
+            <div class="postnone"></div>
+        }
+    </div>
+    }
+    
+    if(LAYOUT_ARR["bbs2"] != "0" || LAYOUT_ARR["bbs3"] != "0")
+    {
+    <div class="topicbox">
+        <div class="tl">
+		@if(LAYOUT_ARR["bbs2"] != "0")
+        {
+            string _WHERE = "bbs=" + LAYOUT_ARR["bbs2"] + " AND display='1' AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "'";
+            var _B = _DB.GetDbData_M(AppState["table_bbslist"].ToString(), "uid=" + LAYOUT_ARR["bbs2"]);
+            string[] _sort = LAYOUT_ARR["sort2"].Split(delimiter);
+            int bbs2_num = 0;
+                    
+            if(Convert.ToInt32(LAYOUT_ARR["bbs2_num"]) > 0)
+            {
+                bbs2_num = Convert.ToInt32(LAYOUT_ARR["bbs2_num"]) - 1;
+            }
+            if(LAYOUT_ARR["bbs2_day"] != "")
+            {
+                string m_date = "-" + LAYOUT_ARR["bbs2_day"];
+                    
+                _date = _date.AddDays(Convert.ToInt32(m_date));
+            }
+
+            _RCD = "SELECT TOP " + bbs2_num + " * FROM " + AppState["table_bbsdata"] + " WHERE " + _sort[0] + " not in (SELECT TOP 1 " + _sort[0] + " FROM " + AppState["table_bbsdata"] + " ORDER BY " + _sort[0] + " " + _sort[1] + ") AND " + _WHERE + " ORDER BY " + _sort[0] + " " + _sort[1];
+            _R = _DB.GetDbData_M(AppState["table_bbsdata"].ToString(), _WHERE + " ORDER BY " + _sort[0] + " " + _sort[1]);
+
+            <div class="tt">
+                <div class="ts">@_B["name"]</div>
+                <div class="tmore"><a href="@_System.RW("m=bbs&bid=" + _B["id"], g["r"], _HS)">더보기</a></div>
+                <div class="clear"></div>
+    		</div>
+            
+            if(_R != null)
+            {
+                string _IMGS = _System.getImgs(_R["content"], "jpg|jpeg");
+                string img_str = "";
+                string s_prn = "";
+                
+                int _R_cmt_cnt = _R["comment"] + _R["oneline"];
+                
+                if(_IMGS != "")
+                {
+                    img_str = _IMGS;
+                }
+                else
+                {
+                    img_str = g["img_core"] + "/blank.gif";
+                }
+
+                if(_R_cmt_cnt > 1)
+                {
+                    s_prn = "s";
+                }
+                
+                <div class="thumb"><a href="@_System.getPostLink(s, _R, g["r"], _HS)"><img src="@img_str" alt="" /></a></div>
+                <div class="tsubject"><a href="@_System.getPostLink(s, _R, g["r"], _HS)">@_R["subject"]</a></div>
+                <div class="tdate">@_R["d_regis"].ToString("yyyy.MM.dd") , @Html.Raw(_R_cmt_cnt.ToString() + " Comment" + s_prn)</div>
+                <div class="tcont">@Html.Raw(_System.nl2br(_System.getStrCut(_System.Strip_tags(_R["content"]), 85, "..")))</div>
+                
+                foreach (var _R1 in _DB.Query(_RCD))
+                {
+                    int _R_cmt_cnt1 = _R1["comment"] + _R1["oneline"];
+                    
+                   <div class="tpost"><a href="@_System.getPostLink(s, _R1, g["r"], _HS)">@_R1["subject"]</a>
+                        
+                    @if(_R_cmt_cnt1 > 0)
+                    {
+                        <i>@Html.Raw("(" + _R_cmt_cnt1 + ")")</i>
+                    }
+                        
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="none"></div>
+            }
+        }
+        </div>
+    
+        <div class="tr">
+		@if(LAYOUT_ARR["bbs3"] != "0")
+        {
+            string _WHERE = "bbs=" + LAYOUT_ARR["bbs3"] + " AND display='1' AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "'";
+            var _B = _DB.GetDbData_M(AppState["table_bbslist"].ToString(), "uid=" + LAYOUT_ARR["bbs3"]);
+            string[] _sort = LAYOUT_ARR["sort3"].Split(delimiter);
+            int bbs3_num = 0;
+                    
+            if(Convert.ToInt32(LAYOUT_ARR["bbs3_num"]) > 0)
+            {
+                bbs3_num = Convert.ToInt32(LAYOUT_ARR["bbs3_num"]) - 1;
+            }            
+            if(LAYOUT_ARR["bbs3_day"] != "")
+            {
+                string m_date = "-" + LAYOUT_ARR["bbs3_day"];
+                    
+                _date = _date.AddDays(Convert.ToInt32(m_date));
+            }
+
+            _RCD = "SELECT TOP " + bbs3_num + " * FROM " + AppState["table_bbsdata"] + " WHERE " + _sort[0] + " not in (SELECT TOP 1 " + _sort[0] + " FROM " + AppState["table_bbsdata"] + " ORDER BY " + _sort[0] + " " + _sort[1] + ") AND " + _WHERE + " ORDER BY " + _sort[0] + " " + _sort[1];
+            _R = _DB.GetDbData_M(AppState["table_bbsdata"].ToString(), _WHERE + " ORDER BY " + _sort[0] + " " + _sort[1]);
+
+            <div class="tt">
+                <div class="ts">@_B["name"]</div>
+                <div class="tmore"><a href="@_System.RW("m=bbs&bid=" + _B["id"], g["r"], _HS)">더보기</a></div>
+                <div class="clear"></div>
+    		</div>
+            
+            if(_R != null)
+            {
+                string _IMGS = _System.getImgs(_R["content"], "jpg|jpeg");
+                string img_str = "";
+                string s_prn = "";
+                
+                int _R_cmt_cnt = _R["comment"] + _R["oneline"];
+                
+                if(_IMGS != "")
+                {
+                    img_str = _IMGS;
+                }
+                else
+                {
+                    img_str = g["img_core"] + "/blank.gif";
+                }
+
+                if(_R_cmt_cnt > 1)
+                {
+                    s_prn = "s";
+                }
+                
+                <div class="thumb"><a href="@_System.getPostLink(s, _R, g["r"], _HS)"><img src="@img_str" alt="" /></a></div>
+                <div class="tsubject"><a href="@_System.getPostLink(s, _R, g["r"], _HS)">@_R["subject"]</a></div>
+                <div class="tdate">@_R["d_regis"].ToString("yyyy.MM.dd") , @Html.Raw(_R_cmt_cnt.ToString() + " Comment" + s_prn)</div>
+                <div class="tcont">@Html.Raw(_System.nl2br(_System.getStrCut(_System.Strip_tags(_R["content"]), 85, "..")))</div>
+                
+                foreach (var _R1 in _DB.Query(_RCD))
+                {
+                    int _R_cmt_cnt1 = _R1["comment"] + _R1["oneline"];
+                    
+                   <div class="tpost"><a href="@_System.getPostLink(s, _R1, g["r"], _HS)">@_R1["subject"]</a>
+                        
+                    @if(_R_cmt_cnt1 > 0)
+                    {
+                        <i>@Html.Raw("(" + _R_cmt_cnt1 + ")")</i>
+                    }
+                        
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="none"></div>
+            }
+        }
+        </div>
+        
+        <div class="clear"></div>
+    </div>
+    }
+
+    if(LAYOUT_ARR["bbs4"] != "0")
+    {
+        string _WHERE = "bbs=" + LAYOUT_ARR["bbs4"] + " AND display='1' AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "'";
+        var _B = _DB.GetDbData_M(AppState["table_bbslist"].ToString(), "uid=" + LAYOUT_ARR["bbs4"]);
+        string[] _sort = LAYOUT_ARR["sort4"].Split(delimiter);
+        int bbs4_num = 0;
+                    
+        if(Convert.ToInt32(LAYOUT_ARR["bbs4_num"]) > 0)
+        {
+            bbs4_num = Convert.ToInt32(LAYOUT_ARR["bbs4_num"]) - 1;
+        }            
+        if(LAYOUT_ARR["bbs4_day"] != "")
+        {
+            string m_date = "-" + LAYOUT_ARR["bbs4_day"];
+                    
+            _date = _date.AddDays(Convert.ToInt32(m_date));
+        }
+
+        _RCD = "SELECT TOP " + bbs4_num + " * FROM " + AppState["table_bbsdata"] + " WHERE " + _sort[0] + " not in (SELECT TOP 0 " + _sort[0] + " FROM " + AppState["table_bbsdata"] + " ORDER BY " + _sort[0] + " " + _sort[1] + ") AND " + _WHERE + " ORDER BY " + _sort[0] + " " + _sort[1];        
+        _R = _DB.GetDbData_M(AppState["table_bbsdata"].ToString(), _WHERE + " ORDER BY " + _sort[0] + " " + _sort[1]);
+        
+        <div class="photobox">
+            <div class="tt">
+                <div class="ts">@_B["name"]</div>
+                <div class="tmore"><a href="@_System.RW("m=bbs&bid=" + _B["id"], g["r"], _HS)">더보기</a></div>
+                <div class="clear"></div>
+            </div>
+            <div class="picwrap">
+
+            @foreach (var _R1 in _DB.Query(_RCD))
+            {
+                string _thumbimg = _System.getUploadImage(_R1["upload"], _R1["d_regis"].ToString("yyyyMMdd"), _R1["content"], "jpg|jpeg", g);
+                string thumb_prn = g["img_core"] + "/blank.gif";
+
+                if(_thumbimg != "")
+                {
+                    thumb_prn = _thumbimg;
+                }
+
+                <div class="pic"><a href="@_System.getPostLink(s, _R1, g["r"], _HS)" title="@_R1["subject"]"><img src="@thumb_prn" alt="" /></a></div>
+            }
+            
+            <div class="clear"></div>
+            </div>
+        </div>
+    }
+}    

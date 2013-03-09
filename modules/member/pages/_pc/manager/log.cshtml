@@ -1,0 +1,424 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/    
+        
+
+    dynamic g = PageData[0];
+    dynamic m = PageData[3];
+    dynamic _HS = PageData[5];
+    
+    var _m = PageData[1];
+    var p = PageData[4];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    
+    string year1 = Request["year1"];
+    string month1 = Request["month1"];
+    string day1 = Request["day1"];
+    string year2 = Request["year2"];
+    string month2 = Request["month2"];
+    string day2 = Request["day2"];
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string recnum = Request["recnum"];
+    string where = Request["where"];
+    string keyword = Request["keyword"];
+    string front = Request["front"];
+    string page = Request["page"];
+    string iframe = Request["iframe"];
+    string skin = Request["skin"];
+    string type = Request["type"];
+    string mbruid = Request["mbruid"];        
+    string r = Request["r"];
+    string account = Request["account"];
+
+    dynamic M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + mbruid);
+    
+    int now_year = Convert.ToInt32(date["year"]);
+    int now_month = Convert.ToInt32(date["month"]);
+    int now_day = Convert.ToInt32(date["day"]);
+
+    if (year1 == null || year1 == "")
+    {
+        year1 = date["year"];
+    }
+    if (month1 == null || month1 == "")
+    {
+        month1 = date["month"];
+    }
+    if (day1 == null || day1 == "")
+    {
+        day1 = "01";
+    }
+    if (year2 == null || year2 == "")
+    {
+        year2 = date["year"];
+    }
+    if (month2 == null || month2 == "")
+    {
+        month2 = date["month"];
+    }
+    if (day2 == null || day2 == "")
+    {
+        day2 = date["day"];
+    }
+    if (sort == null || sort == "")
+    {
+        sort = "uid";
+    }
+    if (orderby == null || orderby == "")
+    {
+        orderby = "desc";
+    }
+    if (recnum == null || recnum == "" || Convert.ToInt32(recnum) > 200)
+    {
+        recnum = "20";
+    }
+
+    string date_sc1 = year1 + "-" + month1 + "-" + day1;
+    string date_sc2 = year2 + "-" + month2 + "-" + day2;
+    string sqlque = "mbruid='" + M["memberuid"] + "'";
+    if (account != null && account != "")
+    {
+        sqlque += " and site=" + account;
+    }
+    sqlque = sqlque + " AND d_regis BETWEEN '" + date_sc1 + "' AND '" + date_sc2 + " 23:59:59'";
+
+    if (where != null && where != "")
+    {
+        if (keyword != null && keyword != "")
+        {
+            string where_set = "(";
+
+            char[] delimiter = { '|' };
+            string[] strArray = where.Split(delimiter);
+            int str_int = 0;
+
+            sqlque = sqlque + " AND ";
+
+            foreach (var tmp in strArray)
+            {
+                if (str_int > 0)
+                {
+                    where_set = where_set + " OR ";
+                }
+
+                where_set = where_set + tmp + " LIKE '%" + keyword + "%'";
+                str_int++;
+            }
+            where_set = where_set + ")";
+            sqlque = sqlque + where_set;
+        }
+    }
+
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);      // 페이지별 리스트 개수
+    string RCD_sql = _System.GetQuery(AppState["table_s_referer"].ToString(), "", sqlque, sort, orderby, list_start, recnum);
+    int NUM = _DB.GetDbData_Count(AppState["table_s_referer"].ToString(), sqlque);
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));        
+    
+    @RenderPage("_menu.cshtml", g, mbruid, m, _HS);            // 개별 페이지 상단 메뉴부
+}
+
+<div id="loglist">
+
+	<form name="bbssearchf" action="@g["s"]/">
+	<input type="hidden" name="r" value="@r" />
+
+	<div class="info">
+
+		<div class="article">
+			@string.Format("{0:#,0}", Convert.ToInt32(NUM))건(@p/@TPG 페이지)
+		</div>
+
+		<div class="category">
+		    <select name="year1">
+		    @{
+                for (var i = 2009; i <= now_year; i++)
+                {
+                    var tmp_i = i.ToString();
+                    string year_select = "";
+
+                    if (tmp_i == year1)
+                    {
+                        year_select = " selected='selected'";
+                    }
+                    <option value="@i"@year_select>@Html.Raw(@i + "년")</option>
+                }
+		    }            
+		    </select>
+            
+		    <select name="month1">
+		    @{
+                for (var i = 1; i <= 12; i++)
+                {
+                    var tmp_i = i.ToString();
+                    string month_select = "";
+
+                    if (tmp_i.Length == 1)
+                    {
+                        tmp_i = "0" + tmp_i;
+                    }
+                    if (tmp_i == month1)
+                    {
+                        month_select = " selected='selected'";
+                    }
+                    <option value="@tmp_i"@month_select>@Html.Raw(@tmp_i + "월")</option>
+                }
+		    }            
+		    </select>
+            
+		    <select name="day1">
+		    @{
+                for (var i = 1; i <= 31; i++)
+                {
+                    var tmp_i = i.ToString();
+                    string day_select = "";
+
+                    if (tmp_i.Length == 1)
+                    {
+                        tmp_i = "0" + tmp_i;
+                    }
+                    if (tmp_i == day1)
+                    {
+                        day_select = " selected='selected'";
+                    }
+                    <option value="@tmp_i"@day_select>@Html.Raw(@tmp_i + "일")</option>
+                }
+		    }            
+		    </select> ~
+		    <select name="year2">
+		    @{
+                for (var i = 2009; i <= now_year; i++)
+                {
+                    var tmp_i = i.ToString();
+                    string year_select = "";
+
+                    if (tmp_i == year2)
+                    {
+                        year_select = " selected='selected'";
+                    }
+                    <option value="@i"@year_select>@Html.Raw(@i + "년")</option>
+                }
+		    }            
+		    </select>
+            
+		    <select name="month2">
+		    @{
+                for (var i = 1; i <= 12; i++)
+                {
+                    var tmp_i = i.ToString();
+                    string month_select = "";
+
+                    if (tmp_i.Length == 1)
+                    {
+                        tmp_i = "0" + tmp_i;
+                    }
+                    if (tmp_i == month2)
+                    {
+                        month_select = " selected='selected'";
+                    }
+                    <option value="@tmp_i"@month_select>@Html.Raw(@tmp_i + "월")</option>
+                }
+		    }
+		    </select>
+            
+		    <select name="day2">
+		    @{
+                for (var i = 1; i <= 31; i++)
+                {
+                    var tmp_i = i.ToString();
+                    string day_select = "";
+
+                    if (tmp_i.Length == 1)
+                    {
+                        tmp_i = "0" + tmp_i;
+                    }
+                    if (tmp_i == day2)
+                    {
+                        day_select = " selected='selected'";
+                    }
+                    <option value="@tmp_i"@day_select>@Html.Raw(@tmp_i + "일")</option>
+                }
+		    }       
+		    </select>
+        
+            @{
+                DateTime now_date = date["totime"];
+
+                DateTime yester1 = now_date.AddDays(-1);
+                DateTime week1 = now_date.AddDays(-7);
+                DateTime month1_1 = now_date.AddMonths(-1);
+		    }
+		    <input type="button" class="btngray" value="기간적용" onclick="this.form.submit();" />
+
+			<select name="account" class="account" onchange="this.form.submit();">
+			<option value="">&nbsp;+ 전체사이트</option>
+			<option value="">-------------</option>
+            @{
+                string SITES_sql = "SELECT * FROM " + AppState["table_s_site"] + " ORDER BY gid ASC";
+                int SITES_cnt = _DB.GetDbData_Count(AppState["table_s_site"].ToString(), "");
+                
+                foreach (var S in _DB.Query(SITES_sql))
+                {
+                    <option value="@S["uid"]" @_System.getSltStr(account, S["uid"])>ㆍ @S["name"]</option>
+                }
+                
+                if (SITES_cnt == 0)
+                {
+                    <option value="">등록된 사이트가 없습니다.</option>
+                }                
+            }
+            </select>
+
+
+		</div>
+
+		<div class="clear"></div>
+	</div>
+
+	<table summary="접속기록 리스트입니다.">
+	<caption>접속기록</caption> 
+	<colgroup> 
+	<col width="70"> 
+	<col width="150"> 
+	<col> 
+	<col width="120"> 
+	<col width="110"> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1">번호</th>
+	<th scope="col">아이피</th>
+	<th scope="col">접속경로</th>
+	<th scope="col">브라우져</th>
+	<th scope="col" class="side2">날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+
+
+
+
+    @if (NUM == 0)
+    {
+ 	    <tr>
+	    <td>1</td>
+	    <td class="sbj1" colspan="5">접속기록이 없습니다.</td>
+	    </tr>        
+    }
+    else
+    {
+        int _rec = 0;
+
+        foreach (var R in _DB.Query(RCD_sql))
+        {
+            string _browse = _System.getBrowser(R["agent"]);
+            int pagenum = NUM - ((Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum)) + _rec++;
+	        <tr>
+	        <td>@pagenum</td>
+	        <td class="sbj"><a href="#." onclick="whoisSearch('@R["ip"]');" title="후이즈 IP정보">@R["ip"]</a></td>
+	        <td class="cat"><a href="@R["referer"]" target="_blank" title="@R["referer"]">@_System.getDomain(R["referer"])</a></td> 
+	        <td class="agent">
+            @if (_browse == "Mobile")
+            {
+                <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@_System.isMobileConnect(R["agent"]))접속" />
+            }	
+		        @_browse.ToUpper()
+	        </td>
+	        <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	        </tr>            
+        }
+    }
+
+	</tbody>
+	</table>
+	
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>
+
+	<div class="searchform">
+
+		<input type="hidden" name="mbruid" value="@mbruid" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="front" value="@front" />
+		<input type="hidden" name="page" value="@page" />
+		<input type="hidden" name="sort" value="@sort" />
+		<input type="hidden" name="orderby" value="@orderby" />
+		<input type="hidden" name="recnum" value="@recnum" />
+		<input type="hidden" name="type" value="@type" />
+		<input type="hidden" name="iframe" value="@iframe" />
+		<input type="hidden" name="skin" value="@skin" />
+
+		<select name="where">
+        @{
+            string ipStr = "";
+            string refStr = "";
+
+            if (where == "ip")
+            {
+                ipStr = " selected='selected'";
+            }
+            if (where == "referer")
+            {
+                refStr = " selected='selected'";
+            }
+        }
+		<option value="ip"@ipStr>아이피</option>
+		<option value="referer"@refStr>접속경로</option>
+		</select>
+		
+		<input type="text" name="keyword" size="30" value="@_keyword" class="input" />
+		<input type="submit" value="검색" class="btngray" />
+		<input type="button" value="리셋" class="btngray" onclick="goHref('@g["url_page"]');" />
+	</div>
+	
+	</form>
+
+	<form name="whois_search_form">
+	<input type="hidden" name="domain_name" value="" />
+	</form>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function dropDate(date1, date2) {
+        var f = document.procForm;
+        f.year1.value = date1.substring(0, 4);
+        f.month1.value = date1.substring(5, 7);
+        f.day1.value = date1.substring(8, 10);
+
+        f.year2.value = date2.substring(0, 4);
+        f.month2.value = date2.substring(5, 7);
+        f.day2.value = date2.substring(8, 10);
+
+        f.submit();
+    }
+    function whoisSearch(ip) {
+        var f = document.whois_search_form;
+
+        f.domain_name.value = ip;
+        f.target = "_blank";
+        f.method = "post";
+        f.action = "http://whois.kisa.or.kr/result.php";
+        f.submit();
+    }
+
+
+    document.title = "@M[_HS["nametype"]]님의 접속기록";
+    self.resizeTo(800, 750);
+
+//]]>
+</script>

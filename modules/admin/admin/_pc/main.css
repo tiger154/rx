@@ -1,0 +1,10 @@
+﻿#deskbox {}
+
+#deskbox .tt {font-weight:bold;color:#538ACD;padding:0 0 20px 0;margin:0;}
+#deskbox .tt img {position:relative;top:2px;}
+#deskbox .tt .height {font-weight:normal;font-size:11px;font-family:dotum;color:#c0c0c0;}
+#deskbox .tt .height .input {color:#c0c0c0;}
+#deskbox .posrel {position:relative;border:#dfdfdf dashed 1px;}
+
+#deskbox .none {font-size:12px;font-family:dotum;color:#c0c0c0;padding:10px 0 0 0;}
+#deskbox .none .notice {position:relative;top:2px;}

@@ -1,0 +1,55 @@
+
+
+
+#mbrlist .sbox {padding:0 0 15px 0;}
+#mbrlist .sbox .btngray {margin:0;height:17px;}
+#mbrlist .sbox .btnblue {margin:0;height:17px;}
+#mbrlist .sbox .account {width:192px;}
+#mbrlist .sbox .input {margin:0 0 0 10px;height:14px;}
+#mbrlist .sbox .input:focus {border:#dfdfdf solid 1px;}
+#mbrlist .sbox div {padding:10px 0 0 0;}
+
+
+#mbrlist .info {height:28px;}
+#mbrlist .info .article {float:left;font-size:11px;font-family:gothic,dotum;color:#c0c0c0;padding:5px 0 0 5px;}
+#mbrlist .info .article a {position:relative;top:3px;left:3px;}
+#mbrlist .info .category {float:right;}
+#mbrlist .info .category select .sline {color:#c0c0c0;}
+
+#mbrlist table {width:100%;_width:99.6%;border-spacing:0px;border-collapse:collapse;}
+#mbrlist table caption {display:none;}
+#mbrlist thead th {height:28px;border-top:#D2D2D2 solid 1px;border-bottom:#D2D2D2 solid 1px;background:url('../../../../../_core/image/_public/bg_list_tt.jpg');font-size:11px;font-family:dotum;font-weight:normal;color:#787878;}
+#mbrlist .tblfix {width:790px;}
+#mbrlist thead .side1 {border-left:#D2D2D2 solid 1px;}
+#mbrlist thead .side2 {border-right:#D2D2D2 solid 1px;}
+#mbrlist tbody td {text-align:center;color:#888888;font-family:dotum;font-size:12px;border-bottom:#E6E6E6 solid 1px;padding:3px 0 3px 0;}
+
+
+
+#mbrlist .pagebox01 {padding:15px 0 0 0;}
+#mbrlist .prebox {padding:20px 0 20px 0;}
+#mbrlist .prebox div {padding:0 0 10px 0;line-height:150%;}
+
+#mbrlist .prebox div table {width:100%;border-spacing:0px;border-collapse:collapse;}
+#mbrlist .prebox div table caption {display:none;}
+#mbrlist .prebox div thead th {height:28px;border-top:#D2D2D2 solid 1px;border-bottom:#D2D2D2 solid 1px;background:url('../../../../../_core/image/_public/bg_list_tt.jpg');font-size:11px;font-family:dotum;font-weight:normal;color:#787878;}
+#mbrlist .prebox div thead .side1 {border-left:#D2D2D2 solid 1px;}
+#mbrlist .prebox div thead .side2 {border-right:#D2D2D2 solid 1px;}
+#mbrlist .prebox div tbody td {text-align:left;color:#888888;font-family:dotum;font-size:12px;border-bottom:#E6E6E6 solid 1px;padding:3px 0 3px 0;}
+
+
+#mbrlist .prebox .xt {padding:0;color:#999999;font-family:dotum;font-size:11px;}
+#mbrlist .prebox .xt1 {padding:15px 0 20px 0;line-height:250%;}
+#mbrlist .prebox .xt1 .select {width:150px;}
+#mbrlist .prebox .xt1 .sm {width:30px;}
+#mbrlist .prebox .xt1 .textarea {width:380px;height:150px;padding:5px 0 5px 5px;line-height:150%;color:#000000;font-family:Courier new, arial, dotum;font-size:9pt;text-align:left;}
+#mbrlist .prebox .xt1 .maildoc {width:490px;padding:2px;margin:1px;}
+
+#mbrlist .prebox .xt1 .iconbox {border-left:#e0e0e0 solid 1px;border-top:#e0e0e0 solid 1px;border-right:#e0e0e0 solid 1px;background:#f9f9f9;padding:6px 0 8px 7px;margin:10px 0 0 0;}
+#mbrlist .prebox .xt1 .iconbox a {padding:0 3px 0 3px;font-size:11px;font-family:dotum;color:#333;}
+#mbrlist .prebox .xt1 .iconbox a:hover {color:#7899C7;}
+#mbrlist .prebox .xt1 .iconbox a img {position:relative;top:2px;left:-2px;margin-right:3px;}
+#mbrlist .prebox .xt1 .iconbox .split {padding:0 2px 0 2px;margin-bottom:-1px;}
+
+#mbrlist .nodata {text-align:center;padding:35px 0 35px 0;font-size:14px;font-family:dotum;color:#999;border-bottom:#dfdfdf dashed 1px;}
+#mbrlist .nodata img {position:relative;top:2px;}

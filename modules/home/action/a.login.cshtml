@@ -1,0 +1,174 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var id = Request["id"];
+    var pw = Request["pw"];
+    var usertype = Request["usertype"];
+    var idpwsave = Request["idpwsave"];
+    var drop = Request["drop"];
+
+    dynamic d_member = _DB.Get_code("member");
+    dynamic M = null;
+    dynamic M1 = null;    
+
+    
+    if(id == null || id == "" || pw == null || pw == "") 
+    {
+        @_System.getLink("", "", "아이디와 패스워드를 입력해 주세요.", "")
+        return;
+	}
+    
+    if (d_member["login_emailid"] == "1")
+    {
+        M = _DB.Get_module_data(AppState["table_s_mbrdata"], "email", id);
+        M1 = _DB.Get_module_data(AppState["table_s_mbrid"], "uid", M["memberuid"]);
+    }
+    
+    else
+    {
+        M = _DB.Get_module_data(AppState["table_s_mbrid"], "id", id);
+        M1 = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", M["uid"]);
+    }
+    
+    int my_level = M1["level"];
+    int num_login = 0;    
+    
+    if (M["uid"] == 0 || M1["auth"] == "4") 
+    {
+        @_System.getLink("", "", "존재하지 않는 아이디입니다.", "")
+        return;
+	}
+    if (M1["auth"] == "2") 
+    {
+        @_System.getLink("", "", "회원님은 인증보류 상태입니다.", "")
+        return;
+	}
+    if (M1["auth"] == "3") 
+    {
+        @_System.getLink("", "", "회원님은 이메일 인증대기 상태입니다.", "")
+        return;
+	}
+    
+    if (M["pw"] != FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1")) {     // sha1 encording
+        @_System.getLink("", "", "패스워드가 일치하지 않습니다.", "")
+        return;
+	}
+    
+    if(usertype == "admin") 
+    {
+        if(M1["admin"] != "1") 
+        {
+            @_System.getLink("", "", "회원님은 관리자가 아닙니다.", "")
+            return;
+		}
+	}
+
+    var Now_Date = date["totime"].ToString("yy-MM-dd");       // ex) 2010-01-02
+    var To_Date = date["totime"].AddDays(1).ToString("yy-MM-dd");
+
+    int TodayLogin = _DB.GetDbData_Count(AppState["table_s_referer"].ToString(), "d_regis BETWEEN '"+Now_Date+"' AND "+To_Date+" AND mbruid="+M["uid"]);
+    var num_post = Convert.ToInt32(_DB.GetDbData_S(AppState["table_bbsdata"].ToString(), "mbruid=" + M["uid"], "count(*)").ToString());
+    var num_comment = Convert.ToInt32(_DB.GetDbData_S(AppState["table_s_comment"].ToString(), "mbruid="+M["uid"], "count(*)").ToString());
+    dynamic levelnum = _DB.GetDbData_M(AppState["table_s_mbrlevel"].ToString(), "gid=1");
+
+    if (TodayLogin == 0) 
+    {
+        num_login = M1["num_login"]+1;
+	}
+    else 
+    {
+        num_login = M1["num_login"];
+	}
+    string RCD_sql = "SELECT TOP " + levelnum["uid"] + " * FROM "+AppState["table_s_mbrlevel"]+" ORDER BY uid ASC";
+    
+    foreach (var R in _DB.Query(RCD_sql)) 
+    {
+        if ((R["login"] != 0 || R["post"] != 0 || R["comment"] != 0) && (R["login"] == 0 || R["login"] <= num_login) && (R["post"] == 0 || R["post"] <= num_post) && (R["comment"] == 0 || R["comment"] < num_comment)) {
+            my_level = R["uid"];
+		}
+	}
+    
+    if(my_level != M1["level"]) {
+        string update_sql = "UPDATE "+AppState["table_s_mbrlevel"]+" SET num=num-1 WHERE uid="+M1["level"];
+        string update_sql2 = "UPDATE "+AppState["table_s_mbrlevel"]+" SET num=num+1 WHERE uid="+my_level;    
+        
+        @_DB.Execute(update_sql)
+        @_DB.Execute(update_sql2)
+	}
+    
+    int login_point = 0;
+    
+    if (d_member["login_point"] == "1")
+    {
+        if (M1["last_log"].ToString("yyyyMMdd" != date["today"]))
+        {            
+            @_DB.getDbInsert(AppState["table_s_point"], "my_mbruid,by_mbruid,price,content,d_regis", "'"+ M["uid"] + "','0','" + d_member["login_point"] + "','로그인 포인트','" + date["insert"] + "'")
+            login_point = d_member["login_point"];
+        }
+    }
+    
+    string today_cut = date["year"]+date["month"]+date["day"];    
+    string update_sql3 = "UPDATE "+AppState["table_s_mbrdata"]+" SET level="+my_level+", point=point+"+login_point+", num_login="+num_login+", now_log='1', last_log='" + date["insert"] + "' WHERE memberuid="+M["uid"];
+    string update_sql4 = "UPDATE "+AppState["table_s_numinfo"]+" SET login=login+1 WHERE date='"+today_cut+"' AND site="+s;
+    string update_sql5 = "UPDATE "+AppState["table_s_referer"]+" SET mbruid="+M["uid"]+" WHERE d_regis BETWEEN '"+Now_Date+"' AND '"+To_Date+"' AND site="+s+" AND mbruid=0 AND ip='"+AppState["myip"]+"'";
+
+    @_DB.Execute(update_sql3);
+    @_DB.Execute(update_sql4);
+    //@_DB.Execute(update_sql5);
+    
+    // saved ID (cookie setting)
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+
+    if (idpwsave == "checked")
+    {
+        Cookie_svshop.Value = id + "|" + pw;
+        Cookie_svshop.Expires = date["totime"].AddDays(30);
+    }
+    else
+    {
+        Cookie_svshop.Value = null;
+    }
+    Response.Cookies.Add(Cookie_svshop);    
+    
+    // Session setting
+    Session["mbr_uid"] = M["uid"];
+    Session["mbr_pw"] = M["pw"];
+
+    if(drop == "Y") 
+    {
+        @_System.getLink(referer.ToString(), "top.opener.", "", "close")
+        return;
+	}
+    else 
+    {
+        @_System.getLink(referer.ToString(), "parent.", "", "")
+        return;
+	}
+}

@@ -1,0 +1,63 @@
+body {font-size:12px;font-family:gulim;background:#F8F5F0;}
+input,select,textarea {font-size:12px;font-family:gulim;}
+select {font-size:12px;font-family:dotum;}
+label {cursor:pointer;}
+a {text-decoration:none;color:#000;}
+a:hover {color:#666;}
+
+.bgwrap {background:url('./image/bg_main.jpg') top left repeat-x #F8F5F0;}
+.wrap {width:960px;margin:auto;}
+
+#header {}
+
+#header .hment {float:left;}
+#header .hment span {display:block;font-size:11px;font-family:dotum;color:#999999;padding:10px 0 0 0;}
+#header .gnb {float:right;}
+#header .gnb .menutops {padding:3px 15px 10px 15px;text-align:right;font-size:11px;font-family:dotum;letter-spacing:2px;font-family:dotum;color:#666666;background:#444341;border-radius:0 0 8px 8px;}
+#header .gnb .menutops a {font-family:gulim;font-size:12px;letter-spacing:-1px;outline:none;color:#ffffff;}
+#header .gnb .menutops a:hover {text-decoration:underline;}
+#header .gnb .menutops img {margin-bottom:-3px;}
+#header .gnb .menutops .admin {font-size:11px;font-family:dotum;font-weight:bold;color:#FA5800;}
+#header .logo {float:left;}
+#header .logo h1 {padding:0;margin:0;}
+#header .logo a {font-size:34px;font-family:"malgun gothic";outline:none;display:block;color:#444442;}
+#header .logo img {}
+#header .logo .sment {color:#969591;padding:10px 0 0 2px;}
+#header .bannerbox {float:right;}
+#header .bannerbox .banner {left:492px;width:470px;height:60px;border:#D6D5D3 solid 1px;background:#ffffff;box-shadow:0 0 10px #D6D5D3;overflow:hidden;}
+#header .bannerbox .banner .sample {display:block;text-align:center;padding-top:25px;font-size:11px;font-family:dotum;color:#999999;}
+
+#container {background:#ffffff;border:#D6D5D3 solid 1px;border-radius:4px 4px 4px 4px;box-shadow:0 0 10px #D6D5D3;}
+#container .tabmenu {height:82px;background:#E8E7E3;}
+#container .tabmenu ul {float:left;padding:30px 0 0 30px;margin:0;list-style-type:none;z-index:0;}
+#container .tabmenu li {float:left;padding:0;margin:0 0 0 15px;height:50px;}
+#container .tabmenu li a {font-weight:bold;font-family:"malgun gothic";font-size:16px;color:#41403E;display:block;padding:2px 7px 4px 7px;letter-spacing:-1px;}
+#container .tabmenu li .on {color:#F8FFF7;background:#F45400;border-radius:4px 4px 4px 4px;}
+#container .tabmenu li div {position:absolute;display:none;width:1px;height:1px;z-index:1;}
+#container .tabmenu li div dl {margin:40px 0 0 0;padding:10px;width:140px;border:#D91D1E solid 1px;background:#F45303;border-radius:6px 6px 6px 6px;}
+#container .tabmenu li div dl span {position:absolute;height:1px;}
+#container .tabmenu li div dl span i {position:relative;top:-20px;left:15px;display:block;width:17px;height:10px;background:url('./image/arr_up.gif') left top no-repeat;}
+#container .tabmenu li div dt {margin:0;padding:0;}
+#container .tabmenu li div dd {margin:0;padding:0;}
+#container .tabmenu li div dt a {overflow:hidden;height:13px;line-height:150%;display:block;font-weight:normal;padding:4px 0 10px 10px;font-size:13px;font-family:gulim;color:#FFFEFB;height:12px;text-shadow:1px 1px 3px #666666;}
+#container .tabmenu li div dt a:hover {background:#E44B00;}
+#container .tabmenu li div dd a {overflow:hidden;height:12px;line-height:150%;display:block;font-weight:normal;padding:3px 0 8px 15px;font-size:12px;font-family:gulim;color:#FFFEFB;height:11px;text-shadow:1px 1px 3px #666666;}
+#container .tabmenu li div dd a:hover {background:#E44B00;}
+#container .tabmenu .on1 {background:#E44B00;}
+#container .tabmenu .none {color:#999999;padding:8px 0 0 0;}
+#container .tabmenu .more {margin-bottom:3px;}
+#container .tabmenu .search {float:right;padding:30px 20px 0 0;}
+#container .tabmenu .search .keyword {float:left;width:200px;height:21px;padding:2px 0 0 3px;font-size:11px;font-family:dotum;color:#999999;border:#D6D5D3 solid 1px;}
+#container .tabmenu .search .keyword:focus {font-weight:bold;font-size:12px;font-family:gulim;color:#666666;}
+#container .tabmenu .search .sbtn {float:left;margin-left:5px;}
+
+
+#footer {margin:0 0 30px 0;}
+#footer .footer {padding:15px 0 0 0;}
+#footer .footer .slinks {float:left;}
+#footer .footer .slinks .elink {padding:10px 0 10px 0;font-size:11px;font-family:dotum;color:#c0c0c0;letter-spacing:2px;}
+#footer .footer .slinks .elink a {font-family:gulim;font-size:12px;letter-spacing:-1px;color:#666666;}
+#footer .footer .slinks .elink a:hover {text-decoration:underline;}
+#footer .footer .slinks .copyright {font-size:11px;font-family:arial;color:#999999;}
+#footer .footer .powered {float:right;}
+#footer .footer .kimsq {padding:10px 0 10px 0;font-size:11px;font-family:arial;color:#c0c0c0;}

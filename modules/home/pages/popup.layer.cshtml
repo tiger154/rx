@@ -1,0 +1,87 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    
+    dynamic g = Session["g"];
+    
+    string uid = Request["uid"];
+    string scrollbar = "hidden";
+    string center = "0";
+    
+    dynamic R = _DB.GetDbData_M(AppState["table_s_popup"].ToString(), "uid='"+uid+"'");
+    int R_cnt = _DB.GetDbData_Count(AppState["table_s_popup"].ToString(), "uid='"+uid+"'");
+    
+    if(R_cnt < 1) {
+        @_System.getLink("", "", "", "close");
+    }
+    
+    if(R["scroll"] == "1") {
+        scrollbar = "auto";
+    }
+    if(R["center"] == "1") {
+        center = "auto";
+    }
+    
+    int height = R["height"] - 25;
+    int zindex = R["uid"]+10000;
+}
+
+
+<div id="poplayer">
+
+	<div class="popupbody" style="height:@Html.Raw(height+"px");overflow-x:hidden;overflow-y:@scrollbar;">
+    @{
+        if(R["html"] == "HTML") {
+            @Html.Raw(R["content"]);                
+        }
+        else {
+            @R["content"];
+        }    
+    }    	
+	</div>
+	<div class="popclose">
+		<input type="checkbox" id="popCheck" checked="cbecked" />
+		오늘 하루 이창을 그만 엽니다.
+		<img src="@g["img_module_skin"]/event_close_btn.gif" alt="창닫기" class="hand" onclick="hidePopupLayer('@R["uid"]');" />
+	</div>
+
+	<link type="text/css" rel="stylesheet" charset="utf-8" href="@Html.Raw(g["url_module_mode"]+".css")" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+
+var pg = parent.getId('_action_layer_');
+var ng = getId('poplayer');
+
+pg.style.position = 'absolute';
+pg.style.width = '100%';
+pg.style.height = '100%';
+pg.style.top = '0px';
+pg.style.left = '0px';
+
+@{
+    @Html.Raw("ng.style.margin = '"+center+"';\n");
+    @Html.Raw("ng.style.position = 'relative';\n");
+    @Html.Raw("ng.style.zIndex = '"+zindex+"';\n");
+    
+    if(R["center"] == "1") {
+        @Html.Raw("ng.style.top = (parseInt((parseInt(window.screen.height)-"+R["height"]+")/2) + "+R["ptop"]+")+'px';\n");
+    }
+    else {
+        @Html.Raw("ng.style.top = '"+R["ptop"]+"px';\n");
+    }
+    
+    @Html.Raw("ng.style.left = '"+R["pleft"]+"px';\n");
+    @Html.Raw("ng.style.width = '"+R["width"]+"px';\n");
+    @Html.Raw("ng.style.height = '"+R["height"]+"px';\n");           
+}
+
+pg.innerHTML = document.body.innerHTML;
+//]]>
+</script> 
+

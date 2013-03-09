@@ -1,0 +1,689 @@
+﻿@using System;
+@using System.Collections;
+@using System.Data;
+@using System.Data.SqlServerCe;
+@using System.Configuration;
+
+@helper Execute(string queryString)
+{
+    var db = Database.Open(AppState["DB_Name"].ToString());    
+    
+    if (queryString.ToUpper().StartsWith("INSERT INTO "))
+    {
+        string table_name = queryString.Replace("INSERT INTO ", "").Replace("insert into ", "").Split(' ')[0];
+        if (table_name.Contains("("))
+        {
+            table_name = table_name.Split('(')[0];
+        }
+        
+        @optID(table_name)
+    }
+
+    try
+    {
+        db.Execute(queryString);
+    }    
+    catch (System.Data.SqlServerCe.SqlCeException ex)
+    {
+        @_System.getLink("", "", "System.Data.SqlServerCe.SqlCeException: " + ex.ToString(), "")
+    }
+
+    db.Close();
+}
+
+@helper getDbInsert(object table, string key, string val)
+    {
+        var INSERT_SQL = "";
+
+        if (key != null && key != "" && val != null && val != "")
+        {
+            INSERT_SQL = "INSERT INTO  " + table.ToString() + " (" + key + ") VALUES (" + val + ")";
+        }
+    
+    @optID(table)
+
+        Execute(INSERT_SQL);
+}
+
+@helper getDbUpdate(object table, string set, string where)
+    {
+        var UPDATE_SQL = "";
+
+        if (set != null && set != "")
+        {
+            UPDATE_SQL = "UPDATE " + table.ToString() + " SET " + set;
+        }
+
+        if (where != null && where != "")
+        {
+            UPDATE_SQL += " WHERE " + where;
+        }
+
+        Execute(UPDATE_SQL);    
+}
+
+@helper getDbDelete(object table, string where)
+    {
+        var DELETE_SQL = "DELETE FROM " + table.ToString();
+
+        if (where != null && where != "")
+        {
+            DELETE_SQL += " WHERE " + where;
+        }
+
+        Execute(DELETE_SQL);       
+}
+
+@helper GetDbData_S(object table, string whereis, string data)
+    {            
+        // Database Output (특정필드 return)
+        var whereis_set = "";
+
+        if (whereis != "" && whereis != null)
+        {
+            whereis_set = " WHERE " + whereis;
+        }
+
+        var result = QuerySingle("SELECT " + data + " FROM " + table.ToString() + whereis_set);
+
+        if (result == null)
+        {
+            return;
+        }
+        else
+        {
+        @result[0];
+        }
+}
+
+@helper optID(object table)
+    {   
+        if (table.ToString() == "")
+        {
+            return;
+        }
+
+        string id = "uid";
+
+        // 테이블에 데이터가 없으면 id값 초기화
+
+        if (GetDbData_Count(table.ToString(), "") == 0)
+        {
+            var ALTER_TABLE_SQL = "ALTER TABLE " + table + " ALTER COLUMN " + id + " IDENTITY (1,1)";
+            Execute(ALTER_TABLE_SQL);
+        }
+        else
+        {
+            var isPrikey = QuerySingle("SELECT AUTOINC_INCREMENT FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME like '" + table + "'");
+
+            if (isPrikey[0] != null && isPrikey[0].ToString().Contains(table.ToString()))
+            {
+                string startUid = GetDbData_S(table.ToString(), "", "max(" + id + ")").ToString();
+
+                var ALTER_TABLE_SQL = "ALTER TABLE " + table + " ALTER COLUMN " + id + " IDENTITY (" + (Convert.ToInt32(startUid) + 1).ToString() + ",1)";
+                Execute(ALTER_TABLE_SQL);
+            }
+        }
+}
+
+@helper createTable(string module)
+    {
+        string cpath = Request.PhysicalApplicationPath + "\\modules\\" + module + "\\_setting\\";
+
+        foreach (string files in Directory.GetFiles(cpath))
+        {
+            var result = "";
+            var tableName = "";
+            var primaryKey = "";
+            var insertdata = "";
+
+            string file_name = files.Substring(cpath.Length, files.Length - cpath.Length);
+
+            foreach (string data in File.ReadAllLines(files))
+            {
+                if (data.Trim() == "")
+                {
+                    continue;
+                }
+
+                if (data.Trim().StartsWith("table_name"))
+                {
+                    tableName = data.Split(':')[1].Trim();
+                }
+                else if (data.Trim().StartsWith("primary_key"))
+                {
+                    primaryKey = data.Split(':')[1].Trim();
+                }
+                else
+                {
+                    insertdata += data.Replace("[]", " ").Replace("[", " ").Replace("]", " ");
+                    insertdata += ",";
+                }
+            }
+
+            if (insertdata != "")
+            {
+                result = "CREATE TABLE " + tableName + " (";
+
+                if (primaryKey != "")
+                {
+                    result += insertdata + "PRIMARY KEY (" + primaryKey + "));";
+                }
+                else
+                {
+                    result += insertdata.Substring(0, insertdata.Length - 1) + ");";
+                }
+
+                Execute(result);
+            }
+
+            //File.WriteAllText(Request.PhysicalApplicationPath + "sql_query\\" + file_name + ".txt", result, System.Text.Encoding.UTF8);
+        }  
+}
+
+@functions {
+    public static dynamic Query(string queryString)
+    {
+        var db = Database.Open(AppState["DB_Name"].ToString());
+        var result = db.Query(queryString);
+        db.Close();
+
+        return result;
+    }
+
+    public static dynamic QuerySingle(string queryString)
+    {
+        var db = Database.Open(AppState["DB_Name"].ToString());        
+
+        var result = db.QuerySingle(queryString);
+        db.Close();
+
+        return result;
+    }
+
+    public static string getDbSelect(object table, string where, string data)
+    {
+        var SELECT_SQL = "SELECT " + data + " FROM " + table.ToString();
+
+        if (where != null && where != "")
+        {
+            SELECT_SQL += " WHERE " + where;
+        }
+
+        return SELECT_SQL;
+    }
+
+    // Database Output (복수 필드 return. row는 1개. 복수의 row는 foreach로 개별처리)
+    public static object GetDbData_M(object table, string whereis) {        
+        var whereis_set = "";
+    
+        if(whereis != "" && whereis!=null) {
+            whereis_set = " WHERE "+whereis;    
+	    }
+        
+        var result = QuerySingle("SELECT * FROM " + table.ToString() + whereis_set);
+
+        if (result == null) {
+            return null;
+	    }
+        else {
+            return result;
+      	}
+    }
+    
+    // Query 관련 row
+    public static int getDbRows(string queryString)
+    {
+        var db = Database.Open(AppState["DB_Name"].ToString());        
+        var result = db.Query(queryString).Count();
+        db.Close();
+
+        return result;
+    }   
+    
+    // 관련 테이블의 Raw Count
+    public static int getDbRows(object table, string whereis) {
+        var db = Database.Open(AppState["DB_Name"].ToString());        
+        var whereis_set = "";        
+        
+        if(whereis != "" && whereis != null) 
+        {
+            whereis_set = " WHERE " + whereis;    
+	    }
+        
+        var SQL = "SELECT * FROM " + table.ToString() + whereis_set;
+
+        /*
+         * int result;
+        var runDB = _DB.QuerySingle("SELECT count(*) FROM " + table + whereis_set);
+
+        if (runDB == null)
+        {
+            result = 0;
+        }
+        else {
+            result = Convert.ToInt32(runDB.ToString());
+        }
+         */
+
+        var result = db.Query(SQL).Count();
+        db.Close();
+
+        return result;
+    }
+        
+    // 관련 테이블의 Raw Count
+    public static int GetDbData_Count(object table, string whereis) {
+        var db = Database.Open(AppState["DB_Name"].ToString());            
+        var whereis_set = "";        
+        
+        if(whereis != "" && whereis != null) 
+        {
+            whereis_set = " WHERE " + whereis;    
+	    }
+        
+        var SQL = "SELECT * FROM " + table.ToString() + whereis_set;
+
+        /*
+         * int result;
+        var runDB = _DB.QuerySingle("SELECT count(*) FROM " + table + whereis_set);
+
+        if (runDB == null)
+        {
+            result = 0;
+        }
+        else {
+            result = Convert.ToInt32(runDB.ToString());
+        }
+         */
+        var result = db.Query(SQL).Count();
+        db.Close();
+
+        return result;        
+    }
+
+    //table_code_d_module
+    public static object Get_code(string module)
+    {
+        var tableVar = new Dictionary<string, string>();
+
+        string cpath = Request.PhysicalApplicationPath + "\\modules\\" + module + "\\var\\var.cshtml";
+        
+        if (File.Exists(cpath))
+        {
+            foreach (string data in File.ReadAllLines(cpath))
+            {
+                if (data.Trim() == "")
+                {
+                    continue;
+                }
+
+                string[] item = _System.getArrayString(data);
+
+                if (tableVar.ContainsKey(item[1]))
+                {
+                    tableVar[item[1]] = item[2];
+                }
+                else
+                {
+                    tableVar.Add(item[1], item[2]);
+                }
+            }
+        }
+
+        return tableVar;        
+    }
+
+    public static object Get_code(string module, string file_name)
+    {
+
+        var tableVar = new Dictionary<string, string>();
+
+        string cpath = Request.PhysicalApplicationPath + "\\modules\\" + module + "\\var\\" + file_name;
+
+        if (File.Exists(cpath))
+        {
+            foreach (string data in File.ReadAllLines(cpath))
+            {
+                if (data.Trim() == "")
+                {
+                    continue;
+                }
+
+                string[] item = _System.getArrayString(data);
+
+                if (tableVar.ContainsKey(item[1]))
+                {
+                    tableVar[item[1]] = item[2];
+                }
+                else
+                {
+                    tableVar.Add(item[1], item[2]);
+                }
+            }
+        }
+
+        return tableVar;
+    }
+
+    public static object Get_code(Dictionary<string, string> d_var, string module, string file_name)
+    {
+        var tableVar = d_var;
+
+        string cpath = Request.PhysicalApplicationPath + "\\modules\\" + module + "\\var\\" + file_name;
+
+        if (File.Exists(cpath))
+        {
+            foreach (string data in File.ReadAllLines(cpath))
+            {
+                if (data.Trim() == "")
+                {
+                    continue;
+                }
+
+                string[] item = _System.getArrayString(data);
+
+                if (tableVar.ContainsKey(item[1]))
+                {
+                    tableVar[item[1]] = item[2];
+                }
+                else
+                {
+                    tableVar.Add(item[1], item[2]);
+                }
+            }
+        }
+        return tableVar;
+    }
+    
+    
+    public static object Get_bbstheme(string theme)
+    {
+
+        var tableVar = new Dictionary<string, string>();
+
+        string cpath = Request.PhysicalApplicationPath + "\\modules\\bbs\\theme\\" + theme + "\\_var.cshtml";
+
+        if (File.Exists(cpath))
+        {
+            foreach (string data in File.ReadAllLines(cpath))
+            {
+                if (data.Trim() == "" || data.TrimStart().StartsWith("//"))
+                {
+                    continue;
+                }
+
+                string[] item = _System.getArrayString(data);
+
+                if (tableVar.ContainsKey(item[1]))
+                {
+                    tableVar[item[1]] = item[2];
+                }
+                else
+                {
+                    tableVar.Add(item[1], item[2]);
+                }
+            }
+        }
+
+        return tableVar;
+    }
+    
+    public static object Get_amenu(string module)
+    {
+        var tableVar = new Dictionary<string, string>();
+
+        string cpath = Request.PhysicalApplicationPath + "\\modules\\" + module + "\\admin\\_pc\\var\\var.menu.cshtml";
+
+        if (File.Exists(cpath))
+        {
+            foreach (string data in File.ReadAllLines(cpath))
+            {
+                if (data.Trim() == "" || data.TrimStart().StartsWith("//"))
+                {
+                    continue;
+                }
+
+                string[] item = _System.getArrayString(data);
+
+                if (tableVar.ContainsKey(item[1]))
+                {
+                    tableVar[item[1]] = item[2];
+                }
+                else
+                {
+                    tableVar.Add(item[1], item[2]);
+                }
+            }
+        }
+
+        return tableVar;
+    }    
+    
+    //table_code_g_lang
+    public static object Get_code_lang(string nation)
+    {
+        var tableVar = new Dictionary<string, string>();
+
+        string cpath = Request.PhysicalApplicationPath + "\\_var\\language\\" + nation + "\\";
+
+        foreach (string files in Directory.GetFiles(cpath))
+        {
+            if (files.Contains("name.txt"))
+            {
+                continue;
+            }
+
+            foreach (string data in File.ReadAllLines(files))
+            {
+                if (data.Trim() == "")
+                {
+                    continue;
+                }
+
+                string[] item = _System.getArrayString(data);
+
+                if (tableVar.ContainsKey(item[1]))
+                {
+                    tableVar[item[1]] = item[2];
+                }
+                else
+                {
+                    tableVar.Add(item[1], item[2]);
+                }
+            }                        
+        }
+
+        return tableVar;        
+        /*
+        var tableVar = new Dictionary<string, string>();
+        string[] nationName = { "korean" };
+        
+
+        if (!nationName.Contains(nation))
+        {
+            return null;
+        }
+
+        foreach (var val in Query("SELECT * FROM " + AppState["table_code_g_lang"].ToString() + " WHERE nation='" + nation + "'"))
+        {
+            if (tableVar.ContainsKey(val["id"]))
+            {
+                tableVar[val["id"]] = val["id_value"];    
+            }
+            else
+            {
+                tableVar.Add(val["id"], val["id_value"]);
+            }            
+        }
+        return tableVar;*/
+    }
+
+    //table_code_g_layout
+    public static object Get_code_layout(string layout)
+    {        
+        var tableVar = new Dictionary<string, string>();        
+        
+        string cpath = Request.PhysicalApplicationPath + "\\layouts\\" + layout + "\\_var\\_var.cshtml";
+
+        foreach (string data in File.ReadAllLines(cpath))
+        {
+            if (data.Trim() == "")
+            {
+                continue;
+            }
+
+            string[] item = _System.getArrayString(data);
+
+            if (tableVar.ContainsKey(item[1]))
+            {
+                tableVar[item[1]] = item[2];
+            }
+            else
+            {
+                tableVar.Add(item[1], item[2]);
+            }              
+        }
+                
+        return tableVar;
+    }
+    
+    //dynamic rrrr = _Var.Get_module_data("rx_bbs_data", "uid", "4");
+    public static object Get_module_data(object table, string whereKey, object whereVal)
+    {
+        var defaultTable = new Dictionary<string, object>();        
+
+        if (whereKey == null || whereKey == "" || whereVal == null || whereVal == "")
+        {
+            return getFromDB(defaultTable, null, table);
+        }
+
+        var whereis_set = " WHERE " + whereKey + "='" + whereVal.ToString() + "'";
+        var slt_SQL = "SELECT * FROM " + table + whereis_set;
+        
+        var getData = QuerySingle("SELECT * FROM " + table + whereis_set);
+
+        return getFromDB(defaultTable, getData, table);
+        
+        /*
+        if (getData != null)
+        {
+            foreach (var column in getData.Keys)
+            {
+                defaultTable.Add(column, getData[column]);
+            }
+        }
+        else
+        {
+            defaultTable = getFromDB(defaultTable, null, table);
+        }        
+        return defaultTable;*/
+    }
+
+    //DB-UID데이터 
+    public static object getUidData(object table, object uid)
+    {
+	    return getDbData(table, "uid=" + uid.ToString() , "*");
+    }
+    
+    //DB데이터 1ROW
+    public static object getDbData(object table, string where, object target)
+    {
+        var defaultTable = new Dictionary<string, object>();
+
+        if (where == null || where == "")
+        {
+            return getFromDB(defaultTable, null, table);
+        }
+
+        var whereis_set = " WHERE " + where;
+        var slt_SQL = "SELECT " + target + " FROM " + table + whereis_set;
+
+        var getData = QuerySingle("SELECT * FROM " + table + whereis_set);
+
+        return getFromDB(defaultTable, getData, table);
+    }    
+    
+    public static dynamic getTop1(dynamic obj, object table, string sort, string orderby)
+    {
+        var result = QuerySingle("SELECT top 1 * FROM " + table + " ORDER BY " + sort + " " + orderby);
+
+        return getFromDB(obj, result, table);
+    }    
+    
+
+    public static dynamic getVar(dynamic obj, object table, string whereis)
+    {   
+        var whereis_set = "";        
+
+        if (whereis != "" && whereis != null)
+        {
+            whereis_set = " WHERE " + whereis;
+        }
+        
+        var result = QuerySingle("SELECT * FROM " + table + whereis_set);
+
+        return getFromDB(obj, result, table);
+    }
+    
+    public static dynamic getFromDB(dynamic obj, dynamic result, object table)
+    {
+        dynamic rst = result;
+
+        string getColInfoStr = "SELECT *  FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME like '" + table + "'";
+        /*string getColInfoStr = "";
+        getColInfoStr += "SELECT A.TABLE_NAME, B.COLUMN_NAME, B.DATA_TYPE, B.IS_NULLABLE ";
+        getColInfoStr += "FROM INFORMATION_SCHEMA.TABLES A, INFORMATION_SCHEMA.COLUMNS B ";
+        getColInfoStr += "WHERE A.TABLE_NAME = '" + table + "' AND A.TABLE_NAME = B.TABLE_NAME ";
+        getColInfoStr += "ORDER BY A.TABLE_NAME ";           */
+        //string dataFile = Request.PhysicalApplicationPath + "\\_var\\dbinfo\\" + table + ".txt";
+
+        //Array userData = null;
+        //userData = File.ReadAllLines(dataFile);        
+        
+        if (rst == null)
+        {   
+            foreach(var Col in Query(getColInfoStr))
+            {
+                if (Col["DATA_TYPE"].Contains("int") || Col["DATA_TYPE"] == "float")
+                {
+                    if (obj.ContainsKey(Col["COLUMN_NAME"]))
+                    {
+                        obj[Col["COLUMN_NAME"]] = 0;
+                    }
+                    else
+                    {
+                        obj.Add(Col["COLUMN_NAME"], 0);
+                    }
+                }
+                else 
+                {
+                    if (obj.ContainsKey(Col["COLUMN_NAME"]))
+                    {
+                        obj[Col["COLUMN_NAME"]] = "";
+                    }
+                    else
+                    {
+                        obj.Add(Col["COLUMN_NAME"], "");
+                    }                    
+                }   
+            }
+        }
+        else
+        {
+            foreach (var Col in Query(getColInfoStr))
+            {
+                if (obj.ContainsKey(Col["COLUMN_NAME"]))
+                {
+                    obj[Col["COLUMN_NAME"]] = rst[Col["COLUMN_NAME"]];
+                }
+                else
+                {
+                    obj.Add(Col["COLUMN_NAME"], rst[Col["COLUMN_NAME"]]);
+                }
+            }
+        }
+        return obj;
+    }
+}
+

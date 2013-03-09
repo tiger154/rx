@@ -1,0 +1,186 @@
+﻿@{
+    /*****************************************************************
+    //
+    //// Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var _m = PageData[1];
+    var m = PageData[3];
+    var p = PageData[4];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string recnum = Request["recnum"];
+    string where = Request["where"];
+    string keyword = Request["keyword"];
+    string front = Request["front"];
+    string page = Request["page"];
+    string type = Request["type"];
+    string iframe = Request["iframe"];
+    string skin = Request["skin"];
+    string uid = Request["uid"];
+
+    decimal TPG = 0;
+
+    if (sort == null || sort == "")
+    {
+        sort = "uid";
+    }
+    if (orderby == null || orderby == "")
+    {
+        orderby = "asc";
+    }
+    if (recnum == null || recnum == "" || recnum == "0" || Convert.ToInt32(recnum) >= 200)
+    {
+        recnum = "20";
+    }
+
+    string bbsque = "mbruid=" + my["uid"] + " AND site=" + s;
+
+    if (where != null && where != "" && keyword != null && keyword != "")
+    {
+        string where_set = "(";
+
+        char[] delimiter = { '|' };
+        string[] strArray = where.Split(delimiter);
+        int str_int = 0;
+
+        bbsque = bbsque + " AND ";
+
+        foreach (var tmp in strArray)
+        {
+            if (str_int > 0)
+            {
+                where_set = where_set + " OR ";
+            }
+
+            where_set = where_set + tmp + " LIKE '%" + keyword + "%'";
+            str_int++;
+        }
+        where_set = where_set + ")";
+        bbsque = bbsque + where_set;
+    }
+
+
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+    int NUM = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), bbsque);
+
+    string RCD_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", bbsque, sort, orderby, list_start, recnum);
+
+    TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+    
+    @RenderPage("_menu.cshtml", g, m)
+}
+
+<div id="bbslist">
+
+	<div class="infox">
+
+		<div class="article">
+			@string.Format("{0:#,0}", NUM)개(@p/@TPG 페이지)
+		</div>
+		
+		<div class="category">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+
+
+    @foreach(var R in _DB.Query(RCD_sql)) {
+        string mobile_chk = _System.isMobileConnect(R["agent"]);     // 모바일 체크
+
+        <div class="list @Html.Raw(_System.isEqual(R["uid"], uid, "dselected", ""))" onclick="goHref('@Html.Raw(_System.getCyncURL(R["cync"], 6, '[', ',', ':')+"&CMT="+R["uid"]+"#CMT")');">
+	    <div class="sbj">
+                
+		@if (mobile_chk != "")
+        {
+            <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@mobile_chk)로 등록된 글입니다" />
+        }
+            
+        <span class="subject">@R["subject"]</span>
+
+  		@if (R["oneline"] > 0)
+        {
+            <span class="comment">[@R["oneline"]]</span>
+        }
+            
+		@*if (R["trackback"] > 0)
+        {
+            <span class="trackback">[@R["trackback"]]</span>
+        }*@
+        
+		@if (_System.getNew(R["d_regis"].ToString(), 24))
+        {
+            <span class="new">new</span>
+        }
+            
+ 		</div>
+		<div class="info">
+			@R["d_regis"].ToString("yyyy.MM.dd HH:mm") <span>|</span> 
+			조회 @R["hit"]
+            @if (R["content"].ToLower().IndexOf(".jpg") > -1)
+            {
+                <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+            }
+		    @if(R["upload"] == "1") {
+                <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+            }
+		    @if(R["hidden"] == "1") {
+                <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+            }
+		</div>
+	</div>               
+    }
+
+    @if (NUM == 0)
+    {
+        <div class="none">등록된 댓글이 없습니다.</div>
+    }
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>
+
+	<div class="searchform">
+		<form name="bbssearchf" action="@g["s"]/">
+		<input type="hidden" name="r" value="@r" />
+		@if (_mod != null && _mod != "")
+        {
+    		<input type="hidden" name="mod" value="@_mod" />            
+        }
+        else
+        {
+            <input type="hidden" name="m" value="@m" />
+		    <input type="hidden" name="front" value="@front" />            
+        }
+        <input type="hidden" name="page" value="@page" />
+		<input type="hidden" name="sort" value="@sort" />
+		<input type="hidden" name="orderby" value="@orderby" />
+		<input type="hidden" name="recnum" value="@recnum" />
+		<input type="hidden" name="type" value="@type" />
+		<input type="hidden" name="iframe" value="@iframe" />
+		<input type="hidden" name="skin" value="@skin" />
+
+		<select name="where">
+		<option value="subject|tag" @_System.getSltStr(where, "subject")>제목</option>
+		<option value="content"@_System.getSltStr(where, "content")>본문</option>
+		</select>
+		
+		<input type="text" name="keyword" size="30" value="@_keyword" class="input" />
+		<input type="submit" value=" 검색 " class="btngray" />
+		</form>
+	</div>
+</div>
+

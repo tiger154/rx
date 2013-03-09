@@ -1,0 +1,432 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];    
+    var m = PageData[3];
+    var my = PageData[6];
+
+    string mod = g["mod"];
+    string gparam = Request["gparam"];
+    string r = Request["r"];
+    string PHOTOS = g["PHOTOS"];    
+    string frame_name = "_action_frame_"+m;
+    string cupload = "Y";       // default upload = classic
+
+    decimal limit_size = Convert.ToDecimal(g["limit_size"]);    
+
+    int limit_num = Convert.ToInt32(g["limit_num"]);    
+    int SS = Convert.ToInt32(g["SS"]);
+    int N = Convert.ToInt32(g["N"]);    
+
+    char[] delimiter = {'|'};
+    string[] gparamExp = gparam.Split(delimiter);
+
+}
+
+<div id="photobox">
+	
+	<div class="header">		
+		<div class="xl">
+			<img src="@g["img_core"]/_public/ico_rx.png" class="logo" alt="kimsQ-Rx" />
+		</div>
+        
+		<div class="xr">
+            @if(cupload != null && cupload != "") {
+                <div class="cupload">
+                <form name="cform" action="@g["s"]/" method="post" enctype="multipart/form-data" onsubmit="return upCheck(this);">
+                <input type="hidden" name="r" value="@r" />
+                <input type="hidden" name="m" value="@m" />
+                <input type="hidden" name="a" value="upload" />
+                <input type="hidden" name="sess_Code" value="@Html.Raw(Session["upsescode"] + "_" + my["uid"])" />
+                <input type="hidden" name="saveDir" value="@g["path_file"]" />
+                <input type="hidden" name="upType" value="normal" />
+                <input type="hidden" name="mod" value="@mod" />
+                <input type="hidden" name="gparam" value="@gparam" />
+                <input type="hidden" name="cupload" value="@cupload" />
+                <input type="FILE" name="Filedata" class="file" id="Upfile" />                
+                <input type="submit" value="첨부" class="btngray" />
+                <input type="button" value="취소" class="btngray" onclick="goHref('?r=@r&m=@m&mod=@mod&gparam=@gparam');" />
+                </form>
+                </div>
+           }
+		</div>
+		<div class="clear"></div>
+	</div>
+    
+	<div class="wrap">
+		<div class="bar">
+			<div class="xl">
+				<img src="@g["img_module_skin"]/ico_drag.gif" alt="" />
+				<span class="dragstr">마우스로 드래그하면 순서를 변경할 수 있습니다.</span>
+			</div>
+			<div class="xr">
+				
+				<span class="info">
+				용량 : <span class="b">@_System.getSizeFormat(SS)</span> / @_System.getSizeFormat(limit_size) 
+				개수 : <span class="b">@Html.Raw(@N + "개")</span> / @Html.Raw(@limit_num + "개")
+				</span>    
+                
+				<a href="#." onclick="filesAlldelete('@N','@m');"><img src="@g["img_module_skin"]/btn_delete_all.gif" alt="전체삭제" /></a>
+			</div>
+		</div>
+
+        <div class="body">
+			<div class="viewer scrollbar01">
+                
+			@if(N > 0) {
+				<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/core.js"></script>
+				<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/events.js"></script>
+				<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/css.js"></script>
+				<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/coordinates.js"></script>
+				<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/drag.js"></script>
+				<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/dragsort.js"></script>
+
+                <script type="text/javascript">
+				//<![CDATA[
+                    var dragsort = ToolMan.dragsort();
+
+                    function slideshowOpen() {
+                        dragsort.makeListSortable(getId("photoorder"));
+                    }
+
+                    window.onload = slideshowOpen;
+				//]]>
+				</script>
+       
+                <!-- 추가부분-->
+				<ul id="photoorder"> 
+                @{
+                   foreach (var val in _DB.Query(PHOTOS)) { 
+                        string tmp_thumb_path = g["path_root_ps"]+"/files/";
+                            
+      				    <li>
+					    <input type="checkbox" name="photomembers" value="@val["uid"]|@val["url"].Replace('\\', '/')@val["folder"].Replace('\\', '/')/@val["tmpname"]|@val["width"]" checked="checked" />
+					    <span id="@Html.Raw("finfo_name_" + val["uid"])" class="hide">@_System.htmlspecialchars(val["name"].Replace("." + _System.getExt(val["name"]), ""))</span>
+					    <span id="@Html.Raw("finfo_caption_" + val["uid"])" class="hide">@_System.htmlspecialchars(val["caption"])</span>
+					    <span id="@Html.Raw("finfo_tmpcode_" + val["uid"])" class="hide">@val["tmpcode"]</span>
+					    <div title="@val["name"] (@_System.getSizeFormat(val["size"])/@val["width"]*@val["height"]px)" class="photo" style="background:url('@tmp_thumb_path.Replace('\\', '/')@val["folder"].Replace('\\', '/')/@val["thumbname"]') center center no-repeat;" onclick="captionCheck('@val["uid"]');"></div>
+		    		    </li>                 
+                    }
+                }                    
+				</ul>
+            }
+            else {
+				<div class="none">
+    				<div class="ment"><span>@_System.getSizeFormat(limit_size),@Html.Raw(limit_num + "개")</span>까지 올릴 수 있습니다.</div>
+				</div>        
+            }
+			</div>
+
+			<div class="tool">
+
+				<div class="tt">가로크기<span>(모든사진)</span></div>
+				<div class="stype shift">
+				<input type="radio" name="sizetype" id="sizetype1" value="1" checked="checked" onclick="sizeTypeSelect(1);" />
+				<select id="wsize1" onclick="sizeTypeSelect(1);">
+				<option value="240">240px</option>
+				<option value="320">320px</option>
+				<option value="400">400px</option>
+				<option value="480">480px</option>
+				<option value="640" selected="selected">640px</option>
+				<option value="720">720px</option>
+				<option value="1024">1024px</option>
+				</select>
+				</div>
+				<div class="stype shift">
+				<input type="radio" name="sizetype" id="sizetype2" value="2" onclick="sizeTypeSelect(2);" />
+				<input type="text" id="wsize2" value="직접입력" maxlength="4" class="input" onfocus="sizeFocus(this);" onblur="sizeBlur(this);" />px
+				</div>
+	
+				<div class="guide">
+				사진 크기는 원본 사이즈<br />
+				내에서 변경 가능합니다.
+				</div>
+
+				<div class="line"></div>
+
+				<div class="tt">위치<span>(모든사진)</span></div>
+				
+				<div class="align shift">
+				<input type="radio" name="align" id="xalign1" value="top" checked="checked" /><img src="@g["img_module_skin"]/align_top.gif" alt="맨위" /><label for="xalign1">맨위</label><br />
+				<input type="radio" name="align" id="xalign2" value="bottom" /><img src="@g["img_module_skin"]/align_bottom.gif" alt="아래" /><label for="xalign2">아래</label><br />
+				<input type="radio" name="align" id="xalign3" value="left" /><img src="@g["img_module_skin"]/align_left.gif" alt="왼쪽" /><label for="xalign3">왼쪽</label><br />
+				<input type="radio" name="align" id="xalign4" value="right" /><img src="@g["img_module_skin"]/align_right.gif" alt="오른쪽" /><label for="xalign4">오른쪽</label><br />
+				</div>
+
+				<div class="line"></div>
+
+				<div class="oview shift"><input type="checkbox" id="orignview" value="1" />클릭시 원본사진 보기</div>
+
+			</div>            
+		</div>
+		<div class="clear"></div>
+
+        <!-- 추가부분 -->
+
+		<div id="captionDiv" class="caption">
+			<form name="captionForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return captionRegis(this);">
+			<input type="hidden" name="r" value="@r" />
+			<input type="hidden" name="m" value="@m" />
+			<input type="hidden" name="a" value="caption_regis" />
+			<input type="hidden" name="tmpcode" value="" />
+			<input type="hidden" name="uid" value="" />
+			파일명 <input type="text" name="name" value="" class="input c1" />
+			캡션 <input type="text" name="caption" value="" class="input c2" />
+			<input type="submit" value="등록" class="btnblue" />
+			<input type="button" value="취소" class="btngray" onclick="captionClose();" />
+			</form>
+		</div>
+
+        <!-- 여기까지 -->
+
+		<div class="footer">
+			<img src="@g["img_module_skin"]/btn_regis.gif" alt="등록" class="hand" onclick="insertPhoto();" />
+			<img src="@g["img_module_skin"]/btn_cancel.gif" alt="취소" class="hand" onclick="closePhoto();" />
+		</div>
+
+		</div>
+
+	</div>
+
+</div>
+
+<div id="progress">
+	
+	<table>
+		<tr>
+		<td class="td1">전체크기 : </td>
+		<td class="td2"><span id="totalsize"></span></td>
+		<td class="td3"></td>
+		</tr>
+		<tr>
+		<td class="td1">파일갯수 : </td>
+		<td class="td2"><span id="totalnum">0</span>개</td>
+		<td class="td3"></td>
+		</tr>
+		<tr>
+		<td class="td1">남은파일 : </td>
+		<td class="td2"><span id="remainnum">0</span>개</td>
+		<td class="td3"></td>
+		</tr>
+		<tr>
+		<td class="td1">진행파일 : </td>
+		<td class="td2"><span id="filename"></span></td>
+		<td class="td3"></td>
+		</tr>
+		<tr>
+		<td class="td1">전송상태 : </td>
+		<td class="td2"><span class="bggrap"><span id="filegrap" class="grap"></span></span></td>
+		<td class="td3">(<span id="filepers">0%</span>)</td>
+		</tr>
+	</table>
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function captionClose()
+{
+	getId('captionDiv').style.visibility = 'hidden';
+}
+function captionRegis(f)
+{
+	if (f.uid.value == '')
+	{
+		return false;
+	}
+	if (f.name.value == '')
+	{
+		alert('파일명을 입력해 주세요. ');
+		f.name.focus();
+		return false;
+	}
+	return confirm('정말로 실행하시겠습니까?  ');
+}
+function captionCheck(xuid)
+{
+	var f = document.captionForm;
+	var xname = getId('finfo_name_'+xuid).innerHTML;
+	var xcaption = getId('finfo_caption_'+xuid).innerHTML;
+	var xtmpcode = getId('finfo_tmpcode_'+xuid).innerHTML;
+	getId('captionDiv').style.visibility = 'visible';
+	f.uid.value = xuid;
+	f.name.value = xname;
+	f.caption.value = xcaption;
+	f.tmpcode.value = xtmpcode;
+	f.caption.focus();
+}
+
+function upCheck(f) {
+	@if (limit_num < N + 1 || limit_size <= SS) {
+    	@Html.Raw("alert('더 이상 첨부할 수 없습니다.');\n");
+	    @Html.Raw("return false;\n");
+    }
+    
+	if (f.Filedata.value == '') {
+		alert('사진파일을 선택해 주세요.');
+		f.Filedata.focus();
+        
+		return false;
+	}
+    
+	var extarr = f.Filedata.value.split('.');
+	var filext = extarr[extarr.length-1].toLowerCase();
+	var permxt = '[gif][jpg][jpeg][png]';
+	var notext = '[html][php3][inc][cgi][pl][jsp]';
+
+	if (notext.indexOf(filext) != -1) {
+		alert('php,cgi,jsp 파일은 등록할 수 없습니다.    ');
+		f.Filedata.focus();
+        
+		return false;
+	}
+
+	if (permxt.indexOf(filext) == -1) {
+		alert('gif/jpg/png 파일만 등록할 수 있습니다.    ');
+		f.Filedata.focus();
+        
+		return false;
+	}
+	return true;
+}
+
+function filesAlldelete(n,m) {
+	if (n == '0') {
+		alert('첨부된 사진이 없습니다.    ');
+        
+		return false;
+	}
+	if (confirm('정말로 모두 삭제하시겠습니까?   ')) {
+        @Html.Raw("frames._action_frame_" + m + ".location.href = '?r=" + r + "&m=" + m + "&a=files_delete&dtype=photo';\n");
+		
+	}
+}
+
+function sizeTypeSelect(n) {
+	getId('sizetype' + n).checked = true;
+    
+	if (n == 1) getId('wsize2').value = getId('wsize2').defaultValue;
+}
+
+function sizeFocus(obj) {
+	getId('sizetype2').checked = true;
+    
+	if (obj.value == obj.defaultValue) obj.value = '';
+}
+
+function sizeBlur(obj) {
+	if (obj.value == '') {
+		sizeTypeSelect(1);
+		obj.value = obj.defaultValue;
+	}
+	else {
+		numFormat(obj);
+	}
+}
+
+function insertPhoto() {
+    var l = document.getElementsByName('photomembers');
+    var n = l.length;
+    var i;
+	var j = 0;
+	var photos = '';
+	var upfiles= '';
+
+	var x_width;
+	var x_align;
+	var x_orign;
+	var val;
+
+	if (getId('sizetype1').checked == true) {
+		x_width = getId('wsize1').value;
+	}
+	else {
+		x_width = getId('wsize2').value;
+	}
+
+	for (i = 1; i < 5; i++) {
+		if(getId('xalign'+i).checked == true) {
+			x_align = getId('xalign'+i).value;
+			break;
+		}
+	}
+    
+	if (getId('orignview').checked == true) {
+		x_orign = true;
+	}
+
+	for	(i = 0; i < n; i++) {
+		if (l[i].checked == true) {
+			val = l[i].value.split('|');
+
+            x_width = parseInt(val[2]) <= parseInt(x_width) ? parseInt(val[2]) : x_width;
+
+			if (x_orign == true) {
+				photos += '<img src="' + val[1] +'" width="'+x_width+'" align="'+x_align+'" class="photo hand" imgOrignWin(this.src) alt="" />';
+			}
+			else {
+				photos += '<img src="' + val[1] +'" width="'+x_width+'" align="'+x_align+'" class="photo" alt="" />';
+			}
+            
+			photos += '<br /><br />';
+			j++;
+		}
+		upfiles += '['+val[0]+']';
+	}
+    
+	if (!j) {
+		alert('첨부된 사진이 없습니다.     ');
+		return false;
+	}
+    
+	@{
+        if(gparamExp[0] != null) {
+            @Html.Raw("if(opener.getId('" + gparamExp[0] + "'))\n");
+            @Html.Raw("{\n");
+            @Html.Raw("opener.getId('" + gparamExp[0] + "').value = opener.getId('" + gparamExp[0] + "').value + upfiles;\n");
+            @Html.Raw("}\n");
+        }
+	}
+
+	@{
+        if(gparamExp[1] != null) {
+            @Html.Raw("if(opener.getId('" + gparamExp[1] + "'))\n");
+            @Html.Raw("{\n");
+            @Html.Raw("opener.frames." + gparamExp[1] + ".location.href = opener.frames." + gparamExp[1] + ".location.href + upfiles;\n");
+            @Html.Raw("}\n");
+        }
+    }    
+        
+	@{
+        if(gparamExp[2] != null) {
+            @Html.Raw("if(opener.getId('" + gparamExp[2] + "'))\n");
+            @Html.Raw("{\n");
+            @Html.Raw("opener.frames." + gparamExp[2] + ".EditDrop(photos);\n");
+            @Html.Raw("}\n");
+        }
+    }
+    
+	@Html.Raw("frames._action_frame_" + m + ".location.href = '?r=" + "&m=" + m + "&a=sess_delete';\n");
+}
+
+function closePhoto() {
+	@Html.Raw("frames._action_frame_" + m + ".location.href = '?r=" + "&m=" + m + "&a=files_delete&dtype=photo&close=Y';\n");
+}
+
+if (!opener) {
+	location.href = './';
+}
+else {
+	document.title = '사진첨부';
+	top.resizeTo(750,680);
+}
+//]]>
+</script>

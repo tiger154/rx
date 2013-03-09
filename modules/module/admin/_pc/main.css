@@ -1,0 +1,59 @@
+
+
+#catebody {margin:0 0 30px 0;padding:0 0 30px 0;}
+#category {float:left;width:220px;padding:0 0 0 0;}
+#category .title {height:19px;background:url('../../../../_core/image/tree/default/top.gif') left no-repeat #dfdfdf;background-position:4px 3px;padding:6px 0 0 23px;}
+#category .title .c1 {width:63px;height:18px;position:relative;top:-5px;}
+#category .title .c2 {width:63px;height:18px;position:relative;top:-5px;}
+#category .title img {position:relative;top:-2px;}
+
+#category .tree {margin:0;padding:10px 0 10px 0;}
+#category .tree ul {margin:0;padding:0;}
+#category .tree li {width:194px;list-style-type:none;background:url('../../../../_core/image/_public/ico_folder_01.gif') left no-repeat;background-position:5px 4px;padding:3px 0 0 24px;border:transparent solid 1px;_border:#ffffff solid 1px;letter-spacing:-1px;}
+#category .tree li:hover {border:#ebebeb solid 1px;background:url('../../../../_core/image/_public/ico_folder_01.gif') left no-repeat #f9f9f9;background-position:5px 4px;}
+#category .tree .system {background:url('./image/ico_system.gif') left no-repeat;background-position:5px 4px;}
+#category .tree .system:hover {background:url('./image/ico_system.gif') left no-repeat #f9f9f9;background-position:5px 4px;}
+#category .tree input {display:none;}
+#category .tree a {position:relative;top:-4px;}
+#category .tree .eye1 {position:relative;top:1px;}
+#category .tree .eye2 {position:relative;top:5px;}
+#category .tree .name {color:#111;padding:2px 0 0 0;}
+#category .tree .id {position:relative;top:-1px;left:2px;font:normal 11px arial;color:#999;}
+#category .tree .id:hover {}
+#category .tree .name:hover {color:#AECD63;}
+#category .tree .on {background:#AECD63;color:#ffffff;padding:2px;}
+#category .tree .on:hover {color:#ffffff;}
+#category .tree .mobilehide {filter:alpha(opacity=30);opacity:0.3;}
+#category .tree img {}
+#category .move {cursor:move;}
+
+#catinfo {margin-left:220px;padding:0 0 0 20px;}
+#catinfo .title {background:#dfdfdf;height:25px;}
+#catinfo .title .xleft {float:left;padding:6px 0 0 23px;font-weight:bold;}
+#catinfo .title .xright {float:right;padding:7px 7px 0 0;}
+#catinfo .title .xright a {font:normal 11px dotum;color:#888;}
+
+#catinfo .td1 {padding:7px 0 7px 15px;width:70px;}
+#catinfo .td2 {padding:7px 0 7px 0;}
+#catinfo .td2 div {padding:7px 0 0 0;font-size:11px;font-family:dotum;color:#888;}
+#catinfo .td2 .sname {width:174px;}
+#catinfo .td2 .sname1 {width:307px;}
+#catinfo .td2 .sname2 {width:82px;}
+#catinfo .td2 .supload {width:270px;height:20px;margin:1px 0 1px 0;background:#ffffff;}
+#catinfo .td2 .select1 {width:180px;letter-spacing:-1px;}
+#catinfo .td2 .dn {position:relative;top:4px;}
+#catinfo .sfont1 {font:normal 11px dotum;color:#c0c0c0;}
+
+#catinfo .notice {padding:15px 0 10px 15px;margin:0 0 20px 0;height:70px;border-bottom:#dfdfdf dashed 1px;}
+#catinfo .notice .icon {float:left;width:60px;height:60px;border:#efefef solid 1px;}
+#catinfo .notice .ment {margin:0 0 0 70px;font-size:11px;font-family:dotum;color:#02B6D6;line-height:150%;}
+#catinfo .notice .ment div {font-weight:bold;color:#333;padding:2px 0 10px 0;}
+#catinfo .notice .ment div span {font-weight:normal;color:#888;padding:0 0 0 3px;}
+
+#catinfo .submitbox {margin:20px 0 20px 0;padding:15px 0 0 15px;border-top:#dfdfdf dashed 1px;}
+
+
+
+
+
+

@@ -1,0 +1,115 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];  
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var type = Request["type"];
+    var ufile = Request["ufile"];
+    
+    @_System.checkAdmin(my["admin"], 0)  
+    
+    string _ufile = g["path_root_ps"] + g["path_var"] + "update\\" + ufile + ".txt";
+    
+    if (type == "delete")
+    {
+        File.Delete(_ufile);
+        
+        @_System.getLink("reload", "parent.", "업데이트 기록이 제거되었습니다.", "")
+        return;  
+    }
+    else if (type == "manual")
+    {
+        File.WriteAllText(_ufile, date["today"] + ",1", System.Text.Encoding.UTF8);
+        
+        @_System.getLink("reload", "parent.", "수동 업데이트 처리되었습니다.", "")
+        return;  
+    }
+    else 
+    {
+        dynamic d_market = _DB.Get_code("market");
+        //dynamic d_admin = _DB.Get_code("admin");
+
+        string[] _serverinfo = d_market["url"].Split('/');        
+        WebClient client = new WebClient();
+    
+        string _updatedate = client.DownloadString("http://" + _serverinfo[2] + "/__update/update.txt");
+        string[] _updatelist = _updatedate.Split('\n');
+    
+        int _updatelength = _updatelist.Length;
+        
+        bool _includeup = false;
+
+        for (int i = _updatelength; i > 0; i--)
+        {
+            string[] _upx = _updatelist[i - 1].Trim().Split(',');
+
+            if (_upx[1] == ufile)
+            {
+                _includeup = true;
+                break;
+            }
+        }
+
+
+        if (!_includeup)
+        {            
+            @_System.getLink("", "", "업데이트 파일이 존재하지 않습니다.", "")
+            return;
+        }
+
+        string folder = g["path_root_ps"];
+        string extPath = g["path_root_ps"] + g["path_tmp"] + "app";
+        string extPath1 = extPath + "\\";
+        string saveFile = extPath1 + "rx_update_app.zip";
+        
+        // download zip file
+        client.DownloadFile("http://" + _serverinfo[2] + "/__update/files/" + ufile + ".zip", saveFile);
+
+        // unzip
+        _System.Unzip(saveFile, extPath);
+        
+        // delete zip file
+        File.Delete(saveFile);
+
+
+        string _updateFile = extPath1 + "_update.cshtml";
+
+        if (File.Exists(_updateFile))
+        {
+            //           
+        }
+
+        // move directory
+        _System.DirMove(extPath1, folder);
+        
+
+        File.WriteAllText(_ufile, date["today"] + ",0", System.Text.Encoding.UTF8);        
+    
+        @_System.getLink("reload", "parent.", "업데이트가 완료되었습니다.", "")
+        return;  
+    }
+}

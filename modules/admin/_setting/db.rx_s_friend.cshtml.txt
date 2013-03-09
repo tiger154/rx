@@ -1,0 +1,1 @@
+﻿CREATE TABLE rx_s_friend ( uid  int  identity(1,1)  NOT NULL , rel  nvarchar(2)   NOT NULL , my_mbruid  int   NOT NULL , by_mbruid  int   NOT NULL , category  nvarchar(50)   NOT NULL , d_regis  datetime   ,PRIMARY KEY (uid));

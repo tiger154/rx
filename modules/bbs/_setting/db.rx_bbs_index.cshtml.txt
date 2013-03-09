@@ -1,0 +1,1 @@
+﻿CREATE TABLE rx_bbs_index ( uid  int  identity(1,1)  NOT NULL , site  int   NOT NULL , notice  tinyint   NOT NULL , bbs  int   NOT NULL , gid  nvarchar(100)   NOT NULL ,PRIMARY KEY (uid));

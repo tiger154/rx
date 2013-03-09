@@ -1,0 +1,78 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+        
+    dynamic R = _DB.GetDbData_M(AppState["table_" + m + "data"].ToString(), "uid=" + uid);
+    
+    if (R == null)
+    {
+        return;
+    }
+    
+    if (my["admin"] == "1" && my["uid"]!=R["mbruid"])
+    {       
+        if (my["point"] < R["point2"])
+        {
+            @_System.getLink("","","회원님의 보유포인트가 열람포인트보다 적습니다.","")
+            return;
+        }
+        
+        string INSERT_PT_SQL = "INSERT INTO " + AppState["table_s_point"].ToString() + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES ('" + my["uid"] + "','0','-" + R["point2"] + "','게시물열람(" + _System.getStrCut(R["subject"], 15, "") + ")";
+        string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdatea"].ToString() + " SET point=point-" + R["point2"] + ",usepoint=usepoint+" + R["point2"] + " WHERE memberuid=" + my["uid"];
+        string UPDATE_DT_SQL = "UPDATE " + AppState["table_" + m + "data"].ToString() + " SET hit=hit+1 WHERE uid=" + R["uid"];
+        
+        @_DB.Execute(INSERT_PT_SQL);
+        @_DB.Execute(UPDATE_MBR_SQL);
+        @_DB.Execute(UPDATE_DT_SQL);
+
+        Session["module_" + m + "_view"] += "[" + R["uid"] + "]";
+
+        @_System.getLink("reload", "parent.", "결제되었습니다.", "")
+        return;
+    }
+    else
+    {
+        string UPDATE_DT_SQL = "UPDATE " + AppState["table_" + m + "data"].ToString() + " SET hit=hit+1 WHERE uid=" + R["uid"];
+        @_DB.Execute(UPDATE_DT_SQL);
+
+        Session["module_" + m + "_view"] += "[" + R["uid"] + "]";
+
+        if (my["uid"] == R["mbruid"])
+        {
+            @_System.getLink("reload", "parent.", "게시물 등록회원님으로 인증되셨습니다.", "")
+            return;
+        }
+        else
+        {
+            @_System.getLink("reload", "parent.", "관리자님으로 인증되셨습니다.", "")
+            return;
+        }
+    }
+}

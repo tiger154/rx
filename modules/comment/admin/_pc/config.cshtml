@@ -1,0 +1,380 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+    
+    dynamic d_comment = _DB.Get_code("comment");
+    
+    string frame_name = "_action_frame_" + m;
+}
+
+<div id="configbox">
+
+    <form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+    <input type="hidden" name="m" value="@module" />
+    <input type="hidden" name="a" value="config" />
+    
+    <div class="title">
+        댓글 환경설정
+    </div>
+
+    <table>
+        <tr>
+            <td class="td1">
+                댓글테마
+                <img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_skin','block','none');" />
+            </td>
+            <td class="td2">				
+                <select name="skin_main" class="select1">
+                <option value="">&nbsp;+ 선택하세요</option>
+                <option value="">--------------------------------</option>
+                @{                    
+                    string tdir_cmt = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_pc\\";
+                    string[] dirs_cmt = Directory.GetDirectories(tdir_cmt);
+                        
+                    foreach (string skin in dirs_cmt) {
+                        string skin_name = skin.Substring(tdir_cmt.Length, skin.Length - tdir_cmt.Length);
+                        string sltSkin = "";
+                            
+                        if (skin == "." || skin == ".." || File.Exists(skin) == true) {
+                            continue;
+                        }
+                        if (d_comment["skin_main"] == "_pc\\" + skin_name)
+                        {
+                            sltSkin = "selected='selected'";
+                        }
+                        <option value="_pc\@skin_name" title="@skin" @sltSkin>ㆍ @_System.getFolderName(skin, "name.txt") (@skin_name)</option>                        
+                    }                    
+                }
+                </select>
+                
+                <div id="guide_skin" class="guide hide">
+                지정된 테마는 댓글리스트 출력시에 적용됩니다.<br />
+                적용할 댓글테마를 지정해 주세요.
+                </div>
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1 m">
+                (모바일테마)
+            </td>
+            <td class="td2">
+                <select name="skin_mobile" class="select1">
+                <option value="">&nbsp;+ 선택하세요</option>
+                <option value="">--------------------------------</option>
+                @{                    
+                    string tdir_mb = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_mobile\\";
+                    string[] dirs_mb = Directory.GetDirectories(tdir_mb);
+                        
+                    foreach (string skin in dirs_mb) {
+                        string skin_name = skin.Substring(tdir_mb.Length, skin.Length - tdir_mb.Length);
+                        string sltSkin = "";
+    
+                        if (skin == "." || skin == ".." || File.Exists(skin) == true) {
+                            continue;
+                        }
+                        if (d_comment["skin_mobile"] == "_mobile\\" + skin_name) {
+                            sltSkin = "selected='selected'";
+                        }
+                        <option value="_mobile\@skin_name" title="@skin" @sltSkin>ㆍ @_System.getFolderName(skin,"name.txt") (@skin_name)</option>                        
+                    }                    
+                }
+                </select>
+            </td>
+        </tr>
+    
+        <tr>
+            <td class="td1">글쓰기권한</td>
+            <td class="td2">
+                <select name="perm_write" class="select1">
+                <option value="0">&nbsp;+ 전체허용</option>
+                <option value="0">--------------------------------</option>
+                @{                    
+                    string LEVEL_sql = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid asc";
+    
+                    foreach (var _L in _DB.Query(LEVEL_sql)) {
+                    string sltPermW = "";
+                        
+                        if (_L["uid"] == Convert.ToInt32(d_comment["perm_write"])) {
+                            sltPermW = "selected='selected'";
+                        }
+                            
+                        <option value="@_L["uid"]" @sltPermW>ㆍ @Html.Raw(_L["name"]+"("+string.Format("{0:#,0}", Convert.ToInt32(_L["num"]))+")") 이상</option>
+                        
+                        if (_L["gid"] != 0) {
+                            break;
+                        }
+                    }
+                }
+                </select>
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">사진첨부권한</td>
+            <td class="td2">
+                <select name="perm_photo" class="select1">
+                <option value="0">&nbsp;+ 전체허용</option>
+                <option value="0">--------------------------------</option>
+                @{
+                    foreach (var _L in _DB.Query(LEVEL_sql)) {
+                        string sltPermPT = "";
+                        
+                        if (_L["uid"] == Convert.ToInt32(d_comment["perm_photo"])) {
+                            sltPermPT = "selected='selected'";
+                        }
+                        
+                        <option value="@_L["uid"]" @sltPermPT>ㆍ @Html.Raw(_L["name"]+"("+string.Format("{0:#,0}", Convert.ToInt32(_L["num"]))+")") 이상</option>
+                        
+                        if (_L["gid"] != 0) {
+                        break;
+                    }
+                    }
+                }
+                </select>
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">파일첨부권한</td>
+            <td class="td2">
+                <select name="perm_upfile" class="select1">
+                <option value="0">&nbsp;+ 전체허용</option>
+                <option value="0">--------------------------------</option>
+                @{
+                    foreach (var _L in _DB.Query(LEVEL_sql)) {
+                        string sltPermUpF = "";
+                            
+                        if (_L["uid"] == Convert.ToInt32(d_comment["perm_upfile"])) {
+                            sltPermUpF = "selected='selected'";
+                        }
+                            
+                        <option value="@_L["uid"]" @sltPermUpF>ㆍ @Html.Raw(_L["name"]+"("+string.Format("{0:#,0}", Convert.ToInt32(_L["num"]))+")") 이상</option>
+                            
+                        if (_L["gid"] != 0) {
+                            break;
+                        }
+                    }
+                }
+                </select>			
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">소셜연동</td>
+            <td class="td2">
+                <select name="snsconnect" class="select1">
+                <option value="0">&nbsp;+ 연동안함</option>
+                <option value="0">--------------------------------</option>
+                @{
+                    string tdir_social = g["path_root_ps"] + "\\modules\\social\\inc";
+                        
+                    if(Directory.Exists(tdir_social)) {
+                        string[] dirs_social = Directory.GetDirectories(tdir_social);
+                            
+                        foreach(string skin in dirs_social) {
+                            string sltSns = "";
+    
+                            if (skin == "." || skin == "..") {
+                                continue;
+                            }
+                            if(d_comment["_snsconnect"] == "social\\inc\\"+skin) {
+                                sltSns = "selected='selected'";
+                            }
+                            
+                            <option value="social/inc/@skin" @sltSns>ㆍ @skin.Replace(".cshtml","")</option>                                
+                        }
+                    }
+                }
+                </select> (소셜모듈을 설치 후 사용가능)
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">댓글제목</td>
+            <td class="td2">
+            <input type="checkbox" name="use_subject" value="1" @_System.getChkStr(d_comment["use_subject"], 1) />댓글제목을 사용합니다.
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">글쓰기도구</td>
+            <td class="td2">
+            <input type="checkbox" name="edit_tool" value="1" @_System.getChkStr(d_comment["edit_tool"], 1) />글쓰기 도구를 보여줍니다. 
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">글쓰기폼높이</td>
+            <td class="td2">
+                <input type="text" name="edit_height" value="@d_comment["edit_height"]" size="5" class="input" />픽셀
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">비밀글등록</td>
+            <td class="td2">
+                <select name="use_hidden">
+                <option value="1" @_System.getSltStr(d_comment["use_hidden"], 1)>사용함</option>
+                <option value="0" @_System.getSltStr(d_comment["use_hidden"], 0)>사용안함</option>
+                </select>			
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">댓글출력수</td>
+            <td class="td2">
+                <input type="text" name="recnum" value="@d_comment["recnum"]" size="5" class="input" />개
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">댓글정렬</td>
+            <td class="td2 shift">
+            <input type="radio" name="orderby1" value="asc" @_System.getChkStr(d_comment["orderby1"], "asc") />최근댓글이 위로정렬
+            <input type="radio" name="orderby1" value="desc" @_System.getChkStr(d_comment["orderby1"], "desc") />최근댓글이 아래로정렬
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="td1">한줄의견정렬</td>
+            <td class="td2 shift">
+            <input type="radio" name="orderby2" value="desc" @_System.getChkStr(d_comment["orderby2"], "desc") />최근한줄의견이 위로정렬
+            <input type="radio" name="orderby2" value="asc" @_System.getChkStr(d_comment["orderby2"], "asc") />최근한줄의견이 아래로정렬
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">삭제제한</td>
+            <td class="td2 shift">
+            <input type="checkbox" name="onelinedel" value="1" @_System.getChkStr(d_comment["onelinedel"], 1)  />한줄의견이 있는 댓글의 삭제를 제한합니다.
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">불량글 처리</td>
+            <td class="td2 shift">
+            <input type="checkbox" name="singo_del" value="1" @_System.getChkStr(d_comment["singo_del"], 1)  />신고수가 
+            <input type="text" name="singo_del_num" value="@d_comment["singo_del_num"]" size="5" class="input" />건 이상일 경우 
+    
+            <select name="singo_del_act">
+            @{
+                string sltSingoAct1 = "";
+                string sltSingoAct2 = "";
+
+                if (Convert.ToInt32(d_comment["singo_del_act"]) == 1)
+                {
+                    sltSingoAct1 = "selected='selected'";
+                }
+                if (Convert.ToInt32(d_comment["singo_del_act"]) == 2)
+                {
+                    sltSingoAct2 = "selected='selected'";
+                }
+            }
+            <option value="1" @sltSingoAct1>자동삭제</option>
+            <option value="2" @sltSingoAct2>비밀처리</option>
+            </select>
+            </td>
+        </tr>
+    
+        <tr>
+            <td class="td1">제한단어</td>
+            <td class="td2">
+                <textarea name="badword" rows="5" cols="70" onfocus="this.style.color='#000000';" onblur="this.style.color='#ffffff';">@d_comment["badword"]</textarea>
+            </td>
+        </tr>
+            
+        <tr>
+            <td class="td1">제한단어 처리</td>
+            <td class="td2">
+            @{
+                string chkBadAct0 = "";
+                string chkBadAct1 = "";
+                string chkBadAct2 = "";
+
+                if (Convert.ToInt32(d_comment["badword_action"]) == 0)
+                {
+                    chkBadAct0 = "checked='checked'";
+                }
+                if (Convert.ToInt32(d_comment["badword_action"]) == 1)
+                {
+                    chkBadAct1 = "checked='checked'";
+                }
+                if (Convert.ToInt32(d_comment["badword_action"]) == 2)
+                {
+                    chkBadAct2 = "checked='checked'";
+                }
+            }
+            <input type="radio" name="badword_action" value="0" @chkBadAct0 />제한단어 체크하지 않음<br />
+            <input type="radio" name="badword_action" value="1" @chkBadAct1 />등록을 차단함<br />
+            <input type="radio" name="badword_action" value="2" @chkBadAct2 />제한단어를 다음의 문자로 치환하여 등록함
+            <input type="text" name="badword_escape" value="@d_comment["badword_escape"]" size="1" maxlength="1" class="input" />
+            </td>
+        </tr>
+    
+        <tr>
+            <td class="td1">댓글포인트</td>
+            <td class="td2">
+                <input type="text" name="give_point" value="@d_comment["give_point"]" size="5" class="input" />포인트지급 (등록한 댓글을 삭제시 환원됩니다)
+            </td>
+        </tr>
+        
+        <tr>
+            <td class="td1">한줄의견포인트</td>
+            <td class="td2">
+                <input type="text" name="give_opoint" value="@d_comment["give_opoint"]" size="5" class="input" />포인트지급 (등록한 한줄의견을 삭제시 환원됩니다)
+            </td>
+        </tr>
+	</table>
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function saveCheck(f) {
+    if (f.skin_main.value == '') {
+        alert('대표테마를 선택해 주세요.       ');
+        f.skin_main.focus();
+        return false;
+    }
+
+    if (f.skin_mobile.value == '') {
+        alert('모바일테마를 선택해 주세요.       ');
+        f.skin_mobile.focus();
+        return false;
+    }
+
+    return confirm('정말로 실행하시겠습니까?         ');
+}
+//]]>
+</script>
+
+

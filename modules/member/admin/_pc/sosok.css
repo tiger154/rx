@@ -1,0 +1,44 @@
+
+#sosokbox {padding:0 0 30px 0;}
+
+#sosokbox .sosok {float:left;width:280px;}
+
+#sosokbox .sosok .title {background:#efefef;height:28px;}
+#sosokbox .sosok .title .xl {float:left;font-weight:bold;padding:7px 0 0 7px;}
+#sosokbox .sosok .title .xr {float:right;padding:5px 7px 0 0;}
+#sosokbox .sosok .title .xr .ninput {position:relative;top:-2px;visibility:hidden;}
+#sosokbox .sosok .title .xr .ninput .input {width:90px;height:14px;}
+#sosokbox .sosok .title .xr .trans {opacity:0.3;filter:alpha(opacity=30);}
+
+#sosokbox .sosok .box {padding:0 0 20px 0;}
+#sosokbox .sosok .box .msgbox {background:#f9f9f9;height:31px;border-top:#ffffff solid 1px;border-left:#efefef solid 1px;border-right:#efefef solid 1px;border-bottom:#dfdfdf solid 1px;margin:0 0 20px 0;padding:10px;font-size:11px;font-family:dotum;color:#666;line-height:150%;}
+#sosokbox .sosok .box .sosokbox {margin:0 7px 15px 7px;_margin:0 0 7px 5px;}
+
+#sosokbox .sosok .box .sosokbox .num {position:absolute;}
+#sosokbox .sosok .box .sosokbox .num span {position:relative;top:2px;left:5px;font-size:11px;font-family:arial;color:#666;}
+#sosokbox .sosok .box .sosokbox .delbtn {position:absolute;}
+#sosokbox .sosok .box .sosokbox .delbtn a {position:relative;top:-1px;left:107px;}
+#sosokbox .sosok .box .sosokbox .delbtn a img {padding:5px;}
+#sosokbox .sosok .box .sosokbox .icon {width:120px;height:80px;border:#EFEFEF solid 1px;background:url('./image/bg_group.gif') center center no-repeat;}
+#sosokbox .sosok .box .sosokbox .name {width:120px;height:20px;}
+#sosokbox .sosok .box .sosokbox .name input {border:1px solid transparent;width:118px;height:15px;padding:2px 0 0 2px;margin:3px 0 0 0;text-align:center;color:#666;font-size:11px;font-family:dotum;}
+#sosokbox .sosok .box .sosokbox .name input:hover {border:1px dashed #FF9D1D;color:#ff0000;}
+#sosokbox .sosok .box .sosokbox .name input:focus {border:1px solid #FF9D1D;color:#ff0000;}
+
+#sosokbox .sosok .box ul {padding:0;margin:0;}
+#sosokbox .sosok .box li {list-style-type:none;float:left;margin:0;padding:0;}
+
+
+
+#sosokbox .level {width:360px;margin:0 0 0 290px;}
+#sosokbox .level .title {background:#efefef;height:28px;}
+#sosokbox .level .title .xl {float:left;font-weight:bold;padding:7px 0 0 7px;}
+#sosokbox .level .title .xr {float:right;padding:5px 8px 0 0;}
+#sosokbox .level .title .xr select {position:relative;top:-2px;}
+
+#sosokbox .level .leveltbl {}
+#sosokbox .level .leveltbl table {width:360px;border:#efefef solid 1px;}
+#sosokbox .level .leveltbl caption {display:none;}
+#sosokbox .level .leveltbl th {text-align:center;font-weight:normal;border-bottom:#dfdfdf solid 1px;height:22px;background:#f9f9f9;font-size:11px;font-family:dotum;color:#555;}
+#sosokbox .level .leveltbl td {text-align:center;border-bottom:#efefef dotted 1px;}
+#sosokbox .level .leveltbl td .num {width:30px;height:15px;font-size:11px;font-family:arial;background:#8DB404;color:#fff;margin:0 0 0 7px;}

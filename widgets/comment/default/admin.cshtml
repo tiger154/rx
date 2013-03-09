@@ -1,0 +1,204 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    dynamic _HS = PageData[1];
+    var wdgvar = PageData[2];
+
+    string swidget = PageData[3];
+    dynamic g = PageData[0];    
+
+    //string swidget = Request["swidget"]; 
+    string r = Request["r"];
+    string option = Request["option"];
+    string isWcode = Request["isWcode"];
+    string dropfield = Request["dropfield"];
+    
+    if (!wdgvar.ContainsKey("c_skin"))
+    {
+        wdgvar.Add("c_skin", "");
+    }   
+    if (!wdgvar.ContainsKey("c_open"))
+    {
+        wdgvar.Add("c_open", "");
+    }
+    if (!wdgvar.ContainsKey("c_hidepost"))
+    {
+        wdgvar.Add("c_hidepost", "");
+    } 
+}
+
+<div id="mjointbox">
+
+	<div class="title">
+		이 위젯(<span class="b">@_System.getFolderName(g["path_root_ps"] + g["path_widget"] + swidget, "name.txt")</span>)을 추가하시겠습니까?
+	</div>
+
+
+
+	<form name="procform" onsubmit="return saveCheck(this);">
+
+
+	<table>
+	<tr>
+	<td class="td1">댓글테마</td>
+	<td class="td2">:</td>
+	<td class="td3">
+		<select name="c_skin" class="select1">
+		<option value="">&nbsp;+ 댓글 대표테마</option>
+		<option value="">--------------------------------</option>
+        @{
+            string tdir = g["path_root_ps"] + g["path_module"] + "comment\\theme\\_pc";
+            
+            foreach (string skin in Directory.GetDirectories(tdir))
+            {
+                string skin_name = Path.GetFileName(skin);
+                
+                if (skin_name == "." || skin_name == ".." || File.Exists(skin))
+                {
+                    continue;
+                }                
+                <option value="_pc/@skin_name" title="@skin_name" @_System.getSltStr(wdgvar["c_skin"], "_pc/" + skin_name)>ㆍ @_System.getFolderName(skin, "name.txt") (@skin_name)</option>                        
+            }
+        }
+		</select>
+	</td>
+	</tr>
+	<tr>
+	<td class="td1">댓글열기</td>
+	<td class="td2">:</td>
+	<td class="td3 shift">
+		<input type="checkbox" name="c_open" value="1" @_System.getChkStr(wdgvar["c_open"], 1) />자동펼침
+	</td>
+	</tr>
+	<tr>
+	<td class="td1">추출제외</td>
+	<td class="td2">:</td>
+	<td class="td3 shift">
+		<input type="checkbox" name="c_hidepost" value="1" @_System.getChkStr(wdgvar["c_hidepost"], 1) />최근댓글 출력에서 제외합니다.
+	</td>
+	</tr>
+	<tr>
+	<td class="td1"></td>
+	<td class="td2"></td>
+	<td class="td4">
+		삽입된 댓글상자의 가로폭은 위젯폭에 맞춰지며<br />
+		높이는 자동으로 조절됩니다.
+	</td>
+	</tr>
+	</table>
+
+	<div class="btnbox">
+	<input type="button" value="미리보기" class="btngray" onclick="imgOrignWin('@g["url_root_host"]/widgets/@swidget.Replace("\\","/")/thumb.jpg');" />
+
+    @{
+        
+        if (isWcode == "Y")
+        {
+            <input type="button" value="위젯코드" class="btnblue" onclick="widgetCode();" />
+        }
+        else
+        {
+            <input type="submit" value="@Html.Raw(_System.isEqual(option != null && option != "", true, "속성변경", "위젯추가"))" class="btnblue" />
+        }
+
+        swidget = swidget.Replace("\\", "/");
+    
+    }
+	</div>
+
+	</form>
+
+
+</div>
+
+<style type="text/css">
+#mjointbox {}
+#mjointbox .title {border-bottom:#dfdfdf dashed 1px;padding:0 0 10px 0;margin:0 0 20px 0;}
+#mjointbox .td1 {padding:0 20px 0 0;letter-spacing:-1px;}
+#mjointbox .td2 {padding:0 15px 0 0;color:#c0c0c0;}
+#mjointbox .td3 {}
+#mjointbox .td4 {padding:10px 0 0 0;color:#999;line-height:150%;}
+#mjointbox .btnbox {text-align:center;padding:20px 0 0 0;margin:20px 0 0 0;border-top:#dfdfdf dashed 1px;}
+</style>
+
+
+<script type="text/javascript">
+//<![CDATA[
+var RX_widgetCode;
+function widgetCode()
+{
+	var f = document.procform;
+	var bbsx = f.bbsid.value.split('^');
+	var widgetName = "@swidget";
+	var widgetInfo = "";
+ 
+    RX_widgetCode = "";
+    RX_widgetCode += "@@{ \n";    
+    RX_widgetCode += "@@_System.getWidget(";
+    RX_widgetCode += "\"" + widgetName + "\",\"";    
+
+	if(f.c_skin.value) RX_widgetCode+= "[c_skin=>"+f.c_skin.value+"]";
+	if(f.c_open.checked == true) RX_widgetCode+= "[c_open=>1]";
+	if(f.c_hidepost.checked == true) RX_widgetCode+= "[c_hidepost=>1]";
+ 
+
+    RX_widgetCode += "\") \n";    
+    RX_widgetCode += "@@RenderPage(_System.getWidgetPath(), PageData[0], PageData[5], _System.getWdgvar())\n";
+    RX_widgetCode += "} \n";
+
+	OpenWindow('@(g["s"])/?r=@r&system=popup.widgetcode&iframe=Y');
+}
+function titleChange(obj)
+{
+	var f = document.procform;
+	if (obj.value == '')
+	{
+		f.title.value = '댓글달기';
+		f.link.value = '';
+		f.title.focus();
+	}
+	else {
+		var tt = obj.value.split('^');
+		f.title.value = tt[1];
+		f.link.value = tt[2];
+		f.link.focus();
+	}
+}
+function saveCheck(f)
+{
+    @if(option==null || option==""){
+	    @Html.Raw("var i; \n");
+	    @Html.Raw("var n = 0; \n");
+
+        @Html.Raw("for (i=0; i<opener.maxTiles; i++) \n");
+	    @Html.Raw("{ \n");
+        @Html.Raw("if (opener.moveObject[i].style.display=='block') \n");
+		@Html.Raw("{ \n");
+		@Html.Raw("n = i+1; \n");
+        @Html.Raw("} \n");
+        @Html.Raw("} \n");
+    }
+    else{
+    	@Html.Raw("var n = " + dropfield + "; \n");
+    }
+    
+    @if(option==null || option==""){
+        @Html.Raw("opener.createTile('440px','350px','0px','0px'); \n");
+    }
+    
+
+	opener.blocktitle[n] = '댓글달기';
+	opener.blockarray[n] = "@swidget,c_skin^"+f.c_skin.value+",c_open^"+(f.c_open.checked==true?1:0)+",c_hidepost^"+(f.c_hidepost.checked==true?1:0);
+	opener.getId('wtitle'+n).innerHTML = opener.blocktitle[n];
+	top.close();
+	return false;
+}
+//]]>
+</script>
+

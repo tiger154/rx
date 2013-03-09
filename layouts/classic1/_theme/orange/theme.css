@@ -1,0 +1,9 @@
+﻿/* ogrange */
+#header .tabmenu {border:#E77512 solid 1px;}
+#header .tabmenu .twrap {border:#F49A4C solid 1px;background:#F18A2E;}
+#header .tabmenu .twrap li a {color:#F9FEF8;}
+#header .tabmenu .twrap li .on {color:#171916;}
+#header .tabmenu .twrap li div dl {border:#E77512 solid 1px;}
+#header .tabmenu .twrap .vline {border-right:#ECAA6E solid 1px;border-left:#A75E1A solid 1px;}
+#header .tabmenu .twrap li div dt a {color:#222222;}
+#header .tabmenu .twrap li div dd a {color:#222222;}

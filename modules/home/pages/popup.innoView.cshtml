@@ -1,0 +1,84 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    dynamic g = Session["g"];
+
+    var uid = Request["uid"];
+    var sort = Request["sort"];
+    var orderby = "asc";
+
+    dynamic R = _DB.getUidData(AppState["table_bbsdata"], uid);
+
+    string fileDir = g["path_root_ps"] + "files\\";
+}
+
+<div id="codebox">
+
+	<div class="header">
+		<h1>@R["subject"]</h1>
+		<div class="guide">		
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div class="line1"></div>
+	<div class="line2"></div>
+	<div class="line3"></div>
+
+    <div class="info"> 
+		등록일 : @R["d_regis"].ToString("yyyy.MM.dd HH:mm") | 조회 @R["hit"]
+    </div>
+
+
+    <div class="gallery">
+    @foreach (var upfile in _System.getArrayString(R["upload"]))
+    {
+
+        dynamic U = _DB.GetDbData_M(AppState["table_s_upload"], "uid=" + upfile);                        
+            
+            <div class="picbox" style="width:136px;height:170px);">
+                <div class="pic" style="height:90px;">
+
+                @if (U["type"] == "2")
+                {
+                    @*<a href="@g["bbs_view"]@R["uid"]">-->*@
+                    <img src="@g["url_root_host"]/files/@U["folder"].Replace("\\", "/")/@U["tmpname"]" height="90" alt="" />
+                }
+                </div>
+            
+                <div class="sbjx">
+
+                @*<a href="@g["bbs_view"]@R["uid"]">*@        
+
+                @_System.getStrCut(U["name"], 10, "..")
+                      
+                </div>
+            </div>           
+    }    
+	</div>
+
+
+    <div class="innoFD">
+        @RenderPage("~/modules/bbs/theme/_pc/kppa01/InnoFD/index.cshtml", R["upload"])                
+    </div>
+
+
+
+	<div class="footer">
+		<input type="button" value="창닫기" class="btngray" onclick="top.close();" />
+	</div>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+    function pageSetting() {
+        getId('widgetCode').value += opener.RX_widgetCode;        
+        document.title = '위젯코드';
+        top.resizeTo(650, 550);
+    }
+    window.onload = pageSetting;
+//]]>
+</script>

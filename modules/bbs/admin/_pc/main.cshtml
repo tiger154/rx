@@ -1,0 +1,1206 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var bbsque = Request["bbsque"];
+    var uid = Request["uid"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var type = Request["type"];
+
+    dynamic d_bbs = _DB.Get_code("bbs");
+    dynamic d_bbsenv = null;
+    dynamic R = null;
+
+    string frame_name = "_action_frame_" + m;
+    string RCD_sql = "";
+
+    int list_start = 0;
+    int NUM = 0;
+
+    decimal TPG = 0;
+
+    if (sort == null || sort == "")
+    {
+        sort = "gid";
+    }
+    if (orderby == null || orderby == "")
+    {
+        orderby = "asc";
+    }
+
+    if (recnum == null || recnum == "" || recnum == "0" || Convert.ToInt32(recnum) >= 301)
+    {
+        recnum = "15";
+    }
+
+    list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+    NUM = _DB.GetDbData_Count(AppState["table_" + module + "list"].ToString(), "");
+    TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));    
+    bbsque = ""; //?????
+
+    R = _DB.Get_module_data(AppState["table_bbslist"].ToString(), "uid", uid);
+    d_bbsenv = _DB.Get_module_data(AppState["table_code_d_bbsenv"].ToString(), "id", R["id"]);
+    RCD_sql = _System.GetQuery(AppState["table_bbslist"].ToString(), "", bbsque, sort, orderby, list_start, recnum);
+}
+
+
+<div id="catebody">
+	<div id="category">      
+        <form name="bbsform" action="@g["s"]/" method="post" target="@frame_name">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="bbsorder_update" />
+
+		<div class="title">
+			<select class="c1" onchange="goHref('@g["adm_href"]&recnum='+this.value);">
+            @for (int i = 15; i <= 300; i = i + 15)
+            {
+                <option value="@i"@_System.getSltStr(i, recnum)>D.@i</option>                
+            }
+			</select>
+            
+			<select class="c2" onchange="goHref('@g["adm_href"]&recnum=@recnum&p='+this.value);">                
+            @for (int i = 1; i <= Convert.ToInt32(TPG); i++)
+            {
+                <option value="@i"@_System.getSltStr(i, p)>P.@i</option>
+            }	            
+			</select>
+
+			<a href="@g["adm_href"]&type=makebbs" title="게시판추가"><img src="@g["img_core"]/_public/btn_add.gif" alt="추가" /></a>
+			<img src="@g["img_core"]/_public/btn_save.gif" title="순서저장" alt="save" class="hand" onclick="document.bbsform.submit();" />
+		</div>
+
+        @if (NUM != 0)
+        {
+            <div class="tree">
+            <ul id="bbsorder">
+                
+            @foreach (var BR in _DB.Query(RCD_sql))
+            {
+                string onString = "";
+                string tmp = "";
+
+                if (BR["uid"] == R["uid"])
+                {
+                    onString = "on";
+                }
+                if (BR["category"] != null && BR["category"] != "")
+                {
+                    tmp = "class='usecat' title='" + BR["category"] + "'";
+                }
+    
+                <li ondblclick="window.open('?r=@r&m=@module&bid=@BR["id"]');" @tmp>
+                    <input type="checkbox" name="bbsmembers" value="@BR["uid"]" checked="checked" />
+                    <a href="@g["adm_href"]&recnum=@recnum&p=@p&uid=@BR["uid"]">
+                    <span class="name @onString" title="@Html.Raw(string.Format("{0:#,0}", BR["num_r"]) + "개")">@BR["name"]</span></a>                        
+                    <span class="id">(@BR["id"])</span>
+                </li>
+            }     
+            </ul>
+            </div>
+        }
+
+        else
+        {
+            <div class="none">등록된 게시판이 없습니다.</div>    
+        }            
+        </form>
+    </div>
+
+	<div id="catinfo">
+
+        <form name="procForm" action="@g["s"]/" method="post" enctype="multipart/form-data" target="@frame_name" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="makebbs" />
+		<input type="hidden" name="bid" value="@R["id"]" />
+		<input type="hidden" name="perm_g_list" value="@d_bbsenv["perm_g_list"]" />
+		<input type="hidden" name="perm_g_view" value="@d_bbsenv["perm_g_view"]" />
+		<input type="hidden" name="perm_g_write" value="@d_bbsenv["perm_g_write"]" />
+
+		<div class="title">
+			<div class="xleft">
+				게시판 등록정보
+			</div>
+			<div class="xright">
+				<a href="@g["adm_href"]&type=makebbs">새게시판 만들기</a>
+			</div>
+		</div>
+
+		<div class="notice">
+			게시판의 순서를 변경하려면 게시판을 드래그 후 [save]버튼을 클릭해 주세요.<br />
+			게시판을 메뉴나 페이지에 연결하면 연결메뉴/연결페이지의 설정값은 무시됩니다.
+		</div>
+
+        <table>
+			<tr>
+    		<td class="td1">
+			게시판이름					
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_bbsidname','block','none');" />
+			</td>
+			<td class="td2">
+			<input type="text" name="name" value="@R["name"]" class="input sname" />
+
+            @if (R["id"] != "")
+            {                            
+                <span class="btn01"><a href="?r=@r&m=@module&a=deletebbs&uid=@R["uid"]" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?     ')"  >삭제하기</a></span>                                                             
+                <span class="btn01"><a href="@_System.RW("m=" + module + "&bid=" + R["id"], g["r"], _HS)">게시판보기</a></span>
+            }
+            else
+            {
+                @:아이디 <input type="text" name="id" value="" class="input sname2" />
+            }
+
+                <div id="guide_bbsidname" class="guide hide">
+                    <span class="b">게시판이름</span> : 게시판제목에 해당되며 한글,영문등 자유롭게 등록할 수 있습니다.<br />
+                    <span class="b">아이디</span> : 영문 대소문자+숫자+_ 조합으로 만듭니다.<br />
+                </div>
+			</td>
+			</tr>
+	
+            <tr>
+			<td class="td1"> 
+            카 테 고 리
+            <img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_category','block','none');" />
+			</td>
+			<td class="td2">
+			<input type="text" name="category" value="@R["category"]" class="input sname1" />
+				<div id="guide_category" class="guide hide">
+					분류를 <span class="b">콤마(,)</span>로 구분해 주세요. <span class="b">첫분류는 분류제목</span>이 됩니다.<br />
+					보기)<span class="b">구분</span>,유머,공포,엽기,무협,기타
+				</div>
+			</td>
+			</tr>          
+            
+            <tr>
+			<td class="td1">레 이 아 웃</td>
+			<td class="td2">
+                <select name="layout" class="select1">
+                <option value="">&nbsp;+ 사이트 대표레이아웃</option>
+                <option value="">--------------------------------</option>
+                @{
+                    string tdir = g["path_root_ps"] + g["path_layout"];
+
+                    foreach (string tpl in Directory.GetDirectories(tdir))
+                    {
+                        string lay_name = tpl.Substring(tdir.Length, tpl.Length - tdir.Length);
+                        string lay_sel = "";
+
+                        if (lay_name != "_blank")
+                        {
+                            if (d_bbsenv["layout"] == lay_name + "\\main.cshtml")
+                            {
+                                lay_sel = "selected='selected'";
+                            }
+                            
+                            <option value="@lay_name\main.cshtml" @Html.Raw(lay_sel)>ㆍ @_System.getFolderName(tpl, "name.txt") (@lay_name)</option>
+                        }
+                    }
+                }
+                </select>
+            </td> 
+            </tr>
+
+            <tr>
+			<td class="td1">게시판테마</td>
+			<td class="td2">
+                <select name="skin" class="select1">
+                <option value="">&nbsp;+ 게시판 대표테마</option>
+                <option value="">--------------------------------</option>
+                @{
+                    string tdir2 = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_pc\\";
+
+                    foreach (string tpl in Directory.GetDirectories(tdir2))
+                    {
+                        string theme_name = tpl.Substring(tdir2.Length, tpl.Length - tdir2.Length);
+                        string theme_sel = "";
+
+                        if (theme_name != "_blank")
+                        {
+                            if (d_bbsenv["skin"] == "_pc\\" + theme_name)
+                            {
+                                theme_sel = "selected='selected'";
+                            }                                                                            
+                            <option value="@Html.Raw("_pc\\" + theme_name)" @theme_sel>ㆍ @_System.getFolderName(tpl, "name.txt") (@theme_name)</option>
+                        }
+                    }
+                }
+                </select>
+            </td> 
+            </tr>
+            
+            <tr>
+			<td class="td1 sfont1">(모바일접속)</td>
+			<td class="td2">
+                <select name="m_skin" class="select1">
+                <option value="">&nbsp;+ 모바일 대표테마</option>
+                <option value="">--------------------------------</option>
+                @{
+                    string tdir_mobile = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\_mobile\\";
+
+                    foreach (string tpl in Directory.GetDirectories(tdir_mobile))
+                    {
+                        string mobile_name = tpl.Substring(tdir_mobile.Length, tpl.Length - tdir_mobile.Length);
+                        string mobile_sel = "";
+
+                        if (mobile_name != "_blank")
+                        {
+                            if (d_bbsenv["m_skin"] == "_mobile\\" + mobile_name)
+                            {
+                                mobile_sel = "selected='selected'";
+                            }
+                            
+                            <option value="@Html.Raw("_mobile\\" + mobile_name)" @mobile_sel>ㆍ @_System.getFolderName(tpl, "name.txt") (@mobile_name)</option>
+                        }
+                    }
+                }
+                </select>
+            </td>
+            </tr>
+            
+            <tr>
+			<td class="td1">댓 글 테 마</td>
+			<td class="td2">
+                <select name="c_skin" class="select1">
+                <option value="">&nbsp;+ 댓글 대표테마</option>
+                <option value="">--------------------------------</option>
+                @{
+                    string tdir_comment = g["path_root_ps"] + "\\modules\\comment\\theme\\_pc\\";
+
+                    foreach (string tpl in Directory.GetDirectories(tdir_comment))
+                    {
+                        string comment_name = tpl.Substring(tdir_comment.Length, tpl.Length - tdir_comment.Length);
+                        string comment_sel = "";
+
+                        if (comment_name != "_blank")
+                        {
+                            if (d_bbsenv["c_skin"] == "_pc\\" + comment_name)
+                            {
+                                comment_sel = "selected='selected'";
+                            }
+                            <option value="@Html.Raw("_pc\\" + comment_name)" @comment_sel>ㆍ @_System.getFolderName(tpl, "name.txt") (@comment_name)</option>
+                        }
+                    }
+                }
+                </select>
+                
+                @{
+                    string chkStr = "";
+                    string chkStr2 = "";
+
+                    if (d_bbsenv["c_hidden"] == "1")
+                    {
+                        chkStr = " checked='checked'";
+                    }
+                    if (d_bbsenv["c_open"] == "1")
+                    {
+                        chkStr2 = " checked='checked'";
+                    }
+                }
+                
+                <input type="checkbox" name="c_hidden" value="1" @chkStr />사용안함
+                <input type="checkbox" name="c_open" value="1" @chkStr2 />자동펼침  
+            </td>
+            </tr>
+            
+            <tr>
+			<td class="td1 sfont1">(모바일접속)</td>
+			<td class="td2">
+			<select name="c_mskin" class="select1">
+			<option value="">&nbsp;+ 모바일 대표테마</option>
+            <option value="">--------------------------------</option>
+            @{
+                string tdir_mobile2 = g["path_root_ps"] + "\\modules\\comment\\theme\\_mobile\\";
+
+                foreach (string tpl in Directory.GetDirectories(tdir_mobile2))
+                {
+                    string mobile2_name = tpl.Substring(tdir_mobile2.Length, tpl.Length - tdir_mobile2.Length);
+                    string mobile2_sel = "";
+
+                    if (mobile2_name != "_blank")
+                    {
+                        if (d_bbsenv["c_mskin"] == "_mobile\\" + mobile2_name)
+                        {
+                            mobile2_sel = "selected='selected'";
+                        }
+                        
+                        <option value="@Html.Raw("_mobile\\" + mobile2_name)" @mobile2_sel>ㆍ @_System.getFolderName(tpl, "name.txt") (@mobile2_name)</option>
+                    }
+                }
+            }
+			</select>
+            </td>
+            </tr>
+            
+            <tr>
+			<td class="td1">연 결 메 뉴
+            <img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_sosokmenu','block','none');" />				
+            </td>
+			<td class="td2">
+                <select name="sosokmenu" class="select1">
+                <option value="">&nbsp;+ 사용안함</option>
+                <option value="">--------------------------------</option>
+                @_Menu.getMenuShowSelect("", AppState["table_s_menu"].ToString(), 0, 0, 0, 0, "", "", g, d_bbsenv["sosokmenu"])
+                </select>
+                
+                <div id="guide_sosokmenu" class="guide hide">
+                이 게시판을 메뉴에 연결하였을 경우 해당메뉴를 지정해 주세요.<br />
+                연결메뉴를 지정하면 게시물수,로케이션이 동기화됩니다.<br />
+                </div>
+            </td>
+            </tr>
+            
+            <tr>
+			<td class="td1">소 셜 연 동
+            <img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_snsconnect','block','none');" />				
+            </td>
+			<td class="td2">
+                <select name="snsconnect" class="select1">
+                <option value="0">&nbsp;+ 연동안함</option>
+                <option value="0">--------------------------------</option>
+                @{
+                    string tdir_social = g["path_root_ps"] + "\\modules\\social\\inc\\";
+
+                    if (Directory.Exists(tdir_social))
+                    {
+                        foreach (string tpl in Directory.GetDirectories(tdir_social))
+                        {
+                            string social_name = tpl.Substring(tdir_social.Length, tpl.Length - tdir_social.Length);
+                            string social_sel = "";
+
+                            if (social_name != "_blank")
+                            {
+                                if (d_bbsenv["snsconnect"] == "social\\inc\\" + social_name)
+                                {
+                                    social_sel = "selected='selected'";
+                                }
+                                
+                                <option value="social\inc\@social_name" @social_sel>ㆍ @social_name.Replace(".cshtml", "")</option>
+                            }
+                        }
+                    }
+                }
+                </select>
+                
+                <div id="guide_snsconnect" class="guide hide">
+                게시물 등록시 SNS에 동시등록을 가능하게 합니다.<br />
+                이 서비스를 위해서는 소셜연동 모듈을 설치해야 합니다.<br />
+                </div>
+            </td>
+            </tr>          
+
+			<tr>
+			<td class="td1">
+			추 가 설 정
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_addconfig','block','none');" />
+			</td>
+			<td class="td2 shift">
+				<input type="checkbox" checked="checked" disabled="disabled" />권한설정
+				<img src="@g["img_core"]/_public/ico_under.gif" alt="접기/펼치기" title="접기/펼치기" id="dm_img_addinfo" class="dm" onclick="codShowHide('menu_addinfo','block','none',this);" />
+				<input type="checkbox" checked="checked" disabled="disabled" />고급설정
+				<img src="@g["img_core"]/_public/ico_under.gif" alt="접기/펼치기" title="접기/펼치기" id="dm_img_config" class="dm" onclick="codShowHide('menu_config','block','none',this);" /><br />
+
+                @{
+                    string headerString = "";
+                    string footerString = "";
+
+                    if (R["imghead"] != "" || File.Exists(g["path_root_ps"] + "\\modules\\" + module + "/var/code/" + R["id"] + ".header.cshtml"))
+                    {
+                        headerString = "checked='checked'";
+                    }
+                    if (R["imgfoot"] != "" || File.Exists(g["path_root_ps"] + "\\modules\\" + module + "/var/code/" + R["id"] + ".footer.cshtml"))
+                    {
+                        footerString = "checked='checked'";
+                    }   
+                }
+                        
+                <input type="checkbox" @headerString disabled="disabled" />헤더삽입
+				<img src="@g["img_core"]/_public/ico_under.gif" alt="접기/펼치기" title="접기/펼치기" id="dm_img_header" class="dm" onclick="codShowHide('menu_header','block','none',this);" />
+				<input type="checkbox" @footerString disabled="disabled" />풋터삽입
+				<img src="@g["img_core"]/_public/ico_under.gif" alt="접기/펼치기" title="접기/펼치기" id="dm_img_footer" class="dm" onclick="codShowHide('menu_footer','block','none',this);" />
+
+				<div id="guide_addconfig" class="guide hide">
+				게시판에 더 많은 세부설정이 필요할 경우 사용합니다.<br />
+				추가설정 뷰는 각각의 모드별로 마지막 접기/펼치기 값을 기억합니다.<br />
+				더 세부적인 설정은 기초환경 및 테마별 설정을 이용하세요.
+				</div>
+			</td>
+			</tr>
+		</table>
+
+		<div id="menu_addinfo" class="hide">
+            
+		<table>
+			<tr>
+			<td class="td1"></td>
+			<td class="td2">
+				<div class="guide">
+				각각의 모드에 대한 회원등급/그룹별 접근권한을 설정합니다.<br />
+				복수의 그룹을 선택하려면 드래그하거나 Ctrl키를 누른다음 클릭해 주세요.
+				</div>
+			</td>
+			</tr>
+            
+			<tr>
+			<td class="td1"></td>
+			<td class="td2 b">
+				목록접근
+			</td>
+			</tr>
+            
+			<tr>
+			<td class="td1">허용등급</td>
+			<td class="td2">
+				<select name="perm_l_list" class="select1">
+				<option value="0">&nbsp;+ 전체허용</option>
+				<option value="0">--------------------------------</option>
+                @{
+                    string LEVEL_sql = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid asc";
+
+                    foreach (var _L in _DB.Query(LEVEL_sql))
+                    {
+                        string selectString = "";
+
+                        if (_L["uid"] == d_bbsenv["perm_l_list"])
+                        {
+                            selectString = " selected='selected'";
+                        }
+                            
+                        <option value="@_L["uid"]" @selectString>@Html.Raw("ㆍ" + _L["name"] + "(" + string.Format("{0:#,0}", Convert.ToInt32(_L["num"])) + ") 이상")</option>
+                        
+                        if (_L["gid"] != null && _L["gid"] != 0)
+                        {
+                            break;
+                        }
+                    }
+                }    
+                </select>
+			</td>
+			</tr>
+            
+			<tr>
+			<td class="td1">
+			차단그룹
+			</td>
+			<td class="td2">
+				<select name="_perm_g_list" class="select1" multiple="multiple" size="5">
+                @{
+                    string selectCha = "";
+
+                    if (d_bbsenv["perm_g_list"] == "")
+                    {
+                        selectCha = " selected='selected'";
+                    }
+
+                    <option value="" @selectCha>ㆍ차단안함</option>
+                            
+                    string _SOSOK_sql = "SELECT * FROM " + AppState["table_s_mbrgroup"].ToString() + " ORDER BY gid asc";
+
+                    foreach (var _S in _DB.Query(_SOSOK_sql))
+                    {
+                        string selectOver = "";
+
+                        if (d_bbsenv["perm_g_list"].IndexOf("[" + _S["uid"] + "]") != -1)
+                        {
+                            selectOver = " selected='selected'";
+                        }            
+
+                        <option value="@_S["uid"]"@selectOver>@Html.Raw("ㆍ" + _S["name"] + "(" + string.Format("{0:#,0}", Convert.ToInt32(_S["num"])) + ")")</option>
+                    }
+                }
+				</select>
+			</td>
+			</tr>
+
+			<tr>
+			<td class="td1"></td>
+			<td class="td2 b">
+			본문열람
+			</td>
+			</tr>
+            
+			<tr>
+			<td class="td1">허용등급</td>
+			<td class="td2">
+				<select name="perm_l_view" class="select1">
+				<option value="0">&nbsp;+ 전체허용</option>
+				<option value="0">--------------------------------</option>
+                @{
+                    string _LEVEL_sql2 = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid asc";
+
+                    foreach (var _L in _DB.Query(_LEVEL_sql2))
+                    {
+                        string selectOver2 = "";
+
+                        if (_L["uid"] == d_bbsenv["perm_l_view"])
+                        {
+                            selectOver2 = " selected='selected'";
+                        }
+
+                        <option value="@_L["uid"]"@selectOver2>@Html.Raw("ㆍ" + _L["name"] + "(" + string.Format("{0:#,0}", Convert.ToInt32(_L["num"])) + ") 이상")</option>
+                        
+                        if (_L["gid"] != null && _L["gid"] != 0)
+                        {
+                            break;
+                        }
+                    }
+                }    
+                </select>
+			</td>
+			</tr>
+            
+			<tr>
+			<td class="td1">
+			차단그룹
+			</td>
+			<td class="td2">
+				<select name="_perm_g_view" class="select1" multiple="multiple" size="5">                        
+                @{
+                    string selectCha2 = "";
+
+                    if (d_bbsenv["perm_g_view"] == "")
+                    {
+                        selectCha2 = " selected='selected'";
+                    }
+
+                    <option value="" @selectCha2>ㆍ차단안함</option>
+                            
+                    string _SOSOK_sql2 = "SELECT * FROM " + AppState["table_s_mbrgroup"].ToString() + " ORDER BY gid asc";
+
+                    foreach (var _S in _DB.Query(_SOSOK_sql2))
+                    {
+                        string selectOver2 = "";
+
+                        if (d_bbsenv["perm_g_view"].IndexOf("[" + _S["uid"] + "]") != -1)
+                        {
+                            selectOver2 = " selected='selected'";
+                        }            
+
+                        <option value="@_S["uid"]"@selectOver2>@Html.Raw("ㆍ" + _S["name"] + "(" + string.Format("{0:#,0}", Convert.ToInt32(_S["num"])) + ")")</option>
+                    }
+                }       
+                </select>
+			</td>
+			</tr>
+
+			<tr>
+			<td class="td1"></td>
+			<td class="td2 b">
+			글쓰기
+			</td>
+			</tr>
+            
+			<tr>
+			<td class="td1">허용등급</td>
+			<td class="td2">
+				<select name="perm_l_write" class="select1">
+				<option value="0">&nbsp;+ 전체허용</option>
+				<option value="0">--------------------------------</option>
+                @{
+                    string _LEVEL_sql3 = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid asc";
+
+                    foreach (var _L in _DB.Query(_LEVEL_sql3))
+                    {
+                        string selectOver = "";
+
+                        if (_L["uid"] == d_bbsenv["perm_l_write"])
+                        {
+                            selectOver = " selected='selected'";
+                        }
+
+                        <option value="@_L["uid"]"@selectOver>@Html.Raw("ㆍ" + _L["name"] + "(" + string.Format("{0:#,0}", Convert.ToInt32(_L["num"])) + ") 이상")</option>
+                        
+                        if (_L["gid"] != null && _L["gid"] != 0)
+                        {
+                            break;
+                        }
+                    }
+                }                            
+                </select>
+				</td>
+			</tr>
+            
+			<tr>
+			<td class="td1">
+			차단그룹
+			</td>
+			<td class="td2">
+				<select name="_perm_g_write" class="select1" multiple="multiple" size="5">
+                @{
+                    string selectCha3 = "";
+
+                    if (d_bbsenv["perm_g_write"] == "")
+                    {
+                        selectCha3 = " selected='selected'";
+                    }
+
+                    <option value="" @selectCha3>ㆍ차단안함</option>
+                            
+                    string _SOSOK_sql3 = "SELECT * FROM " + AppState["table_s_mbrgroup"].ToString() + " ORDER BY gid asc";
+
+                    foreach (var _S in _DB.Query(_SOSOK_sql3))
+                    {
+                        string selectOver = "";
+
+                        if (d_bbsenv["perm_g_write"].IndexOf("[" + _S["uid"] + "]") != -1)
+                        {
+                            selectOver = " selected='selected'";
+                        }            
+
+                        <option value="@_S["uid"]"@selectOver>@Html.Raw("ㆍ" + _S["name"] + "(" + string.Format("{0:#,0}", Convert.ToInt32(_S["num"])) + ")")</option>
+                    }
+                }       
+				</select>
+			</td>
+			</tr>
+		</table>
+		</div>
+		
+		<div id="menu_config" class="hide">
+            <table>
+            <tr>
+            <td class="td1">
+            최근글제외
+            <img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_display','block','none');" />
+            </td>
+            <td class="td2 shift">
+                <div class="shift">
+                @{
+                    string checkRec = "";
+
+                    if (d_bbsenv["display"] == "1")
+                    {
+                        checkRec = " checked='checked'";
+                    }
+                }
+        
+                <input type="checkbox" name="display" value="1" @checkRec /> 최근글 추출에서 제외합니다.
+                </div>
+                
+                <div id="guide_display" class="guide hide">
+                최근글 추출제외는 게시물등록시에 이 설정값을 따르므로<br />
+                설정값을 중간에 변경하면 이전 게시물에 대해서는 적용되지 않습니다.<br />
+                최근글 제외설정은 게시판 서비스전에 확정하여 주세요.<br />
+                최근글에서 제외하면 통합검색에서도 제외됩니다.
+                </div>
+            </td>
+            </tr>
+    
+            <tr>
+			<td class="td1">
+			쿼 리 생 략
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_list','block','none');" />
+			</td>
+			<td class="td2 shift">
+    			<div class="shift">
+                @{
+                    string checkQuery = "";
+
+                    if (d_bbsenv["hidelist"] == "1")
+                    {
+                        checkQuery = " checked='checked'";
+                    }
+                }
+
+                <input type="checkbox" name="hidelist" value="1" @checkQuery />게시물가공 기본쿼리를 생략합니다.
+				</div>
+				
+                <div id="guide_list" class="guide hide">
+					종종 기본쿼리가 아닌 테마자체에서 데이터를 가공해야 하는 경우가 있습니다.<br />
+					1:1상담게시판,일정관리 등 특수한 테마의 경우 쿼리생략이 요구되기도 합니다.<br />
+					쿼리생략이 요구되는 테마를 사용할 경우 체크해 주세요.<br />
+				</div>
+			</td>
+			</tr>
+			
+            <tr>
+			<td class="td1">RSS발행</td>
+			<td class="td2 shift">
+			    <div class="shift">
+                @{
+                    string checkRSS = "";
+
+                    if (d_bbsenv["rss"] == "1")
+                    {
+                        checkRSS = " checked='checked'";
+                    }
+                }
+
+				<input type="checkbox" name="rss" value="1" @checkRSS />RSS발행을 허용합니다.
+				</div>
+			</td>
+			</tr>
+			
+            <tr>
+			<td class="td1">조회수증가</td>
+			<td class="td2 shift">
+				<div class="shift">
+                @{
+                    string checkHit1 = "";
+                    string checkHit0 = "";
+
+                    if (d_bbsenv["hitcount"] != 0)
+                    {
+                        checkHit1 = " checked='checked'";
+                    }
+                    else
+                    {
+                        checkHit0 = " checked='checked'";
+                    }
+                }
+                
+                    <input type="radio" name="hitcount" value="1" @checkHit1 />무조건증가
+                    <input type="radio" name="hitcount" value="0" @checkHit0 />1회만증가
+				</div>
+			</td>
+			</tr>
+
+            <tr>
+			<td class="td1">게시물출력</td>
+			<td class="td2">
+            @{
+                if (d_bbsenv["recnum"] == 0)
+                {
+			        <input type="text" name="recnum" value="20" size="5" class="input"/>
+                }
+                else
+                {
+                    <input type="text" name="recnum" value="@d_bbsenv["recnum"]" size="5" class="input" />
+                }
+            }
+            개(한페이지에 출력할 게시물의 수)
+			</td>
+			</tr>
+                
+			<tr>
+			<td class="td1">제목끊기</td>
+			<td class="td2">
+            @{
+                if (d_bbsenv["sbjcut"] == 0)
+                {
+			        <input type="text" name="sbjcut" value="40" size="5" class="input" />
+                }
+                else
+                {
+                    <input type="text" name="sbjcut" value="@d_bbsenv["sbjcut"]" size="5" class="input" />
+                }
+            }
+            자(제목이 길 경우 자르기)                    
+    		</td>
+			</tr>
+                
+			<tr>
+			<td class="td1">새글유지시간</td>
+			<td class="td2">                    
+            @{
+                if (d_bbsenv["newtime"] == 0)
+                {
+			        <input type="text" name="newtime" value="24" size="5" class="input" />
+                }
+                else
+                {
+                    <input type="text" name="newtime" value="@d_bbsenv["newtime"]" size="5" class="input" />
+                }
+            }
+            시간(새글로 인식되는 시간)                          
+          	</td>
+			</tr>
+
+			<tr>
+			<td class="td1">등록포인트</td>
+			<td class="td2">                    
+            @{
+                if (d_bbsenv["point1"] == 0)
+                {
+                    <input type="text" name="point1" value="0" size="5" class="input" />
+                }
+                else
+                {
+                    <input type="text" name="point1" value="@d_bbsenv["point1"]" size="5" class="input" />
+                }
+            }
+            포인트지급(게시물 삭제시 환원됩니다)                      
+			</td>
+			</tr>
+                
+			<tr>
+			<td class="td1">열람포인트</td>
+			<td class="td2">                    
+            @{
+                if (d_bbsenv["point2"] == 0)
+                {
+                    <input type="text" name="point2" value="0" size="5" class="input" />
+                }
+                else
+                {
+                    <input type="text" name="point2" value="@d_bbsenv["point2"]" size="5" class="input" />
+                }
+            }    
+            포인트차감
+			</td>
+			</tr>
+
+			<tr>
+			<td class="td1">
+            추가관리자
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_bbsadmin','block','none');" />
+			</td>
+			<td class="td2">
+				<input type="text" name="admin" value="@d_bbsenv["admin"]" class="input sname" />
+			
+                <div id="guide_bbsadmin" class="guide hide">
+					이 게시판에 대해서 관리자권한을 별도로 부여할 회원이 있을경우<br />
+					회원아이디를 콤마(,)로 구분해서 등록해 주세요.<br />
+					관리자로 지정될 경우 열람/수정/삭제등의 모든권한을 얻게 됩니다.
+				</div>
+			</td>
+			</tr>
+			
+            <tr>
+			<td class="td1">
+			부 가 필 드
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_addinfo','block','none');" />
+			</td>
+			<td class="td2">
+				<textarea name="addinfo" class="add">@_System.htmlspecialchars(R["addinfo"])</textarea>  <!---------여기------->
+			
+                <div id="guide_addinfo" class="guide hide">
+					이 게시판에 대해서 추가적인 정보가 필요할 경우 사용합니다.<br />
+					필드명은 <span class="b">[adddata]</span> 입니다. 
+				</div>
+			</td>
+			</tr>
+			
+            <tr>
+			<td class="td1">
+			기본양식
+			<img src="@g["img_core"]/_public/btn_code.gif" class="dn hand" alt="편집기" title="" onclick="editWindow('?r=@r&system=edit.editor&iframe=Y&droparea=writeeleArea');" />
+			</td>
+			<td class="td2">
+				<textarea name="writecode" id="writeeleArea">@_System.htmlspecialchars(R["writecode"])</textarea>  <!---------여기------->
+			</td>
+    		</tr>
+	    	</table>
+    	</div>
+
+		<div id="menu_header" class="hide">
+    		<table>
+			<tr>
+			<td class="td1">헤더파일</td>
+			<td class="td2">
+				<input type="file" name="imghead" class="upfile" />
+                @{
+                    if (R["imghead"] != "")
+                    {
+    		        	<a href="@g["s"]/?r=@r&m=admin&module=filemanager&front=main&editmode=Y&pwd=./modules/@module/var/files/&file=@R["imghead"]" target="_blank" title="@R["imghead"]" class="u">파일수정</a> 
+                        <a href="./?m=@module&a=bbs_file_delete&bid=@R["id"]&dtype=head" target="@frame_name" class="u" onclick="return confirm('정말로 삭제하시겠습니까?     ');">삭제</a>
+                    }
+                    else
+                    {
+                        <span>(gif/jpg/png/swf 가능)</span>                            
+                    }
+                }     
+			</td>
+			</tr>
+			
+            <tr>
+			<td class="td1">
+			헤더코드
+			<img src="@g["img_core"]/_public/btn_code.gif" class="dn hand" alt="편집기" title="" onclick="editWindow('@g["s"]/?r=@r&system=edit.editor&iframe=Y&droparea=codheadArea');" />
+			</td>
+			<td class="td2">
+                <textarea name="codhead" id="codheadArea">
+                @{
+                    if (File.Exists(g["path_root_ps"] + "\\modules\\" + module + "\\var\\code\\" + R["id"] + ".header.cshtml") == true)
+                    {
+                        using (StreamReader writer = new StreamReader(g["path_root_ps"] + "\\modules\\" + module + "\\var\\code\\" + R["id"] + ".header.cshtml"))
+                        {
+                            @Html.Raw(writer.ReadToEnd());
+                        }
+                    } 
+                }
+                </textarea>
+			</td>
+			</tr>
+
+            <tr>
+			<td class="td1">
+			노출위치
+			</td>
+			<td class="td2 shift">
+            @{
+                string checkHead1 = "";
+                string checkHead2 = "";
+                string checkHead3 = "";
+
+                if (R["puthead"].IndexOf("[l]") != -1)
+                {
+                    checkHead1 = " checked='checked'";
+                }
+                if (R["puthead"].IndexOf("[v]") != -1)
+                {
+                    checkHead2 = " checked='checked'";
+                }
+                if (R["puthead"].IndexOf("[w]") != -1)
+                {
+                    checkHead3 = " checked='checked'";
+                }
+            }
+                <input type="checkbox" name="inc_head_list" value="[l]" @checkHead1 />목록
+                <input type="checkbox" name="inc_head_view" value="[v]" @checkHead2 />본문
+                <input type="checkbox" name="inc_head_write" value="[w]" @checkHead3 />쓰기
+			</td>
+			</tr>
+    		</table>
+		</div>
+
+		<div id="menu_footer" class="hide">
+		<table>
+			<tr>
+				<td class="td1">풋터파일</td>
+				<td class="td2">
+					<input type="file" name="imgfoot" class="upfile" />
+                    @{
+                        if (R["imgfoot"] != "")
+                        {
+		        			<a href="@g["s"]/?r=@r&m=admin&module=filemanager&front=main&editmode=Y&pwd=./modules/@module/var/files/&file=@R["imgfoot"]" target="_blank" title="@R["imgfoot"]" class="u">파일수정</a> 
+                            <a href="./?m=@module&a=bbs_file_delete&bid=@R["id"]&dtype=foot" target="@frame_name" class="u" onclick="return confirm('정말로 삭제하시겠습니까?     ');">삭제</a>
+                        }
+                        else
+                        {
+                            <span>(gif/jpg/png/swf 가능)</span>    
+                        }
+                    }
+        		</td>
+			</tr>
+            
+			<tr>
+				<td class="td1">
+					풋터코드
+					<img src="@g["img_core"]/_public/btn_code.gif" class="dn hand" alt="편집기" title="" onclick="editWindow('?r=@r&system=edit.editor&iframe=Y&droparea=codfootArea');" />
+				</td>
+				<td class="td2">
+					<textarea name="codfoot" id="codfootArea">
+                        
+                    @{                        
+                        if (File.Exists(g["path_root_ps"] + "\\modules\\" + module + "\\var\\code\\" + R["id"] + ".footer.cshtml") == true)
+                        {
+                            using (StreamReader writer = new StreamReader(g["path_root_ps"] + "\\modules\\" + module + "\\var\\code\\" + R["id"] + ".footer.cshtml"))
+                            {
+                                @Html.Raw(writer.ReadToEnd());
+                            }
+                        }
+                    }
+                    </textarea>
+                </td>
+			</tr>
+            
+			<tr>
+				<td class="td1">
+					노출위치
+				</td>
+				<td class="td2 shift">
+                     @{
+                         string checkFoot1 = "";
+                         string checkFoot2 = "";
+                         string checkFoot3 = "";
+
+                         if (R["putfoot"].IndexOf("[l]") != -1)
+                         {
+                             checkFoot1 = " checked='checked'";
+                         }
+                         if (R["putfoot"].IndexOf("[v]") != -1)
+                         {
+                             checkFoot2 = " checked='checked'";
+                         }
+                         if (R["putfoot"].IndexOf("[w]") != -1)
+                         {
+                             checkFoot3 = " checked='checked'";
+                         }
+                    }
+					<input type="checkbox" name="inc_foot_list" value="[l]" @checkFoot1 /> 목록
+					<input type="checkbox" name="inc_foot_view" value="[v]" @checkFoot2 /> 본문
+					<input type="checkbox" name="inc_foot_write" value="[w]" @checkFoot3 /> 쓰기                        
+				</td>
+			</tr>
+		</table>
+		</div>
+
+		<div class="submitbox">
+            @{
+                if (R["uid"] != 0)
+                {
+                    <input type="submit" class="btnblue" value="게시판속성 변경" />
+                }
+                else
+                {
+                    <input type="submit" class="btnblue" value="새게시판 만들기" />
+                }
+            }
+			<div class="clear"></div>
+		</div>
+		</form>
+		
+	</div>
+	<div class="clear"></div>
+</div>
+
+<script type="text/javascript" src="./_core/opensrc/tool-man/core.js"></script>
+<script type="text/javascript" src="./_core/opensrc/tool-man/events.js"></script>
+<script type="text/javascript" src="./_core/opensrc/tool-man/css.js"></script>
+<script type="text/javascript" src="./_core/opensrc/tool-man/coordinates.js"></script>
+<script type="text/javascript" src="./_core/opensrc/tool-man/drag.js"></script>
+<script type="text/javascript" src="./_core/opensrc/tool-man/dragsort.js"></script>
+
+<script type="text/javascript">
+//<![CDATA[
+var dragsort = ToolMan.dragsort();
+//]]>
+</script>
+
+<script type="text/javascript">
+//<![CDATA[
+function editWindow(url) {
+	window.open(url,"","left=0,top=0,width=800px,height=750px,statusbar=no,scrollbars=no,toolbar=no,resizable=yes");
+}
+
+function codShowHide(layer,show,hide,img) {
+	if(getId(layer).style.display != show) {
+		getId(layer).style.display = show;
+		img.src = img.src.replace("ico_under","ico_over");
+		setCookie("ck_"+layer,show,1);
+	}
+	else {
+		getId(layer).style.display = hide;
+		img.src = img.src.replace("ico_over","ico_under");
+		setCookie("ck_"+layer,hide,1);
+	}
+}
+
+function saveCheck(f) {
+    var l1 = f._perm_g_list;
+    var n1 = l1.length;
+    var l2 = f._perm_g_view;
+    var n2 = l2.length;
+    var l3 = f._perm_g_write;
+    var n3 = l3.length;
+    var i;
+	var s1 = "";
+	var s2 = "";
+	var s3 = "";
+
+	for	(i = 0; i < n1; i++) 	{
+		if (l1[i].selected == true && l1[i].value != "") {
+			s1 += "["+l1[i].value+"]";
+		}
+	}
+	for	(i = 0; i < n2; i++) {
+		if (l2[i].selected == true && l2[i].value != "") {
+			s2 += "["+l2[i].value+"]";
+		}
+	}
+	for	(i = 0; i < n3; i++) {
+		if (l3[i].selected == true && l3[i].value != "") {
+			s3 += "["+l3[i].value+"]";
+		}
+	}
+
+	f.perm_g_list.value = s1;
+	f.perm_g_view.value = s2;
+	f.perm_g_write.value = s3;
+
+	if (f.name.value == "") {
+		alert("게시판이름을 입력해 주세요.     ");
+		f.name.focus();
+		return false;
+	}
+	if (f.bid.value == "") {
+		if (f.id.value == "") {
+			alert("게시판아이디를 입력해 주세요.      ");
+			f.id.focus();
+			return false;
+		}
+		if (!chkFnameValue(f.id.value)) {
+			alert("게시판아이디는 영문 대소문자/숫자/_ 만 사용가능합니다.      ");
+			f.id.value = "";
+			f.id.focus();
+			return false;
+		}
+	}
+    
+	return confirm("정말로 실행하시겠습니까?         ");
+}
+
+function slideshowOpen() {
+	var cc = getCookie("ck_menu_config");
+	var ch = getCookie("ck_menu_header");
+	var cf = getCookie("ck_menu_footer");
+	var ca = getCookie("ck_menu_addinfo");
+	
+	if (cc == "block") {
+		getId("menu_config").style.display = cc;
+		getId("dm_img_config").src = getId("dm_img_config").src.replace("ico_under","ico_over");
+	}
+	if (ch == "block") {
+		getId("menu_header").style.display = ch;
+		getId("dm_img_header").src = getId("dm_img_header").src.replace("ico_under","ico_over");
+	}
+	if (cf == "block") {
+		getId("menu_footer").style.display = cf;
+		getId("dm_img_footer").src = getId("dm_img_footer").src.replace("ico_under","ico_over");
+	}
+	if (ca == "block") {
+		getId("menu_addinfo").style.display = ca;
+		getId("dm_img_addinfo").src = getId("dm_img_addinfo").src.replace("ico_under","ico_over");
+	}
+}
+slideshowOpen();
+
+@{
+    if (NUM != 0)
+    {
+        @Html.Raw("dragsort.makeListSortable(getId(\"bbsorder\"));");
+    }
+    if (type == "makebbs")
+    {
+        @Html.Raw("document.procForm.name.focus();");
+    }
+}
+
+document.procForm.name.focus();
+
+//]]>
+
+
+</script>
+
+
+
+
+

@@ -1,0 +1,55 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+    
+    if(my["uid"] != 0) 
+    {
+        string update_sql = "UPDATE " + AppState["table_s_mbrdata"] + " SET now_log='0' WHERE memberuid=" + my["uid"];        
+        @_DB.Execute(update_sql)
+        
+        Session["mbr_uid"] = null;
+	    Session["mbr_logout"] = "1";
+        Session["g_main"] = null;
+        Session["g_dir_module_mode"] = null;
+        Session["g_url_module_mode"] = null;
+        Session["url_reset"] = null;
+        Session["front"] = null;
+        Session["mod"] = null;
+	}
+    
+    if(referer != "" && referer != null) 
+    {
+        @_System.getLink(referer, "", "", "")
+        return;
+	}
+    else 
+    {   // referer 가 없을때는 메인으로  
+        @_System.getLink("./", "", "", "")
+        return;
+	}
+
+    Session["referer"] = null;
+}
+

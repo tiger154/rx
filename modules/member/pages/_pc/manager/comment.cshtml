@@ -1,0 +1,298 @@
+﻿@{
+
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/    
+    
+    var g = PageData[0];
+    var _m = PageData[1];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+
+    var mbruid = Request["mbruid"];
+    var account = Request["account"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var front = Request["front"];
+    var page = Request["page"];
+    var type = Request["type"];
+    var iframe = Request["iframe"];
+    var skin = Request["skin"];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+
+    dynamic M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid="+mbruid);
+    dynamic levelnum = _DB.GetDbData_M(AppState["table_s_mbrlevel"].ToString(), "gid=1");
+    dynamic levelname= _DB.GetDbData_M(AppState["table_s_mbrlevel"].ToString(), "uid="+M["level"]);
+    dynamic sosokname= _DB.GetDbData_M(AppState["table_s_mbrgroup"].ToString(), "uid="+M["sosok"]);
+    dynamic joinsite = _DB.GetDbData_M(AppState["table_s_site"].ToString(), "uid="+M["site"]);
+    dynamic M1 = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "uid="+M["memberuid"]);
+       
+
+    decimal TPG = 0;
+        
+    if(sort == null || sort == "") {
+        sort = "uid";
+    }
+    if(orderby == null || orderby == "") {
+        orderby = "asc";
+	}        
+    if(recnum == null || recnum == "" || Convert.ToInt32(recnum) >= 200) {
+        recnum = "15";
+	}
+    
+    string bbsque = "mbruid=" + M["memberuid"];
+    
+    if(account != null && account != ""){
+        bbsque += " and site=" + account;      
+    }    
+    
+    if(where != null && where != "" && keyword != null && keyword != "") {
+        string where_set = "(";
+                
+        char[] delimiter = {'|'};
+        string[] strArray = where.Split(delimiter);
+        int str_int = 0;
+                
+        bbsque += " AND ";
+                
+        foreach(var tmp in strArray) {
+           if(str_int > 0) {
+                where_set = where_set+" OR ";
+			}
+                    
+            where_set = where_set+tmp+" LIKE '%"+keyword+"%'";
+            str_int++;
+        }
+        where_set = where_set + ")";                
+        bbsque += where_set;
+	}
+    
+    int list_start = (Convert.ToInt32(p)-1) * Convert.ToInt32(recnum);      // 페이지별 리스트 개수
+    int NUM = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), bbsque);
+    string RCD_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", bbsque, sort, orderby, list_start, recnum);
+    
+    TPG = @_System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));     // 총 페이지수
+
+    @RenderPage("_menu.cshtml",g, mbruid, m, _HS);            // 개별 페이지 상단 메뉴부
+}
+
+    
+    
+
+<div id="bbslist">
+	<div class="info">
+		<div class="article">
+			@string.Format("{0:#,0}", Convert.ToInt32(NUM))개(@p/@TPG 페이지)
+		</div>
+		
+		<div class="category">
+            
+			<select name="account" class="account" onchange="goHref('@g["url_reset"].Replace("&amp;", "&")&page=@page&account='+this.value);">
+			<option value="">&nbsp;+ 전체사이트</option>
+			<option value="">----------------</option>
+
+            @{
+                string SITES_sql = "SELECT * FROM " + AppState["table_s_site"] + " ORDER BY gid ASC";
+                int SITES_cnt = _DB.GetDbData_Count(AppState["table_s_site"].ToString(), "");
+                
+                foreach (var S in _DB.Query(SITES_sql))
+                {
+                    <option value="@S["uid"]" @_System.getSltStr(account, S["uid"])>ㆍ @S["name"]</option>
+                }
+                
+                if (SITES_cnt == 0)
+                {
+                    <option value="">등록된 사이트가 없습니다.</option>
+                }                
+            }
+			</select>
+		</div>
+		<div class="clear"></div>
+	</div>
+
+    <form name="procForm" action="@g["s"]/" method="post" target="@Html.Raw("_action_frame_"+m)">    
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="comment" />
+	<input type="hidden" name="a" value="" />
+
+
+
+	<table summary="댓글리스트 입니다.">
+	<caption>댓글리스트</caption> 
+	<colgroup> 
+    <col width="30">
+	<col width="50"> 
+	<col> 
+	<col width="70"> 
+	<col width="90"> 
+	</colgroup> 
+	<thead>
+	<tr> 
+        
+
+        
+    <th scope="col" class="side1">
+      <img src= "@g["img_core"]/_public/ico_check_01.gif" class="hand" alt="" onclick="chkFlag('comment_members');" />
+    </th>    
+	<th scope="col">번호</th>
+	<th scope="col">제목</th>
+	<th scope="col">조회</th>
+	<th scope="col" class="side2">날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+
+	@if(NUM == 0) {
+    	<tr>
+        <td><input type="checkbox" disabled="disabled" /></td>
+	    <td>1</td>
+	    <td class="sbj1">댓글이 없습니다.</td>
+	    <td class="hit b">-</td>
+	    <td>@date["totime"].ToString().Substring(0, 10)</td>
+	    </tr> 
+    }
+    else {
+        int _rec = 0;
+        
+        foreach(var R in _DB.Query(RCD_sql)) {
+            int tmp_num = ((Convert.ToInt32(p)-1) * Convert.ToInt32(recnum)) + _rec++;
+            int tmp_num2 = NUM - tmp_num;
+
+            string mobile_chk = _System.isMobileConnect(R["agent"]);     // 모바일 체크
+          
+            <tr>
+                
+            <td><input type="checkbox" name="comment_members" value="@R["uid"]" /></td>   
+                
+                
+	        <td>@tmp_num2</td>
+        	<td class="sbj">
+		        @if(mobile_chk != "") {
+                    <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@mobile_chk)로 등록된 글입니다" />
+                }
+                
+                <a href = "@Html.Raw(_System.getCyncURL(R["cync"], 6, '[', ',', ':')+"&CMT="+R["uid"]+ " ,s:" + R["site"] + "#CMT")" target="_blank">@R["subject"]</a> 
+                
+ 
+                @if(R["content"].IndexOf(".jpg") > -1) {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+                }
+		        @if(R["upload"] == "1") {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+                }
+		        @if(R["hidden"] == "1") {
+                    <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+                }
+		        @if(R["oneline"] > 0) {
+                    <span class="comment">[[@R["oneline"]]</span>
+                }
+		        @if(_System.getNew(R["d_regis"].ToString(), 24) == true) {
+                    <span class="new">new</span>
+                }                
+        	</td>
+	        <td class="hit b">@R["hit"]</td>
+	        <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+            </tr>
+        }
+    }
+                
+	</tbody>
+	</table>
+    
+    
+    
+	<div class="pagebox01">
+    <script type="text/javascript">getPageLink(10, @p, @TPG, @g["img_core"]+"/page/default");</script>    
+	
+	</div>   
+    
+    
+    
+	<input type="button" value="선택/해제" class="btngray" onclick="chkFlag('comment_members');" />
+	<input type="button" value="삭제" class="btnblue" onclick="actCheck('multi_delete');" />
+
+	</form>
+
+
+	<div class="searchform">
+		<form name="bbssearchf" action="@g["s"]/">
+        <input type="hidden" name="r" value="@r">
+        <input type="hidden" name="mbruid" value="@mbruid">
+        <input type="hidden" name="account" value="@account">
+        <input type="hidden" name="m" value="@m" />
+	    <input type="hidden" name="front" value="@front" />            
+        <input type="hidden" name="page" value="@page" />
+		<input type="hidden" name="sort" value="@sort" />
+		<input type="hidden" name="orderby" value="@orderby" />
+		<input type="hidden" name="recnum" value="@recnum" />
+		<input type="hidden" name="type" value="@type" />
+		<input type="hidden" name="iframe" value="@iframe" />
+		<input type="hidden" name="skin" value="@skin" />    
+
+		<select name="where">
+		<option value="subject" @_System.getSltStr(where, "subject|tag")>제목+태그</option>
+		<option value="content" @_System.getSltStr(where, "content")>본문</option>
+		</select>
+		
+		<input type="text" name="keyword" size="30" value="@_keyword" class="input" />
+		<input type="submit" value=" 검색 " class="btngray" />
+        
+        </form>
+	</div>
+
+</div>
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+// list
+function actCheck(act)
+{
+	var f = document.procForm;
+    var l = document.getElementsByName('comment_members');
+    var n = l.length;
+	var j = 0;
+    var i;
+
+    for (i = 0; i < n; i++)
+	{
+		if(l[i].checked == true)
+		{
+			j++;	
+		}
+	}
+	if (!j)
+	{
+		alert('선택된 댓글이 없습니다.      ');
+		return false;
+	}
+	
+	if(confirm('정말로 삭제하시겠습니까?    '))
+	{
+        f.a.value = act;
+		f.submit();
+	}
+}
+
+document.title = "@M[_HS["nametype"]]님의 댓글";
+self.resizeTo(800,750);
+
+//]]>
+</script>
+
+
+    
+

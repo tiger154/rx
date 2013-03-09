@@ -1,0 +1,408 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var p = PageData[5];
+
+    var r = Request["r"];
+    var module = Request["module"];
+    var account = Request["account"];
+    var cync = Request["cync"];
+    var keyw = Request["keyw"];
+    var where = Request["where"];
+    var front = Request["front"];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    
+    string frame_name = "_action_frame_" + m;
+
+   decimal TPG = 0;
+
+    string year1 = Request["year1"] != null && Request["year1"] != "" ? Request["year1"] : date["year"];
+    string month1 = Request["month1"] != null && Request["month1"] != "" ? Request["month1"] : date["month"];
+    string day1 = Request["day1"] != null && Request["day1"] != "" ? Request["day1"] : "01";
+    string year2 = Request["year2"] != null && Request["year2"] != "" ? Request["year2"] : date["year"];
+    string month2 = Request["month2"] != null && Request["month2"] != "" ? Request["month2"] : date["month"];
+    string day2 = Request["day2"] != null && Request["day2"] != "" ? Request["day2"] : date["day"];
+
+    string recnum = (Request["recnum"] != null && Request["recnum"] != "" && Convert.ToInt32(Request["recnum"]) < 200 ? Request["recnum"] : "20");
+    string sort = (Request["sort"] != null && Request["sort"] != "" ? Request["sort"] : "gid");
+    string orderby = (Request["orderby"] != null && Request["orderby"] != "" ? Request["orderby"] : "asc");
+    string accountQue = (Request["account"] != null && Request["account"] != "" ? "site=" + Request["account"] + " and " : "");
+    string _WHERE = accountQue + "d_regis BETWEEN '" + year1 + "-" + month1 + "-" + day1 + " 00:00:00' AND '" + year2 + "-" + month2 + "-" + day2 + " 23:59:59'";
+
+    _WHERE = accountQue + "d_regis BETWEEN '" + year1 + "-" + month1 + "-" + day1 + " 00:00:00' AND '" + year2 + "-" + month2 + "-" + day2 + " 23:59:59'";
+
+    if (cync != null && cync != "")
+    {
+        _WHERE = _WHERE + " and cync=''";
+    }
+
+    if (where != null && where != "")
+    {
+        if (keyw != null && keyw != "")
+        {
+            if (where.Contains("mbruid"))
+            {
+                _WHERE = _WHERE + " and " + where + "='" + keyw + "'";
+            }
+            else
+            {
+                if (keyw.Length > 2)
+                {       // 2 byte over
+                    _WHERE = _WHERE + _System.getSearchSql(where, keyw, "", "or");
+                }
+                else
+                {
+                    @_System.getLink("", "", "검색어는 3자 이상 입니다.", "-1")
+                    return;
+                }
+            }
+        }
+    }
+
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+
+    string SITES_sql = "SELECT * FROM " + AppState["table_s_site"].ToString() + " ORDER BY gid asc";
+    string RCD_sql = "SELECT * FROM " + AppState["table_s_upload"] + " WHERE " + _WHERE + " order by " + sort + " " + orderby +
+    " OFFSET " + list_start + " ROWS FETCH NEXT " + recnum + " ROWS ONLY";
+
+    int SITES_num = _DB.GetDbData_Count(AppState["table_s_site"].ToString(), "");
+    int NUM = _DB.GetDbData_Count(AppState["table_s_upload"].ToString(), _WHERE);
+
+    TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+}
+
+<div id="uplist">
+	<div class="sbox">
+		<form name="procForm" action="@g["s"]/" method="get">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="module" value="@module" />
+		<input type="hidden" name="front" value="@front" />
+
+		<select name="account" class="account" onchange="this.form.submit();">
+		<option value="">&nbsp;+ 전체사이트</option>
+		<option value="">---------------------------</option>
+        @if (SITES_num == 0)
+        {
+            <option value="">등록된 사이트가 없습니다.</option>
+        }
+        else
+        {
+            foreach (var S in _DB.Query(SITES_sql))
+            {
+                <option value="@S["uid"]" @_System.getSltStr(S["uid"], account)>ㆍ @S["name"]</option>
+            }
+        }        
+		</select>
+
+		<div>
+	    <select name="year1">
+        @for (int i = Convert.ToInt32(date["year"]); i > 2009; i--) 
+        {
+            <option value="@i" @_System.getSltStr(year1, i)>@(i)년</option>
+        }
+	    </select>
+	    <select name="month1">
+        @for (int i = 1; i < 13; i++) 
+        {
+            <option value="@String.Format("{0:00}", i)" @_System.getSltStr(month1, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)월</option>
+        }  
+	    </select>
+        <select name="day1">
+        @for (int i = 1; i < 32; i++)
+        {
+            <option value="@String.Format("{0:00}", i)" @_System.getSltStr(day1, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)일</option>
+        } 
+        </select>
+	    ~
+	    <select name="year2">
+        @for (int i = Convert.ToInt32(date["year"]); i > 2009; i--) 
+        {
+            <option value="@i" @_System.getSltStr(year2, i)>@(i)년</option>
+        }
+        </select>
+        <select name="month2">
+        @for (int i = 1; i < 13; i++) 
+        {
+            <option value="@String.Format("{0:00}", i)" @_System.getSltStr(month2, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)월</option>
+        }
+        </select>              
+        <select name="day2">
+        @for (int i = 1; i < 32; i++)
+        {
+            <option value="@String.Format("{0:00}", i)" @_System.getSltStr(day2, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)일</option>
+        } 
+        </select>
+        
+        <input type="button" class="btngray" value="기간적용" onclick="this.form.submit();" />
+		<input type="button" class="btngray" value="어제" onclick="dropDate('@date["_yester"]','@date["_yester"]');" />
+		<input type="button" class="btngray" value="오늘" onclick="dropDate('@date["totime"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="일주" onclick="dropDate('@date["_week"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="한달" onclick="dropDate('@date["_month"]','@date["totime"]');" />
+        <input type="button" class="btngray" value="당월" onclick="dropDate('@date["curMonth"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="전월" onclick="dropDate('@date["preMonth1"]','@date["preMonth2"]');" />
+		<input type="button" class="btngray" value="전체" onclick="dropDate('2009-01-01','@date["totime"]');" />
+		</div>
+
+		<div>
+		<select name="sort" onchange="this.form.submit();">
+            <option value="gid" @_System.getSltStr(sort, "gid")>등록일</option>
+            <option value="down" @_System.getSltStr(sort, "down")>다운</option>
+            <option value="size" @_System.getSltStr(sort, "size")>사이즈</option>
+        </select>
+
+		<select name="orderby" onchange="this.form.submit();">
+            <option value="desc" @_System.getSltStr(orderby, "desc")>역순</option>
+            <option value="asc" @_System.getSltStr(orderby, "asc")>정순</option>
+		</select>
+
+		<select name="recnum" onchange="this.form.submit();">
+            <option value="20" @_System.getSltStr(recnum, 20)>20개</option>
+            <option value="35" @_System.getSltStr(recnum, 35)>35개</option>
+            <option value="50" @_System.getSltStr(recnum, 50)>50개</option>
+            <option value="75" @_System.getSltStr(recnum, 75)>75개</option>
+            <option value="90" @_System.getSltStr(recnum, 90)>90개</option>
+        </select>
+        
+		<select name="where">
+            <option value="name" @_System.getSltStr(where, "name")>파일명</option>
+            <option value="caption" @_System.getSltStr(where, "caption")>캡션</option>
+            <option value="mbruid" @_System.getSltStr(where, "mbruid")>회원UID</option>
+		</select>
+
+		<input type="text" name="keyw" value="@_System.stripslashes(keyw)" class="input" />
+
+		<input type="submit" value="검색" class="btnblue" />
+		<input type="button" value="리셋" class="btngray" onclick="location.href='@g["adm_href"]';" />
+		</div>
+
+		</form>
+	</div>
+
+    <div class="info">
+		<div class="article">
+            @string.Format("{0:#,0}", Convert.ToInt32(NUM))개(@p/@TPG 페이지)
+		</div>
+		
+		<div class="category">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+    
+	<form name="listForm" action="@g["s"]/" method="post" target="@frame_name">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="" />
+
+	<table summary="전체 첨부파일리스트 입니다.">
+	<caption>첨부파일</caption> 
+	<colgroup> 
+	<col width="30"> 
+	<col width="50"> 
+	<col width="280">
+	<col width="35">
+	<col width="80">
+	<col width="80"> 
+	<col width="60"> 
+	<col width="50"> 
+	<col width="120">
+	<col>
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" class="hand" alt="" onclick="chkFlag('upfile_members');" /></th>
+	<th scope="col">번호</th>
+	<th scope="col">파일명</th>
+	<th scope="col">사용처</th>
+	<th scope="col">소유자</th>
+    <th scope="col">서버</th>
+	<th scope="col">폴더</th>
+	<th scope="col">사이즈</th>
+	<th scope="col">다운</th>
+	<th scope="col">날짜</th>
+	<th scope="col" class="side2"></th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @if (NUM == 0)
+    {
+ 	    <tr>
+	    <td><input type="checkbox" disabled="disabled" /></td>
+	    <td>1</td>
+	    <td class="sbj1">첨부파일이 없습니다.</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+        <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td></td>
+	    </tr>            
+    }
+    else
+    {
+        int _rec = 0;
+
+        foreach (var R in _DB.Query(RCD_sql))
+        {
+            string tdir = R["url"] + R["folder"] + "\\";
+            string file_ext = _System.getExt(R["name"]);
+            string fileStr = "unKnown";
+
+            int tmp_num = ((Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum)) + _rec++;
+            int tmp_num2 = NUM - tmp_num;
+
+            if (File.Exists(g["path_root_ps"] + "_core\\image\\file\\small\\" + file_ext + ".gif"))
+            {
+                fileStr = file_ext;
+            }
+            
+            <tr>
+            <td><input type="checkbox" name="upfile_members" value="@R["uid"]" /></td>
+            <td>@tmp_num2</td>
+            <td class="sbj" title="@_System.addslashes(R["caption"])">
+                <img src="@Html.Raw(g["img_core"] + "/file/small/" + fileStr + ".gif")" alt="@file_ext" />
+            
+                @if (file_ext.ToLower().Contains("jpeg") || file_ext.ToLower().Contains("jpg") || file_ext.ToLower().Contains("gif") || file_ext.ToLower().Contains("png") || file_ext.ToLower().Contains("swf"))
+                {
+                    <a href="@g["s"]/?r=@r&m=@module&amp;a=download&amp;uid=@R["uid"]" title="@R["tmpname"]" onmouseover="imgShow('@tdir.Replace("\\", "/")',this,@R["width"],event);" onmouseout="imgHide();">@R["name"]</a>
+                }
+                else
+                {
+                    <a href="@g["s"]/?r=@r&m=@module&amp;a=download&amp;uid=@R["uid"]" title="@R["tmpname"]" >@R["name"]</a>
+                }
+    
+                @if (_System.getNew(R["d_regis"].ToString(), 24))
+                {
+                    <span class="new">new</span>
+                }
+            </td>
+	            
+            <td>
+                @if (R["cync"] != null && R["cync"] != "")
+                {
+                    <a href="@_System.getCyncURL(R["cync"], 6, '[', ',', ':')" target="_blank"><img src="@g["img_core"]/_public/ico_blank.gif" alt="보기" title="보기" /></a>
+                }
+	        </td>
+
+            @if (R["mbruid"] != null && R["mbruid"] != 0)
+            {
+                dynamic M = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", R["mbruid"]);
+                    
+                <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&m=member&front=manager&iframe=Y&page=post&mbruid=@R["mbruid"]');" title="소유자정보">@M[_HS["nametype"]]</a></td>
+            }
+            else
+            {
+                <td>비회원</td>
+            }
+
+            <td>@_System.getDomain(R["url"])</td>
+            <td>@R["folder"]</td>
+            <td>@_System.getSizeFormat(R["size"])</td>
+            <td>@R["down"]</td>
+            <td>@R["d_regis"].ToString()</td>
+            <td></td>
+            </tr> 
+        }
+    }
+    
+	</tbody>
+	</table>
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10,@p,@TPG,'@g["img_core"]/page/default');</script>
+	</div>
+    
+    <input type="button" value="선택/해제" class="btngray" onclick="chkFlag('upfile_members');" />
+	<input type="button" value="삭제" class="btnblue" onclick="actCheck('multi_delete');" />
+	</form>
+
+</div>
+
+<div id="hImg"></div>
+
+<script type="text/javascript">
+//<![CDATA[
+function imgShow(tdir, obj, w, e) {
+    var xy = getEventXY(e);
+
+    if (w > 300) {
+        var xw = 'width=300';
+    }
+    else {
+        var xw = 'width=' + w;
+    }
+
+    getId('hImg').style.display = 'block';
+    getId('hImg').style.top = parseInt(xy.y) + 'px'
+    getId('hImg').style.left = (parseInt(xy.x) + 20) + 'px';
+
+    if (obj.innerHTML.indexOf('.swf') != -1) {
+        getId('hImg').innerHTML = '<div style="background:#ffffff;border:#000000 solid 4px;"><embed src="' + tdir + obj.title + '" ' + xw + ' style="padding:5px;"></embed></div>';
+    }
+    else {
+        getId('hImg').innerHTML = '<div style="background:#ffffff;border:#000000 solid 4px;"><img src="' + tdir + obj.title + '" ' + xw + ' style="padding:5px;" /></div>';
+    }
+}
+
+function imgHide() {
+    getId('hImg').style.display = 'none';
+}
+
+function dropDate(date1, date2) {
+    var f = document.procForm;
+
+    f.year1.value = date1.substring(0, 4);
+    f.month1.value = date1.substring(5, 7);
+    f.day1.value = date1.substring(8, 10);
+
+    f.year2.value = date2.substring(0, 4);
+    f.month2.value = date2.substring(5, 7);
+    f.day2.value = date2.substring(8, 10);
+
+    f.submit();
+}
+
+function actCheck(act) {
+    var f = document.listForm;
+    var l = document.getElementsByName('upfile_members');
+    var n = l.length;
+    var j = 0;
+    var i;
+
+    for (i = 0; i < n; i++) {
+        if (l[i].checked == true) {
+            j++;
+        }
+    }
+
+    if (!j) {
+        alert('선택된 파일이 없습니다.      ');
+        return false;
+    }
+    if (act == 'multi_delete') {
+        if (confirm('정말로 삭제하시겠습니까?        ')) {
+            f.a.value = act;
+            f.submit();
+        }
+    }
+
+    return false;
+}
+//]]>
+</script>

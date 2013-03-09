@@ -1,0 +1,87 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var pointType = Request["pointType"];
+    var members = Request["members"];
+    var R_uid = Request["R_uid"];
+
+    dynamic P = null;
+
+    int memberuid = 0;
+    int price = 0;
+
+    if (my["uid"] != 1)
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+    if (my["admin"] == "1")
+    {
+        foreach (string val in members.Split(','))
+        {
+            P = _DB.GetDbData_M(AppState["table_s_" + pointType].ToString(), "uid=" + val);
+            
+            if (P == null)
+            {
+                continue;
+            }
+            
+            price = price + P["price"];
+            memberuid = P["my_mbruid"];
+
+            string DELET_POINT_SQL = "DELETE " + AppState["table_s_" + pointType] + " WHERE uid=" + P["uid"];
+            @_DB.Execute(DELET_POINT_SQL);
+        }
+        
+        string INSERT_POINT_SQL = "INSERT INTO " + AppState["table_s_" + pointType] + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES ('"
+            + memberuid + "',0," + price + ",'포인트내역을 정리하였습니다.','" + date["insert"] + "'";
+        
+        @_DB.Execute(INSERT_POINT_SQL);
+
+    }
+    else
+    {
+        foreach (string val in members.Split(','))
+        {
+            P = _DB.GetDbData_M(AppState["table_s_" + pointType].ToString(), "uid=" + val.Trim());
+            price = price + P["price"];
+
+            string DELET_POINT_SQL = "DELETE " + AppState["table_s_" + pointType].ToString() + " WHERE uid=" + R_uid + " and my_mbruid=" + my["uid"];
+            @_DB.Execute(DELET_POINT_SQL);
+        }
+        
+        string INSERT_POINT_SQL = "INSERT INTO " + AppState["table_s_" + pointType].ToString() + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES ('"
+            + my["uid"] + "','0','" + price + "','포인트내역을 정리하였습니다.',getdate()";
+
+        @_DB.Execute(INSERT_POINT_SQL);
+    }
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

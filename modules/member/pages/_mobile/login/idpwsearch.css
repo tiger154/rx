@@ -1,0 +1,19 @@
+#pages_idpw {}
+
+#pages_idpw h2 {font-family:"malgun gothic",dotum;font-size:15px;padding:0 0 10px 0;margin:0 0 30px 0;border-bottom:#999999 solid 3px;}
+
+#pages_idpw .msg {color:#1C5B8C;font-family:dotum;line-height:150%;}
+
+#pages_idpw .tab {border-bottom:#dfdfdf solid 1px;padding:20px 0 0 0;}
+#pages_idpw .tab ul {position:relative;top:1px;padding:0;margin:0;}
+#pages_idpw .tab li {list-style-type:none;border-top:#dfdfdf solid 1px;border-right:#dfdfdf solid 1px;border-left:#dfdfdf solid 1px;padding:7px 7px 7px 7px;background:#f9f9f9;cursor:pointer;color:#666666;}
+#pages_idpw .tab .selected {background:#000000;color:#ffffff;border-top:#000000 solid 1px;border-right:#000000 solid 1px;border-left:#000000 solid 1px;}
+
+#pages_idpw .agreebox {border:#dfdfdf solid 1px;padding:15px;}
+
+#pages_idpw .agreebox table {width:100%;}
+#pages_idpw .agreebox .key {width:60px;}
+#pages_idpw .agreebox .key1 {padding:0 0 0 5px;}
+#pages_idpw .agreebox .input {width:100%;}
+#pages_idpw .agreebox .ques {font-weight:bold;color:#ff0000;}
+#pages_idpw .agreebox .submitbox {text-align:right;padding:15px 0 0 0;}

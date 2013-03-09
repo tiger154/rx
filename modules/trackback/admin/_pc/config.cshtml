@@ -1,0 +1,160 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+
+    dynamic d_trackback = _DB.Get_code(module);
+    
+    string frame_name = "_action_frame_" + m;
+}
+
+<div id="configbox">
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="config" />
+
+	<div class="title">
+		트랙백 환경설정
+	</div>
+
+	<table>
+		<tr>
+			<td class="td1">
+				트랙백테마
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_skin','block','none');" />
+			</td>
+			<td class="td2">
+				
+				<select name="skin_main" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">--------------------------------</option>]
+                @{
+                    string tdir = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\";
+                    string[] dirs = Directory.GetDirectories(tdir);
+                    
+                    foreach (string skin in dirs) 
+                    {
+                        string skin_name = skin.Substring(tdir.Length, skin.Length - tdir.Length);                        
+                        
+                        if (skin_name == "." || skin_name == ".." || File.Exists(skin) == true) {
+                            continue;
+                        }
+                        <option value="@skin_name" title="@skin_name" @_System.getSltStr(d_trackback["skin_main"], skin_name)>ㆍ @_System.getFolderName(skin, "name.txt") (@skin_name)</option>                      
+                    }
+                }
+				</select>
+                
+				<div id="guide_skin" class="guide hide">
+				지정된 테마는 트랙백리스트 출력시에 적용됩니다.<br />
+				적용할 트랙백테마를 지정해 주세요.
+				</div>
+			</td>
+		</tr>
+        
+		<tr>
+			<td class="td1 m">
+				(모바일테마)
+			</td>
+			<td class="td2">
+				<select name="skin_mobile" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">--------------------------------</option>
+                @{
+                    foreach (string skin in dirs) {
+                        string skin_name = skin.Substring(tdir.Length, skin.Length - tdir.Length);                        
+                        
+                        if (skin_name == "." || skin_name == ".." || File.Exists(skin) == true) {
+                            continue;
+                        }
+                            
+                        <option value="@skin_name" title="@skin_name"@_System.getSltStr(d_trackback["skin_mobile"], skin_name)>ㆍ @_System.getFolderName(skin, "name.txt") (@skin_name)</option>                             
+                    }
+                }
+				</select>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="td1">보내기권한</td>
+			<td class="td2">
+				<select name="perm_write" class="select1">
+				<option value="0">&nbsp;+ 전체허용</option>
+				<option value="0">--------------------------------</option>
+                @{
+                    string LEVEL_sql = "SELECT * FROM "+AppState["table_s_mbrlevel"]+" ORDER BY uid asc";
+
+                    foreach (var _L in _DB.Query(LEVEL_sql)) 
+                    {   
+                        <option value="@_L["uid"]" @_System.getSltStr(d_trackback["perm_write"], _L["uid"])>ㆍ @_L["name"] (@string.Format("{0:#,0}", Convert.ToInt32(_L["num"]))) 이상</option>     
+                    
+                        if (_L["gid"] > 0)
+                        {
+                            break;
+                        }
+                    }
+                }
+				</select>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="td1">엮인글출력수</td>
+			<td class="td2">
+				<input type="text" name="recnum" value="@d_trackback["recnum"]" size="5" class="input" />개
+			</td>
+		</tr>
+	</table>
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function saveCheck(f) {
+    if (f.skin_main.value == '') {
+        alert('대표테마를 선택해 주세요.       ');
+        f.skin_main.focus();
+        return false;
+    }
+
+    if (f.skin_mobile.value == '') {
+        alert('모바일테마를 선택해 주세요.       ');
+        f.skin_mobile.focus();
+        return false;
+    }
+
+    return confirm('정말로 실행하시겠습니까?         ');
+}
+//]]>
+</script>
+
+

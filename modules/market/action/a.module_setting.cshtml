@@ -1,0 +1,70 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var module = Request["module"];    
+
+    @_System.checkAdmin(my["admin"], 0)
+    
+    dynamic isModule =  _DB.GetDbData_M(AppState["table_s_module"].ToString(), "id='" + module + "'");    
+    
+    if(isModule != null)
+    {
+        @_System.getLink("", "", "이미 설치된 모듈입니다.", "")
+        return;
+    }
+    else{
+        if(!File.Exists(g["path_root_ps"] + g["path_module"] + module + "\\main.cshtml"))
+        {
+            @_System.getLink("","","존재하지 않는 모듈입니다.","")
+            return;      
+        }
+
+        string savePath = g["path_root_ps"] + "dbtable.txt";
+
+        if (!File.Exists(savePath))
+        {
+            File.Create(savePath);
+        }
+
+        StreamWriter sw = File.AppendText(savePath);
+        sw.WriteLine("table_s_" + module + ", rb_s_" + module);
+        sw.Flush();
+        sw.Close();
+
+        int maxgid = _DB.GetDbData_Count(AppState["table_s_module"].ToString(), "");
+
+        string QKEY = "gid,system,hidden,mobile,name,id,tblnum,d_regis";   //tblnum 값 다시해야함
+        string QVAL = "'" + maxgid + 1 + "','0','0','1','" + _System.getFolderName(g["path_root_ps"] + g["path_module"] + module, "name.txt") + "','" + module +"','0',getdate()";
+        string INSERT_MODUEL_SQL = "INSERT INTO " + AppState["table_s_module"].ToString() + " (" + QKEY + ") VALUES (" + QVAL + ")";
+        @_DB.Execute(INSERT_MODUEL_SQL);
+       
+	    @_System.getLink("reload","parent.","모듈이 정상적으로 설치되었습니다.","")
+        return;
+    }
+}    

@@ -1,0 +1,126 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var parent = Request["parent"];
+    var uid = Request["uid"];
+    var iframe = Request["iframe"];
+    var sort = Request["sort"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var orderby = Request["orderby"];
+    var skin = Request["skin"];    
+    
+    string getlink_url = "./?";
+    
+    if (my["uid"] == 0) 
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+
+    dynamic R = null;
+    R = _DB.GetDbData_M(AppState["table_s_oneline"].ToString(), "uid=" + uid);
+    
+    if(R == null) 
+    {
+        @_System.getLink("", "", "존재하지 않는 한줄의견입니다.", "")
+        return;        
+    }
+    
+    if (R["id"] != my["id"]) 
+    {
+        if (my["admin"] != "1") 
+        {
+            @_System.getLink("", "", "삭제권한이 없습니다.", "")
+            return;              
+        }
+    }
+
+    dynamic C = _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "uid=" + R["parent"]);
+
+    
+    string DELETE_OL_SQL = "DELETE FROM " + AppState["table_s_oneline"].ToString() + " WHERE uid=" + R["uid"];
+    string UPDATE_CMT_SQL = "UPDATE " + AppState["table_s_comment"].ToString() + " SET oneline=oneline-1 WHERE uid='" + C["uid"] + "'";
+    string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"].ToString() + " SET oneline=oneline-1 WHERE date='" + R["d_regis"].ToString("yyyyMMdd") + "' and site='" + R["site"] + "'";
+    
+    @_DB.Execute(DELETE_OL_SQL);
+    @_DB.Execute(UPDATE_CMT_SQL);
+    @_DB.Execute(UPDATE_NUM_SQL);
+    
+    if (R["point"]!=0 && R["mbruid"] != 0)
+    {
+        string INSERT_PT_SQL = "INSERT INTO " + AppState["table_s_oneline"].ToString() + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES ('"
+            + R["mbruid"] + "','0','-" + R["point"] + "','한줄의견삭제(" + _System.getStrCut(R["content"], 15, "") + ")환원',getdate()";
+
+        string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"].ToString() + " SET point=point-" + R["point"] + " WHERE memberuid=" + R["mbruid"];
+
+        @_DB.Execute(INSERT_PT_SQL);
+        @_DB.Execute(UPDATE_MBR_SQL);
+    }
+
+    //동기화
+    string[] fdexp = _System.getSyncValue(C["cync"].ToString(), 3).Split(',');
+
+    if (_System.getSyncValue(C["cync"].ToString(), 4) != "" && fdexp[0] != "" && fdexp[2] != "")
+    {
+        string cyncQue = fdexp[2] + "=" + fdexp[2] + "-1";
+        string UPDATE_OL_SQL2 = "UPDATE " + _System.getSyncValue(C["cync"].ToString(), 4) + " SET " + cyncQue + " WHERE " + fdexp[0] + "=" + _System.getSyncValue(C["cync"].ToString(), 2);
+        @_DB.Execute(UPDATE_OL_SQL2);
+    }    
+
+    
+    // bbs_reset variable setting
+    if(_HS["usescode"].ToString() == "1") 
+    {
+        getlink_url += "r=" + r + "&";
+    }
+    
+    if(c != "" && c != null) 
+    {
+        getlink_url += "c=" + c;
+    }
+    else {
+        getlink_url += "m=" + m;
+  	}
+    
+    getlink_url += _System.getLinkFilter("iframe|sort|orderby|recnum|where|keyword", iframe+"|"+sort+"|"+orderby+"|"+recnum+"|"+where+"|"+keyword);        
+    
+    if (C["oneline"] > 1) 
+    {
+        getlink_url += "&uid=" + R["parent"] + "&oneOpen=Y";    
+    }
+    else 
+    {
+        getlink_url += "&uid=" + R["parent"];
+    }
+    
+    @_System.getLink(getlink_url, "parent.", "", "")
+    return;
+}

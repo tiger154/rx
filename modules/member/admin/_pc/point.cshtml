@@ -1,0 +1,405 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var front = Request["front"];
+    var ikeyword = Request["ikeyword"];
+    var type = Request["type"];
+    var where = Request["where"];
+    var keyw = Request["keyw"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var year1 = Request["year1"];
+    var month1 = Request["month1"];
+    var day1 = Request["day1"];
+    var year2 = Request["year2"];
+    var month2 = Request["month2"];
+    var day2 = Request["day2"];   
+    var flag = Request["flag"];
+
+    string frame_name = "_action_frame_" + m;    
+    string SITES_sql = "SELECT * FROM " + AppState["table_s_site"] + " ORDER BY gid, ASC";
+    
+    if (year1 == null || year1 == "")
+    {
+        year1 = date["year"];
+    }
+    if (month1 == null || month1 == "")
+    {
+        month1 = date["month"];
+    }
+    if (day1 == null || day1 == "")
+    {
+        day1 = "01";
+    }
+    if (year2 == null || year2 == "")
+    {
+        year2 = date["year"];
+    }
+    if (month2 == null || month2 == "")
+    {
+        month2 = date["month"];
+    }
+    if (day2 == null || day2 == "")
+    {
+        day2 = date["day"];
+    }
+    if (type == null || type == "")
+    {
+        type = "point";
+    }
+    if (sort == null || sort == "")
+    {
+        sort = "uid";
+    }
+    if (orderby == null || orderby == "")
+    {
+        orderby = "desc";
+    }
+    if (recnum == null || recnum == "" || Convert.ToInt32(recnum) >= 200)
+    {
+        recnum = "20";
+    }
+    
+    string _WHERE = "d_regis BETWEEN '" + year1 + "-" + month1 + "-" + day1 + "' AND '" + year2 + "-" + month2 + "-" + day2 + " 23:59:59'"; 
+    
+    
+    if (flag == "+")
+    {
+        _WHERE += " AND price > 0";
+    }
+    if (flag == "-")
+    {
+        _WHERE += " AND price < 0";
+    }
+     
+    if (where != null && where != "" && keyw != null && keyw != "")
+    {
+        if (keyw == "my_mbruid")
+        {
+            _WHERE +=  " AND my_mbruid=" + keyw;
+        }
+        else
+        {
+            _WHERE += _System.getSearchSql(where, keyw, ikeyword, "OR");
+        }
+    }
+    
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+    int NUM = _DB.GetDbData_Count(AppState["table_s_" + type].ToString(), _WHERE);
+    string RCD_sql = _System.GetQuery(AppState["table_s_" + type].ToString(), "", _WHERE, sort, orderby, list_start, recnum);
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+}
+
+<div id="pointlist">
+
+
+	<div class="sbox">
+		<form name="procForm" action="@g["s"]/" method="get">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="module" value="@module" />
+		<input type="hidden" name="front" value="@front" />
+		<input type="hidden" name="type" value="@type" />
+
+		<div>
+		<select name="year1">
+        @for (int i = Convert.ToInt32(date["year"]); i > 2000; i--)
+        {
+            <option value="@i" @_System.getSltStr(year1, i)>@(i)년</option>
+        }
+		</select>
+		<select name="month1">
+        @for (int i = 1; i < 13; i++)
+        {
+            <option value="@i" @_System.getSltStr(Convert.ToInt32(month1), i)>@(i)월</option>
+        }
+		</select>
+		<select name="day1">
+        @for (int i = 1; i < 32; i++)
+        {
+            <option value="@i" @_System.getSltStr(Convert.ToInt32(day1), i)>@(i)일</option>
+        }
+		</select> ~
+		<select name="year2">
+        @for (int i = Convert.ToInt32(date["year"]); i > 2000; i--)
+        {
+            <option value="@i" @_System.getSltStr(year2, i)>@(i)년</option>
+        }
+		</select>
+		<select name="month2">
+		@for (int i = 1; i < 13; i++)
+        {
+            <option value="@i" @_System.getSltStr(Convert.ToInt32(month2), i)>@(i)월</option>
+        }        
+		</select>
+		<select name="day2">
+		@for (int i = 1; i < 32; i++)
+        {
+            <option value="@i" @_System.getSltStr(Convert.ToInt32(day2), i)>@(i)일</option>
+        }        
+		</select>
+
+		<input type="button" class="btngray" value="기간적용" onclick="this.form.submit();" />
+		<input type="button" class="btngray" value="어제" onclick="dropDate('@date["_yester"]','@date["_yester"]');" />
+		<input type="button" class="btngray" value="오늘" onclick="dropDate('@date["totime"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="일주" onclick="dropDate('@date["_week"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="한달" onclick="dropDate('@date["_month"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="당월" onclick="dropDate('@date["curMonth"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="전월" onclick="dropDate('@date["preMonth1"]', '@date["preMonth2"]');" />
+		<input type="button" class="btngray" value="전체" onclick="dropDate('2009-01-01','@date["totime"]');" />
+		</div>
+
+		<div>
+		<select name="flag" onchange="this.form.submit();">
+		<option value="">&nbsp;+ 구분</option>
+		<option value="">--------</option>
+		<option value="+" @_System.getSltStr(flag, "+")>획득</option>
+		<option value="-" @_System.getSltStr(flag, "-")>사용</option>
+		</select>
+
+		<select name="sort" onchange="this.form.submit();">
+		<option value="uid" @_System.getSltStr(sort, "uid")>등록일</option>
+		<option value="price" @_System.getSltStr(sort, "price")>금액</option>
+		</select>
+		<select name="orderby" onchange="this.form.submit();">
+		<option value="desc" @_System.getSltStr(orderby, "desc")>역순</option>
+		<option value="asc" @_System.getSltStr(orderby, "asc")>정순</option>
+		</select>
+
+		<select name="recnum" onchange="this.form.submit();">
+		<option value="20" @_System.getSltStr(recnum, 20)>20개</option>
+		<option value="35" @_System.getSltStr(recnum, 35)>35개</option>
+		<option value="50" @_System.getSltStr(recnum, 50)>50개</option>
+		<option value="75" @_System.getSltStr(recnum, 75)>75개</option>
+		<option value="90" @_System.getSltStr(recnum, 90)>90개</option>
+		</select>
+
+		<select name="where">
+		<option value="content" @_System.getSltStr(where, "content")>내용</option>
+		<option value="my_mbruid" @_System.getSltStr(where, "my_mbruid")>회원코드</option>
+		</select>
+
+		<input type="text" name="keyw" value="@_System.stripslashes(keyw)" class="input" />
+
+		<input type="submit" value="검색" class="btnblue" />
+		<input type="button" value="리셋" class="btngray" onclick="location.href='@g["adm_href"]';" />
+		</div>
+
+		</form>
+	</div>
+
+
+
+	<form name="listForm" action="@g["s"]/" method="post" target="_action_frame_@(m)">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="" />
+	<input type="hidden" name="pointType" value="@type" />
+
+
+	<div class="info">
+
+		<div class="article">
+			@string.Format("{0:#,0}", Convert.ToInt32(NUM))건(@p/@TPG 페이지)
+			
+			<span class="tx">
+			<a class="@Html.Raw(_System.isEqual(type, "point", "b ",""))hand" onclick="document.procForm.type.value='point';document.procForm.submit();">포인트</a> |
+			<a class="@Html.Raw(_System.isEqual(type, "cash", "b ",""))hand" onclick="document.procForm.type.value='cash';document.procForm.submit();">적립금</a> |
+			<a class="@Html.Raw(_System.isEqual(type, "money", "b ",""))hand" onclick="document.procForm.type.value='money';document.procForm.submit();">예치금</a>
+			</span>
+
+		</div>
+		
+		<div class="category">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+
+
+	<table summary="포인트 리스트입니다.">
+	<caption>포인트리스트</caption> 
+	<colgroup> 
+	<col width="30"> 
+	<col width="50"> 
+	<col width="80"> 
+	<col width="70"> 
+	<col width="80"> 
+	<col width="400"> 
+	<col width="80">
+	<col>
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" alt="선택/반전" class="hand" onclick="chkFlag('comment_members');" /></th>
+	<th scope="col">번호</th>
+	<th scope="col">획득/사용자</th>
+	<th scope="col">획득/사용액</th>
+	<th scope="col">지급자</th>
+	<th scope="col">내용</th>
+	<th scope="col">날짜</th>
+	<th scope="col" class="side2"></th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @foreach (var R in _DB.Query(RCD_sql))
+    {
+        dynamic M1 = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", R["my_mbruid"]);
+        dynamic M2 = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", 0);
+        
+        if (R["by_mbruid"] != 0)
+        {
+            M2 = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", R["by_mbruid"]);    
+        }
+        
+	    <tr>
+	    <td><input type="checkbox" name="point_members" value="@R["uid"]" /></td>
+	    <td></td>
+	    <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=@module&front=manager&page=point&price=1&mbruid=@M1["memberuid"]&type=@type');" title="획득/사용내역">@M1[_HS["nametype"]]</a></td>
+	    <td class="@Html.Raw("price" + _System.isEqual(R["price"] > 0, true, "1", "2"))">@string.Format("{0:#,0}", Convert.ToInt32(R["price"]))</td>
+	    <td>
+
+        @if (M2["memberuid"] != 0)
+        {
+            <a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=@module&front=manager&page=point&price=1&mbruid=@M2["memberuid"]&type=@type'');" title="획득/사용내역">@M1[_HS["nametype"]]</a>
+        }
+        else
+        {
+            @:시스템
+        }
+
+	    </td>
+	    <td class="sbj">@_System.Strip_tags(R["content"])</td>
+	    <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	    <td></td>
+	    </tr>         
+
+    }
+
+    @if (NUM == 0)
+    {
+	    <tr>
+	    <td><input type="checkbox" disabled="disabled" /></td>
+	    <td>1</td>
+	    <td colspan="6" class="sbj1">내역이 없습니다.</td>
+	    </tr>         
+    }
+    
+	</tbody>
+	</table>
+
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>
+
+
+	<div class="prebox">
+		<input type="button" class="btngray" value="선택/해제" onclick="chkFlag('point_members');" />
+		<input type="button" class="btnblue" value="삭제" onclick="actQue('point_multi_delete');" />
+	</div>
+	</form>
+
+</div>
+
+<div id="qTilePopDiv"></div>
+<script type="text/javascript">
+//<![CDATA[
+    function qTilePop(obj) {
+        var content = '<div style="width:300px;line-height:150%;font-family:dotum;color:#666666;border:#999999 solid 1px;padding:3px;background:lightyellow;">' + obj.title + '</div>';
+        skn.style.position = 'absolute';
+        skn.style.display = 'block';
+        skn.style.zIndex = '1';
+        itt = obj.title;
+        obj.title = '';
+        skn.innerHTML = content;
+    }
+    function get_mouse(e) {
+        var x = myagent != 'ie' ? e.pageX : event.x + (document.body.scrollLeft || document.documentElement.scrollLeft);
+        var y = myagent != 'ie' ? e.pageY : event.y + (document.body.scrollTop || document.documentElement.scrollTop);
+        skn.style.left = (x - 0) + 'px';
+        skn.style.top = (y + 20) + 'px';
+    }
+    function qTilePopKill(obj) {
+        obj.title = itt;
+        itt = '';
+        skn.style.top = '10000';
+        skn.style.display = 'none';
+    }
+
+    if (myagent != 'ie') document.captureEvents(Event.MOUSEMOVE);
+    document.onmousemove = get_mouse;
+
+    var skn = getId('qTilePopDiv');
+    var itt = '';
+
+
+    function dropDate(date1, date2) {
+        var f = document.procForm;
+        f.year1.value = date1.substring(0, 4);
+        f.month1.value = date1.substring(5, 7);
+        f.day1.value = date1.substring(8, 10);
+
+        f.year2.value = date2.substring(0, 4);
+        f.month2.value = date2.substring(5, 7);
+        f.day2.value = date2.substring(8, 10);
+
+        f.submit();
+    }
+    function actQue(flag) {
+        var f = document.listForm;
+        var l = document.getElementsByName('point_members');
+        var n = l.length;
+        var i;
+        var j = 0;
+        var s = '';
+
+        for (i = 0; i < n; i++) {
+            if (l[i].checked == true) {
+                j++;
+                s += l[i].value + ',';
+            }
+        }
+        if (!j) {
+            alert('내역을 선택해 주세요.     ');
+            return false;
+        }
+
+
+        if (flag == 'point_multi_delete') {
+            if (!confirm('정말로 삭제하시겠습니까?     ')) {
+                return false;
+            }
+        }
+        f.a.value = flag;
+        f.submit();
+    }
+//]]>
+</script>

@@ -1,0 +1,533 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    var nosite = Request["nosite"];
+
+    dynamic R = _DB.Get_module_data(AppState["table_s_site"], "uid", 0);
+
+    string frame_name = "_action_frame_" + m;
+    string tdir = g["path_root_ps"] + g["path_layout"];
+
+    string SITES_sql = "SELECT * FROM " + AppState["table_s_site"] + " ORDER BY gid ASC";
+    string PAGE1_sql = "SELECT * FROM " + AppState["table_s_page"] + " WHERE ismain=1 ORDER BY uid asc";
+    string PAGE2_sql = "SELECT * FROM " + AppState["table_s_page"] + " WHERE mobile=1 ORDER BY uid asc";
+
+    int SITEN = _DB.GetDbData_Count(AppState["table_s_site"].ToString(), "");
+
+    if (type != "makesite")
+    {
+        R = _HS;
+    }
+
+    int DOMAINN = 0;
+    string DOMAINS_sql = "";
+
+    if (R["uid"] != 0) 
+    {
+        DOMAINS_sql = "SELECT * FROM " + AppState["table_s_domain"] + " WHERE site=" + R["uid"] + " ORDER BY gid ASC";
+        DOMAINN = _DB.GetDbData_Count(AppState["table_s_domain"].ToString(), "site=" + R["uid"]);
+    }
+
+    if (!_isDragScript)
+    {
+        <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/core.js"></script>
+        <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/events.js"></script>
+        <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/css.js"></script>
+        <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/coordinates.js"></script>
+        <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/drag.js"></script>
+        <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/dragsort.js"></script>
+
+        <script type="text/javascript">
+        //<![CDATA[
+            var dragsort = ToolMan.dragsort();
+        //]]>
+        </script>
+    }
+}
+
+<div id="sitebox">
+
+	<form name="" action="@g["s"]/" method="post" target="@frame_name">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="siteorder_update" />
+
+	<table width="100%">
+        <tr>
+        <td class="pannel">
+		<ul id="siteorder">
+        @foreach (var S in _DB.Query(SITES_sql))
+        {
+            <li>                
+		    <div id="@Html.Raw("iconbg" + S["uid"])" class="site @(S["uid"] == R["uid"] ? "selected" : "")" style="background:url('@g["img_core"]/siteicon/@S["icon"]') center center no-repeat;" title="@S["name"]">
+			    <input type="checkbox" name="sitemembers" value="@S["uid"]" checked="checked" />
+			    <div class="delbtn">
+                        
+                @if (S["uid"] == R["uid"])
+                {
+                    <a href="@g["s"]/?r=@r&m=@module&a=deletesite&account=@R["uid"]" target="@frame_name" onclick="return confirm('사이트관련 모든 데이터가 삭제됩니다.\n정말로 선택된 사이트를 삭제하시겠습니까?');" title="사이트삭제"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="삭제" /></a>
+                }			        
+                    
+			    </div>
+			    <div class="icon"><a href="@g["s"]/?r=@S["id"]&m=@m&module=@module"><img src="@g["img_core"]/blank.gif" alt="@S["name"]" /></a></div>
+			    <div class="name"><div class="namex" ondblclick="window.open('s=@S["uid"]');">@S["name"]</div></div>
+		    </div>
+		    </li>
+        }        
+		</ul>
+
+        @if (SITEN == 0)
+        {
+ 		    <div class="none">
+		    등록된 사이트가 없습니다. 
+		    </div>
+        
+		    <div class="none1">
+		    사이트를 등록하려면 사이트 기본정보를 입력한 후 [신규사이트 등록]버튼을 클릭해 주세요.<br />
+		    필요한만큼 사이트를 추가할 수 있으며 각각의 사이트에 개별도메인을 지정할 수 있습니다.
+		    </div>               
+        }        		
+            
+		<div class="clear"></div>
+	</td></tr></table>
+
+	<div class="savebtn">
+		<a href="@g["adm_href"]&type=makesite" title="사이트추가"><img src="@g["img_core"]/_public/btn_add.gif" alt="추가" /></a>
+		<input type="image" src="@g["img_core"]/_public/btn_save.gif" title="순서저장" alt="save" />
+	</div>
+                
+	</form>
+    
+
+	<div class="infobox">
+		<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="regissite" />
+		<input type="hidden" name="site_uid" value="@R["uid"]" />        
+        <input type="hidden" name="icon" value="@Html.Raw(_System.isEqual(type != "makesite" && R["icon"] != "", true, R["icon"], "1.png"))" />
+		<input type="hidden" name="backgo" value="admin" />
+		<input type="hidden" name="iconaction" value="" />
+
+		<table cellspacing="0" cellpadding="0">
+			<tr>
+				<td class="td1">사 이 트 명</td>
+				<td class="td2">
+               
+					<div id="iconlayer">
+					<div class="icons">
+                    @{                        
+                        string idir = g["path_root_ps"] + "_core\\" + "image\\siteicon\\";
+                        string[] dirs = Directory.GetFiles(idir);
+
+                        foreach (string f in dirs)
+                        {
+                            string f_name = f.Substring(idir.Length, f.Length - idir.Length);
+					        
+                            <img src="@g["img_core"]/siteicon/@f_name" alt="" onclick="iconDrop('@R["uid"]','@f_name');" />  
+                        }                       
+                    }
+					</div>
+					</div>
+
+					<input type="text" name="name" class="input sname" value="@R["name"]" />
+					<img src="@g["img_core"]/_public/btn_layout.gif" alt="아이콘선택" title="아이콘선택" class="hand" onclick="iconSelect();" />
+				</td>
+				<td class="td1">
+					사이트제목
+					<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_title','block','none');" />				
+				</td>
+				<td class="td2">
+					<input type="text" name="title" class="input sname" value="@R["title"]" />
+					<input type="checkbox" name="titlefix" value="1" @_System.getChkStr(R["titlefix"], 1) />고정
+				</td>
+			</tr>
+            
+			<tr>
+				<td class="td1">
+                    사이트언어
+				</td>
+				<td class="td2">
+					<select name="sitelang" class="select1">                    
+                    @foreach (string tpl in Directory.GetDirectories(g["path_root_ps"] + g["path_var"] + "language\\"))
+                    {
+                        string folder_name = Path.GetFileName(tpl);             
+                    
+                        if (folder_name == "." || folder_name == "..")
+                        {
+                            continue;
+                        }
+                        <option value="@folder_name" @_System.getSltStr(g["sys_selectlang"], folder_name) title="@folder_name">ㆍ @_System.getFolderName(tpl)</option>    
+                    }
+					</select>
+
+				</td>
+				<td class="td1">
+					사이트코드
+					<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_sitecode','block','none');" />	
+				</td>
+				<td class="td2">
+					<input type="text" name="id" class="input sname" value="@R["id"]" title="영문 대소문자/숫자/_ 조합으로 입력해 주세요." />                    
+					<input type="checkbox" name="usescode" value="1" @_System.getChkStr(R["usescode"], 1) />사용
+				</td>
+			</tr>
+            
+			<tr>
+				<td class="td1">레 이 아 웃</td>
+				<td class="td2">
+					<select name="layout" class="select1">
+					<option value="">&nbsp;+ 선택하세요</option>
+                    @{                            
+                        foreach (string tpl in Directory.GetDirectories(tdir))
+                        {
+                            string lay_name = tpl.Substring(tdir.Length, tpl.Length - tdir.Length);         // 디렉토리 명 구하기
+                            
+                            <option value="">--------------------------------</option>
+                        
+                            if (lay_name != "_blank")
+                            {
+                                foreach (string tpl1 in Directory.GetFiles(tpl))
+                                {
+                                    string f_name = tpl1.Substring(tpl.Length + 1, tpl1.Length - tpl.Length - 1);         // 파일명 구하기
+                                    
+                                    if (!f_name.Contains(".cshtml") || f_name == "_main.cshtml")
+                                    {
+                                        continue;
+                                    }
+
+                                    <option value="@lay_name\@f_name" @_System.getSltStr(R["layout"], lay_name + "\\" + f_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@f_name.Replace(".cshtml", ""))</option>
+                                }
+                            }
+                        }
+                    }
+					</select>
+				</td>
+				<td class="td1">시작페이지</td>
+				<td class="td2">
+					<select name="startpage" class="select1">
+					<option value="">&nbsp;+ 선택하세요</option>
+					<option value="">--------------------------------</option>
+                    @{
+                        int PAGE1_cnt = 0;
+
+                        foreach (var S in _DB.Query(PAGE1_sql))
+                        {
+                            <option value="@S["uid"]" @_System.getSltStr(R["startpage"], S["uid"])>ㆍ @S["name"] (@S["id"])</option>                        
+                            PAGE1_cnt++;
+                        }
+
+                        if (PAGE1_cnt == 0)
+                        {
+                            <option value="">ㆍ시작페이지 등록 후 지정</option>
+                        }                        
+                    }
+					</select>
+					<a href="@g["s"]/?r=@r&m=@m&module=@module&front=page&type=makepage"><img src="@g["img_core"]/_public/btn_add.gif" alt="페이지추가" title="페이지추가" /></a>
+				</td>
+			</tr>
+            
+			<tr>
+				<td class="td1 m">
+					(모바일접속) 
+					<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="himg hand" onclick="layerShowHide('guide_mobile','block','none');" />
+				</td>
+				<td class="td2">
+					<select name="m_layout" class="select1">
+					<option value="">&nbsp;+ PC접속과 동일</option>
+                         @{
+                            foreach (string tpl in Directory.GetDirectories(tdir))
+                            {
+                                string lay_name = tpl.Substring(tdir.Length, tpl.Length - tdir.Length);         // 디렉토리 명 구하기                           
+                                 
+                                <option value="">--------------------------------</option>
+
+                                if (lay_name != "_blank")
+                                {
+                                    foreach (string tpl1 in Directory.GetFiles(tpl))
+                                    {
+                                        string f_name = tpl1.Substring(tpl.Length + 1, tpl1.Length - tpl.Length - 1);
+                                        
+                                        if (!f_name.Contains(".cshtml") || f_name == "_main.cshtml")
+                                        {
+                                            continue;
+                                        }
+                                        
+                                        <option value="@lay_name\@f_name"@_System.getSltStr(R["m_layout"], lay_name + "\\" + f_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@f_name.Replace(".cshtml", ""))</option>                                                                       
+                                    }
+                                }
+                            }
+                        }
+					</select>
+				</td>
+				<td class="td1 m">(모바일접속)</td>
+				<td class="td2">
+					<select name="m_startpage" class="select1">
+					<option value="">&nbsp;+ PC접속과 동일</option>
+					<option value="">--------------------------------</option>
+                    @{
+                        int PAGE2_cnt = 0;
+                        foreach (var S in _DB.Query(PAGE2_sql))
+                        {
+                            <option value="@S["uid"]" @_System.getSltStr(R["m_startpage"], S["uid"])>ㆍ @S["name"] (@S["id"])</option>
+                            PAGE2_cnt++;
+                        }
+                        if (PAGE2_cnt == 0)
+                        {
+                            <option value="">ㆍ모바일페이지 등록 후 지정</option>
+                        }
+                    }
+					</select>
+					<a href="@g["s"]/?r=@r&m=@m&module=@module&front=page&type=makepage"><img src="@g["img_core"]/_public/btn_add.gif" alt="페이지추가" title="페이지추가" /></a>
+				</td>
+			</tr>
+
+			<tr>
+				<td class="td1">서비스상태</td>
+				<td class="td2">
+					<select name="open" class="select1">
+					<option value="1" @_System.getSltStr(R["opend"], 1)>ㆍ정상서비스</option>
+					<option value="2" @_System.getSltStr(R["opend"], 2)>ㆍ관리자오픈</option>
+					<option value="3" @_System.getSltStr(R["opend"], 3)>ㆍ정지</option>
+					</select>
+				</td>
+
+				<td class="td1">D T D 형식</td>
+				<td class="td2">
+					<select name="dtd" class="select1">
+					<option value="xhtml_1" @_System.getSltStr(_HS["dtd"], "xhtml_1")>ㆍXHTML 1.0</option>
+					<option value="html5" @_System.getSltStr(_HS["dtd"], "html5")>ㆍHTML 5</option>
+					</select>
+				</td>
+			</tr>
+            
+			<tr>
+				<td class="td1">이 름 표 시</td>
+				<td class="td2">
+					<select name="nametype" class="select1">
+					<option value="nic" @_System.getSltStr(R["nametype"], "nic")>ㆍ닉네임</option>
+					<option value="name" @_System.getSltStr(R["nametype"], "name")>ㆍ이름(실명)</option>
+					<option value="id" @_System.getSltStr(R["nametype"], "id")>ㆍ아이디</option>
+					</select>
+				</td>
+
+				<td class="td1">시 간 조 정</td>
+				<td class="td2">
+					<select name="timecal" class="select1">
+                    @for (int i = -23; i < 24; i++)
+                    {
+                        <option value="@i" @_System.getSltStr(R["timecal"], i)>ㆍ @Html.Raw(_System.isEqual((i > 0), true, "+", ""))@Html.Raw(_System.isEqual(i, 0, "조정안함", i.ToString() + "시간"))</option>					
+                    }                    
+					</select>
+				</td>
+			</tr>
+            
+			<tr>
+				<td class="td1">
+					퍼 포 먼 스
+					<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_rewrite','block','none');" />	
+				</td>
+				<td class="td2">
+					<div class="shift">
+					<div class="shift">
+					<input type="checkbox" name="rewrite" value="1" @_System.getChkStr(R["rewrite"], 1)) />짧은주소사용
+					<input type="checkbox" name="buffer" value="1" @_System.getChkStr(R["buffer"], 1) />버퍼전송사용
+					</div>
+					</div>
+				</td>
+				<td class="td1">연결도메인</td>                
+				<td class="td2" colspan="3">
+					@{
+                        if (R["uid"] != 0)
+                        {
+                            if (DOMAINN != 0)
+                            {
+                                <ul>
+                                    
+                                @foreach (var D in _DB.Query(DOMAINS_sql))
+                                {
+                                     <li><a href="#." onclick="viewDomainMode('@D["name"]');">@D["name"]</a></li>
+                                }
+                                
+					            </ul>
+                            }
+                            else
+                            {
+                                <span class="nodomain">연결된 도메인이 없습니다.</span>
+					            <a href="@g["s"]/?r=@r&m=@m&module=domain&selsite=@R["uid"]&type=makedomain" class="jtdomain">도메인연결하기</a>
+                            }
+                        }
+                        else
+                        {
+                            <span class="nodomain">사이트생성 후 연결할 수 있습니다.</span>
+                        }
+					}
+				</td>
+			</tr>
+		</table>
+
+		<br />
+
+		<div id="guide_title" class="guide hide">
+		<div class="b">사이트제목 :</div>
+		사이트제목에 입력된 메세지는 브라우져의 타이틀에 출력됩니다.<br />
+		[고정]에 체크하면 입력된 타이틀이 모든페이지에 고정되며 체크해제시 페이지별로 타이틀이 출력됩니다.<br />
+		이 입력값은 일부 레이아웃의 사이트제목으로 사용됩니다.<br />
+		</div>
+
+		<div id="guide_sitecode" class="guide hide">
+		<div class="b">사이트코드 :</div>
+		사이트별로 계정아이디를 등록합니다.(영문대/소문자+숫자+_ 조합으로 등록할 수 있습니다)<br />
+		[사용]에 체크하면 사이트별로 계정값을 부여할 수 있으며 하나의 도메인으로 복수의 사이트에 접속할 수 있습니다.<br />
+		사용하지 않을경우 현재의 도메인 @Html.Raw((g["url_root"].Replace("http://", "")).Replace("/rx", ""))으로 사이트패널내의 첫번째 사이트만 접속할 수 있으며 나머지 사이트를 접속하려면 별도의 도메인을 연결해야 합니다.<br />
+		사이트코드를 사용하면 사이트코드만큼 주소가 길어집니다.(kimsq.com/rx/ -> kimsq.com/rx/사이트코드/)<br />
+		영문사이트 서비스 연결예제) kimsq.com/rx/kr/ , kimsq.com/rx/en/<br />
+		</div>
+
+		<div id="guide_mobile" class="guide hide">
+		<div class="b">모바일접속 :</div>
+		모바일기기로 접속시 출력할 사이트 레이아웃(UI)을 지정합니다.<br />
+		지정된 모바일 레이아웃은 모든메뉴,모든페이지에 대해서 일괄적용됩니다.<br />
+		모바일기기에 대해 정의하거나 모바일 전용사이트 등으로 이동시키려면 <a href="?r=@r&m=@m&module=mobile" target="_blank" class="u">모바일설정</a>을 이용하세요.<br />
+		</div>
+
+		<div id="guide_rewrite" class="guide hide">
+		<div class="b">짧은주소사용 :</div>
+		긴 주소줄을 간단하게 줄일 수 있습니다.(WPI 에서 URL 재작성 2.0 이상을 설치해 주셔야 합니다.)<br />
+		보기) ./?c=menu&uid=1000 -> /c/menu/1000<br />
+		사이트코드를 사용하면 사이트코드를 포함한 주소를 줄여줍니다.<br />
+		보기) @g["s"]/?r=home&c=menu&uid=1000 -> /home/c/menu/1000<br />
+		<div class="b">버퍼전송사용 :</div>
+		실행결과를 브라우져에 출력해주는 과정에서 버퍼에 담아두었다가 실행이 완료되면 화면에 출력해 줍니다.<br />
+		실행속도가 느릴경우 화면이 일부분만 출력되는 것을 한번에 열리도록 합니다.
+		</div>
+
+		<div id="headertail" class="headertail">
+			<div class="tt">CSHTML코드 <span>- 이 사이트에 전용으로 사용될 CSHTML코드가 있을 경우 등록해 주세요.</span></div>
+            <div><textarea name="sitephpcode" rows="8" cols="70">
+            @if (R["uid"] != 0 && File.Exists(g["path_root_ps"] + g["path_var"] + "sitecshtml\\" + R["uid"] + ".cshtml"))
+            {
+                using (StreamReader sr = new StreamReader(g["path_root_ps"] + g["path_var"] + "sitecshtml\\" + R["uid"] + ".cshtml", System.Text.Encoding.UTF8, true))
+                { 
+                    @Html.Raw(sr.ReadToEnd())
+                }
+            }</textarea></div>
+            <div class="tt">헤더코드 <span>- &lt;head&gt; 와 &lt;/head&gt; 사이에 삽입하고자 할 코드가 있을 경우 등록해 주세요.</span></div>
+			<div><textarea name="headercode" rows="8" cols="70">@_System.htmlspecialchars(R["headercode"])</textarea></div>
+			<div class="tt">테일코드 <span>- &lt;/body&gt;&lt;/html&gt; 바로앞에 삽입하고자 할 코드가 있을 경우 등록해 주세요.</span></div>
+			<div><textarea name="footercode" rows="8" cols="70">@_System.htmlspecialchars(R["footercode"])</textarea></div>
+		</div>
+
+		<div class="submitbox">
+			<input type="button" class="btngray" value="헤더/테일코드" onclick="layerShowHide('headertail','block','none');" />
+			<input type="submit" class="btnblue" value="@Html.Raw(_System.isEqual(R["uid"], 0, "신규사이트 등록", "사이트속성 변경"))" />
+			<div class="clear"></div>
+		</div>
+
+		</form>
+	</div>
+</div>
+
+@RenderPage("/" + g["path_module"] + module + "/action/a.inscheck.cshtml", g, m, _HS, my, _isDragScript, p, r, s, module, date)
+<script type="text/javascript">
+//<![CDATA[
+function viewDomainMode(domain) {
+    var ux = location.href.split('?');
+    var us = ux[0].split('/');
+    var uh = 'http://' + domain + '/' + us[us.length - 2].replace('index.cshtml', '') + '/';
+
+    window.open(uh);
+}
+
+function iconSelect() {
+    var f = document.procForm;
+
+    if (getId('iconlayer').style.display == 'block') {
+        getId('iconlayer').style.display = 'none';
+    }
+    else {
+        getId('iconlayer').style.display = 'block';
+    }
+}
+
+function iconDrop(uid, val) {
+    var f = document.procForm;
+
+    f.icon.value = val;
+    getId('iconlayer').style.display = 'none';
+    
+    if (uid != '') {
+        getId('iconbg' + uid).style.background =  "url('@g["img_core"]/siteicon/"+val+"') center center no-repeat";
+        f.iconaction.value = '1';
+        f.submit();
+    }
+}
+
+function saveCheck(f) {
+    if (f.name.value == '') {
+        alert('사이트명을 입력해 주세요.      ');
+        f.name.focus();
+        return false;
+    }
+    if (f.title.value == '') {
+        alert('사이트제목을 입력해 주세요.      ');
+        f.title.focus();
+        return false;
+    }
+    if (f.id.value == '') {
+        alert('사이트코드를 입력해 주세요.      ');
+        f.id.focus();
+        return false;
+    }
+    if (!chkFnameValue(f.id.value)) {
+        alert('사이트코드는 영문대소문자,숫자,_만 사용할 수 있습니다.      ');
+        f.id.focus();
+        return false;
+    }
+    if (f.layout.value == '') {
+        alert('대표 레이아웃을 지정해 주세요.      ');
+        f.layout.focus();
+        return false;
+    }
+    if (f.startpage.value == '') {
+        alert('시작페이지를 지정해 주세요.      ');
+        f.startpage.focus();
+        return false;
+    }
+    return confirm('정말로 실행하시겠습니까?         ');
+}
+
+dragsort.makeListSortable(getId("siteorder"));
+
+@if (type == "makesite" || nosite == "Y")
+{
+    @:document.procForm.name.focus();
+}
+
+//]]>
+</script>

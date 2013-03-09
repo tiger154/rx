@@ -1,0 +1,94 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var name = Request["name"];
+    var cat = Request["cat"];
+    var vtype = Request["vtype"];
+    var site = Request["site"];
+    var depth = Request["depth"];
+    var parent = Request["parent"];
+
+    @_System.checkAdmin(my["admin"], 0)
+
+    name = name.Trim();
+    name = name.Replace("http://", "");
+    name = name.Replace("/", "");
+
+    if (cat != "0" && (vtype == "" || vtype == null))
+    {
+        int R = _DB.GetDbData_Count(AppState["table_s_domain"].ToString(), "uid<>" + cat + " and name='" + name + "'");
+
+        if (R > 0)
+        {
+            @_System.getLink("", "", "이미 등록된 도메인입니다.", "");
+            return;
+        }
+
+        string UPDATE_SQL = "UPDATE " + AppState["table_s_domain"] + " SET name='" + name + "', site=" + site + " WHERE uid=" + cat;
+        @_DB.Execute(UPDATE_SQL);
+        
+        @_System.getLink("reload", "parent.", "", "");
+        return;
+    }
+    else {
+        int R = _DB.GetDbData_Count(AppState["table_s_domain"].ToString(), "name='" + name + "'");
+        int tmp_depth = Convert.ToInt32(depth) + 1;
+        string parent_link = "";
+            
+        if (R > 0)
+        {
+            @_System.getLink("", "", "이미 등록된 도메인입니다.", "");
+            return;
+        }
+
+    	string MAXC = _DB.GetDbData_S(AppState["table_s_domain"].ToString(), "depth=" + tmp_depth + " AND parent=" + parent, "max(gid)").ToString();
+        
+        if(MAXC == "") {
+            MAXC = "0";
+        }
+
+        int gid	= Convert.ToInt32(MAXC) + 1;
+	    int xdepth = tmp_depth;
+        
+        string INS_SQL = "INSERT INTO " + AppState["table_s_domain"] + " (gid,isson,parent,depth,name,site) VALUES (" + gid + ",'0'," + parent + "," + xdepth + ",'" + name + "'," + site + ")";
+        
+        @_DB.Execute(INS_SQL);
+
+        if (parent != "0" && parent != null)
+        {
+            parent_link = "&cat=" + parent;
+
+            string UPDATE_SQL2 = "UPDATE " + AppState["table_s_domain"] + " SET isson='1' WHERE uid=" + parent;
+            @_DB.Execute(UPDATE_SQL2);
+        }
+        
+	    @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=" + m + parent_link, "parent.", "", "");
+        return;
+    }    
+}

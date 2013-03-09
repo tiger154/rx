@@ -1,0 +1,1 @@
+﻿CREATE TABLE rx_s_mbrid ( uid  int  identity(1,1)  NOT NULL , site  int   NOT NULL , id  nvarchar(16)   NOT NULL , pw  nvarchar(255)   NOT NULL ,PRIMARY KEY (uid));

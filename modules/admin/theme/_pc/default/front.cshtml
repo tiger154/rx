@@ -1,0 +1,288 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var _m = PageData[1];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+    var date = PageData[15];
+    var referer = PageData[16];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    //var module = Request["module"];
+    var front = g["front"];
+    var module = g["module"];
+
+    dynamic d_admin = _DB.Get_code("admin");
+
+    if (r == null || r == "")
+    {
+        r = Request["r"];
+    }
+    
+    string frame_name = "_action_frame_" + m;
+
+    bool _isDragScript = true;
+    int i = 0;
+
+    if (g["mobile"] != "" && Session["pcmode"] == "Y")
+    {
+        g["adm_menu_display"] = "none";
+        g["adm_menu_margin"] = "30px";
+        g["adm_menu_margin1"] = "-290px";
+        g["adm_menu_string"] = "<img src='" + g["img_module_skin"] + "/m_open.gif' class='mopen' title='메뉴열기' alt='' />";
+    }
+    else
+    {
+        g["adm_menu_display"] = "block";
+        g["adm_menu_margin"] = "325px";
+        g["adm_menu_margin1"] = "0px";
+        g["adm_menu_string"] = "<img src='" + g["img_module_skin"] + "/m_close.gif' class='mopen' title='메뉴접기' alt='' />";
+    }
+}
+
+
+<style type="text/css">
+#tttrspace {display:@g["adm_menu_display"];}
+#menuspace {display:@g["adm_menu_display"];}
+#content {margin-left:@g["adm_menu_margin"];}
+#footer {padding:15px 0 0 @g["adm_menu_margin"];}
+#tabbox {position:relative;left:@g["adm_menu_margin1"];}
+
+</style>
+
+<script type="text/javascript" src="@g["r"]/_core/opensrc/tool-man/core.js"></script>
+<script type="text/javascript" src="@g["r"]/_core/opensrc/tool-man/events.js"></script>
+<script type="text/javascript" src="@g["r"]/_core/opensrc/tool-man/css.js"></script>
+<script type="text/javascript" src="@g["r"]/_core/opensrc/tool-man/coordinates.js"></script>
+<script type="text/javascript" src="@g["r"]/_core/opensrc/tool-man/drag.js"></script>
+<script type="text/javascript" src="@g["r"]/_core/opensrc/tool-man/dragsort.js"></script>
+
+<script type="text/javascript">
+//<![CDATA[
+var dragsort = ToolMan.dragsort();
+function slideshowOpen()
+{
+	dragsort.makeListSortable(getId("moduleorder1"));
+	dragsort.makeListSortable(getId("moduleorder2"));
+
+    @if (g["adm_menu_display"] == "block" && module != "admin" && d_admin["autoclose"] == "1")
+    {
+    @:	var w = parseInt(screen.width);
+    @:	if (w < 1025)
+    @:	{
+    @:		menuFlag(getId('openhideTool'));
+    @:	}
+    }
+}
+window.onload = slideshowOpen;
+//]]>
+</script>
+
+<div id="wrap">
+	<div id="header">
+
+	</div>
+	<div id="container">
+		<div class="snb">
+			<div class="title">
+				<div class="tl">
+					<a class="hand" onclick="menuFlag(this);">@Html.Raw(g["adm_menu_string"])</a>
+				</div>
+				<div id="tttrspace" class="tr">
+					
+				</div>
+			</div>
+
+			<div id="menuspace">
+				<form name="mform" action="@g["s"]/" method="post" target="@frame_name">
+                <input type="hidden" name="r" value="@r" />
+				<input type="hidden" name="m" value="module" />
+				<input type="hidden" name="a" value="moduleorder_update" />
+                <input type="hidden" name="fnum" value="1" />
+
+				<div class="mainmodule">
+					<ul id="moduleorder1">
+					@{
+                        string MODULES_sql = "SELECT * FROM " + AppState["table_s_module"] + " WHERE hidden=0 ORDER BY gid ASC";
+
+                        foreach (var R in _DB.Query(MODULES_sql))
+                        {
+                            if (("_" + my["adm_view"]).Contains("[" + R["id"] + "]"))
+                            {
+                                continue;
+                            }
+
+                            <li>                            
+					        <div class="module @(R["id"] == g["module"] ? "selected" : "")" title="@R["id"]">
+						        <div class="name move @(R["id"] == g["module"] ? "nselected" : "")" ondblclick="window.open('@g["s"]/?r=@r&m=@R["id"]');"><span>@R["name"]</span></div>
+
+                                <input type="checkbox" name="modulemembers1" value="@R["id"]" checked="checked" />
+                                <div class="icon" style="background:url('@g["url_root"]/@g["path_module_url"]@R["id"]/icon.gif') center center no-repeat;" onselectstart="return false;">
+                                    <a href="@g["s"]/?r=@r&m=@m&module=@R["id"]"><img src="@g["img_core"]/blank.gif" alt="@R["name"]@Html.Raw("(" + R["id"] + ")")" /></a>
+                                </div>
+					        </div>
+                                
+    					    </li>
+
+                            if (++i == 4)
+                            {
+                                break;
+                            }
+                        }
+					}
+					</ul>
+				</div>                   
+                    
+
+            @if (my["uid"] == 1)
+            {
+				<div class="clear"></div>
+                    
+				<div class="mtitle">
+					<div class="xl">
+						<a href="@g["s"]/?r=@r&m=@m&module=@m&front=config">환경/테마</a> |
+						<a href="@g["s"]/?r=@r&m=@m&module=@m&front=switch">스위치</a> | 
+						<a href="@g["s"]/?r=@r&m=@m&module=@m&front=update">업데이트</a> | 
+						<a href="@g["s"]/?r=@r&m=@m&module=@m&front=admin">관리자</a>
+					</div>
+					<div class="xr">
+						<a href="@g["s"]/?r=@r&m=@m&module=market&front=pack&type=module" title="모듈추가"><img src="@g["img_core"]/_public/btn_add.gif" alt="추가" /></a>
+						<img src="@g["img_core"]/_public/btn_save.gif" title="순서저장" alt="save" class="hand" onclick="document.mform.submit();" />
+					</div>
+				</div>                        
+            }
+
+                    
+				<div class="allmodule scrollbar">
+					<ul id="moduleorder2">
+					@{                        
+                        i = 0;
+
+                        foreach (var R in _DB.Query(MODULES_sql))
+                        {
+                            if (++i <= 4 || ("_" + my["adm_view"]).Contains("[" + R["id"] + "]"))
+                            {
+                                continue;
+                            }
+		
+                            <li>                            
+                            <div class="module @(R["id"] == g["module"] ? "selected" : "")" title="@R["id"]">
+						        <div class="name move @(R["id"] == g["module"] ? "nselected" : "")" ondblclick="window.open('@g["s"]/?r=@r&m=@R["id"]');"><span>@R["name"]</span></div>
+                                    <input type="checkbox" name="modulemembers1" value="@R["id"]" checked="checked" />
+                                    <div class="icon" style="background:url('@g["url_root"]/@g["path_module_url"]@R["id"]/icon.gif') center center no-repeat;" onselectstart="return false;">
+                                    <a href="@g["s"]/?r=@r&m=@m&module=@R["id"]"><img src="@g["img_core"]/blank.gif" alt="@R["name"]@Html.Raw("(" + R["id"] + ")")" /></a>
+                                </div>
+					        </div>                                
+    					    </li>
+                        }
+					}
+					</ul>
+				</div>    
+				</form>
+                    
+				<div class="mbottom"></div>
+            </div>
+        </div>
+        
+		<div id="content">
+			<div class="tab01" onselectstart="return false;">
+				<ul>
+				@{
+                    var d_amenu = new Dictionary<string, string>();
+
+                    d_amenu = _DB.Get_amenu(g["module"]);
+
+                    foreach (string key in d_amenu.Keys)
+                    {
+                        <li class="@(front == key ? "on" : "")" onclick="goHref('@g["s"]/?r=@r&m=@m&module=@g["module"]&front=@key');"><span>@d_amenu[key]</span></li>                        
+                    }
+                }
+				<li class="wall">&nbsp;</li>
+				</ul>
+                
+				<div class="more">
+
+				</div>
+			</div>
+
+			<div class="location">
+				<div class="loc1">
+					현재위치 : @g["MD_name"]@(d_amenu[front] != "" ? ">" + d_amenu[front] : "")
+				</div>
+				<div class="loc2">
+					@if (g["hidepannel"] != null && g["hidepannel"] != "")
+     {
+         int _ADMCNT = _DB.GetDbData_Count(AppState["table_s_admpage"], "memberuid=" + my["uid"]);
+         string _ADMPAGE = "select * from " + AppState["table_s_admpage"] + " where memberuid=" + my["uid"];
+         
+                        <select class="select2" onchange="goAdmPage(this);">
+    					<option value="">&nbsp;+ 즐겨찾는 페이지</option>
+
+                        @if (_ADMCNT > 0)
+                        {
+                            <option value="">---------------------------------</option>
+                        }
+                        
+                        @foreach (var _R in _DB.Query(_ADMPAGE))
+                        {
+                                <option value="@_R["url"]">@Html.Raw("ㆍ" + _R["name"])</option>
+                        }
+
+                        <option value="">---------------------------------</option>
+                        <option value="@g["s"]/?r=@r&m=@m&module=@m&front=bookmark">ㆍ페이지 관리</option>
+                        </select>
+
+                        <a href="@g["s"]/?r=@r&m=@m&a=bookmark&_addmodule=@module&_addfront=@front" target="@frame_name"><img src="@g["img_core"]/_public/btn_add.gif" alt="추가" title="추가" /></a>
+     }
+     else
+     {
+    					<a href="@g["s"]/?r=@r&m=@m&a=bookmark&_addmodule=@module&_addfront=@front" target="@frame_name"><img src="@g["img_core"]/_public/b_scrap.gif" class="scr" alt="" /> 이 페이지를 즐겨찾기에 추가</a>
+     }
+
+				</div>
+                
+            </div>            
+            <div class="cwrap">            
+                @RenderPage("/" + g["adm_module"], g, m, _HS, my, _isDragScript, p, r, s, module, date)
+			</div>
+
+		</div>
+        
+		<div class="clear"></div>	
+	</div>
+    
+	<div id="footer">
+
+		<p>
+		Copyrights &copy; Redblock Allrights Reserved. Powered by kimsQ-Rx<br />
+		Server Software : IIS + Microsoft Razor + SqlServer-CE<br />
+		<a href="http://validator.w3.org/check?url=referer" target="_blank" title="W3C XHTML 1.0 VALIDATION">W3C XHTML 1.0 VALIDATION</a>
+		</p>
+
+	</div>
+</div>

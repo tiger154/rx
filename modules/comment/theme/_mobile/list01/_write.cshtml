@@ -1,0 +1,139 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var c = PageData[2];
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var r = PageData[12];
+    var R = PageData[15];
+
+    var type = Request["type"];
+    var hidepost = Request["hidepost"];
+    var uid = g["uid"];
+    var pw = Request["pw"];
+    var skin = g["skin"];
+    var iframe = g["iframe"];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    dynamic d_comment = _DB.Get_code("comment");
+    
+    string frame_name = "_action_frame_" + m;
+    string wcode = date["totime"].ToString();
+}
+
+<div id="cwrite" class="@g["type_set"]">
+
+@if (Convert.ToInt32(d_comment["perm_write"]) <= Convert.ToInt32(my["level"]) || my["admin"] == "1") 
+{
+    Session["wcode"] = wcode;     
+
+    
+    <form name="writeForm" method="post" action="@g["s"]/" target="@frame_name" onsubmit="return writeCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+    <input type="hidden" name="a" value="write" />
+    <input type="hidden" name="m" value="@m" />
+    <input type="hidden" name="uid" value="@R["uid"]" />
+    <input type="hidden" name="upfiles" id="upfilesValue" value="@g["upload_set"]" />
+    <input type="hidden" name="c" value="@c" />
+    <input type="hidden" name="skin" value="@skin" />
+    <input type="hidden" name="iframe" value="@iframe" />
+    <input type="hidden" name="hidepost" value="@hidepost" />
+    <input type="hidden" name="pcode" value="@wcode" />
+
+
+	<div class="box">
+		
+		<div class="tt">
+            @Html.Raw(_System.isEqual(type, "modify", "댓글수정", "댓글쓰기"))
+			<span>- 댓글등록 이용약관을 지켜주세요.</span>
+		</div>
+
+
+		<div class="inputbox">
+
+            @if (my["uid"] == 0)
+            {
+                <div><input type="text" name="name" value="@R["name"]" class="input1" /> <span>(이름)</span></div>
+			    <div><input type="password" name="pw" value="@pw" class="input1" /> <span>(비번)</span></div>            
+            }
+        
+            @if (d_comment["use_subject"] == "1")
+            {   
+			    <div>
+				    <input type="text" name="subject" value="@R["subject"]" class="input2" /> <span>(제목)</span>
+			    </div>            
+            }            
+
+			<div>
+				<input type="hidden" name="html" value="@g["html_set"]" />
+				<textarea name="content">@R["content"]</textarea>
+			</div>
+
+		</div>
+
+
+		<div class="bottom">
+			<div class="l">
+
+                @if (my["admin"] == "1")
+                {
+                    <input type="checkbox" name="notice" value="1" @_System.getChkStr(R["notice"], 1) /> @:공지글
+		        }
+            
+                @if (d_comment["use_hidden"] == "1")
+                {
+			        <input type="checkbox" name="hidden" value="1" @_System.getChkStr(R["hidden"], 1) /> @:비밀글
+                }
+                
+                @* 
+                //SNS 구현중
+                if (R["uid"] == 0 && File.Exists(g["path_root_ps"] + g["path_module"] + d_comment["snsconnect"]))
+                {
+                    &nbsp;&nbsp;SNS동시등록 - 
+                }*@
+                    
+			</div>
+			<div class="r">
+				
+                @if (type == "modify")
+                {
+                    <img src="@g["img_module_skin"]/btn_cancel.gif" alt="취소" class="hand" onclick="history.back();" />
+                }
+            
+			    <input type="image" src="@g["img_module_skin"]/btn_write.gif" alt="의견등록" />
+			</div>
+			<div class="clear"></div>
+		</div>
+
+	</div>
+
+	</form>        
+        
+}
+else
+{
+    if (my["uid"] == 0)
+    {
+ 	    <div class="box">
+		    <div class="tt">
+			    댓글쓰기
+			    <span>- 댓글쓰기 권한이 없습니다.</span>
+		    </div>
+	    </div>
+    }
+}
+
+</div>
+
+
+
+
+

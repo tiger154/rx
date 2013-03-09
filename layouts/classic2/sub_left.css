@@ -1,0 +1,14 @@
+﻿
+
+
+#container .snb {float:left;width:180px;padding:20px 0 20px 0;}
+#container .snb .submenu {padding:0;margin:0;list-style-type:none;}
+#container .snb .submenu li {background:url('./image/arr_plus.gif') left 9px no-repeat;padding:7px 0 7px 17px;line-height:140%;}
+#container .snb .submenu li a {font-weight:bold;color:#707070;}
+#container .snb .submenu li ul {padding:10px 0 0 0;margin:0;list-style-type:none;}
+#container .snb .submenu li ul li {background:none;padding:2px 0 2px 0;}
+#container .snb .submenu li ul li a {font-weight:normal;}
+#container .snb .submenu .open {background:url('./image/arr_minus.gif') left 9px no-repeat;}
+#container .snb .submenu .on {color:#3B82BA;}
+
+#content {float:left;width:750px;padding:20px 5px 20px 15px;}

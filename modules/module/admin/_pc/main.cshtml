@@ -1,0 +1,332 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var id = Request["id"];
+    //var hidden = Request["hidden"];
+
+    string frame_name = "_action_frame_" + m;    
+    string sltStr = " selected='selected'";
+    string chkStr = " checked='checked'";
+
+
+    if (sort == null || sort == "")
+    {
+        sort = "gid";
+    }
+    if (orderby == null || orderby == "")
+    {
+        orderby = "asc";
+    }
+    if (recnum == null || recnum == "")
+    {
+        recnum = "30";
+    }
+    else if (recnum == "0" || Convert.ToInt32(recnum) > 90)
+    {
+        recnum = "30";
+    }
+
+
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+
+    string RCD_sql = _System.GetQuery(AppState["table_s_module"].ToString(), "", "", sort, orderby, list_start, recnum);
+
+    int NUM = _DB.GetDbData_Count(AppState["table_s_module"].ToString(), "");
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+
+    if (id == null || id == "")
+    {
+        id = "home";
+    }
+
+    dynamic R = _DB.GetDbData_M(AppState["table_s_module"].ToString(), "id='" + id + "'");
+
+    if (!_isDragScript)
+    {
+        @:<script type="text/javascript" src="./_core/opensrc/tool-man/core.js"></script>
+        @:<script type="text/javascript" src="./_core/opensrc/tool-man/events.js"></script>
+        @:<script type="text/javascript" src="./_core/opensrc/tool-man/css.js"></script>
+        @:<script type="text/javascript" src="./_core/opensrc/tool-man/coordinates.js"></script>
+        @:<script type="text/javascript" src="./_core/opensrc/tool-man/drag.js"></script>
+        @:<script type="text/javascript" src="./_core/opensrc/tool-man/dragsort.js"></script>
+        @:<script type="text/javascript">
+        @://<![CDATA[
+        @:    var dragsort = ToolMan.dragsort();
+        @://]]>
+        @:</script>        
+    }  
+}
+
+
+<div id="catebody">
+	<div id="category">
+        <form name="mform1" action="@g["s"]/" method="post" target="@Html.Raw("_action_frame_" + m)">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="moduleorder_update" />
+		<input type="hidden" name="fnum" value="2" />
+
+		<div class="title">
+			<select class="c1" onchange="goHref('@g["adm_href"]&amp;recnum='+this.value);">
+            @for (int i = 15; i <= 100; i = i + 15)
+            {
+                if (i == Convert.ToInt32(recnum))
+                {
+                    <option value="@i"@sltStr>D.@i</option>
+                }
+                else
+                {
+                    <option value="@i">D.@i</option> 
+                }
+            }
+
+			</select>
+			<select class="c2" onchange="goHref('@g["adm_href"]&amp;recnum=@recnum&amp;p='+this.value);">
+            @for (int i = 1; i <= TPG; i++)
+            {
+                if (i == p)
+                {
+                    <option value="@i"@sltStr>P.@i</option>   
+                }
+                else
+                {
+                    <option value="@i">P.@i</option>   
+                }
+            }
+			</select>
+			<a href="@g["s"]/?r=@r&amp;m=@m&amp;module=market&amp;front=pack&amp;type=module" title="모듈추가"><img src="@g["img_core"]/_public/btn_add.gif" alt="추가" /></a>
+			<img src="@g["img_core"]/_public/btn_save.gif" title="순서저장" alt="save" class="hand" onclick="document.mform1.submit();" />
+
+		</div>
+		
+		<div class="tree">
+			<ul id="moduleorder3">
+            @{
+                foreach (var BR in _DB.Query(RCD_sql))
+                {
+                    string sysStr = "";
+                    if (BR["system"] != null && BR["system"] != "0")
+                    {
+                        sysStr = " system";
+                    }
+ 			        <li class="@Html.Raw("move" + sysStr)" ondblclick="window.open('?m=@BR["id"]');">
+				        <input type="checkbox" name="modulemembers2" value="@BR["id"]" checked="checked" />
+
+                        @if (BR["hidden"] == "1")
+                        {
+                            <a class="hand" onclick="showCheck('@BR["id"]','@BR["hidden"]');"><img src="@g["img_core"]/_public/ico_hide.gif" class="eye2" alt="" title="모듈패널 디스플레이상태 변경" /></a>    
+                        }
+                        else
+                        {
+                            <a class="hand" onclick="showCheck('@BR["id"]','@BR["hidden"]');"><img src="@g["img_core"]/_public/ico_show.gif" class="eye2" alt="" title="모듈패널 디스플레이상태 변경" /></a>   
+                        }
+
+                        @if (BR["mobile"] != null || BR["mobile"] != "")
+                        {
+                            <span class="hand" onclick="mobileCheck('@BR["id"]','@BR["mobile"]');"><img src="@g["img_core"]/_public/ico_mobile.gif" alt="" /></span>
+                        }
+                        else
+                        {
+                            <span class="hand" onclick="mobileCheck('@BR["id"]','@BR["mobile"]');"><img src="@g["img_core"]/_public/ico_mobile.gif" alt="" class="mobilehide" /></span>
+                        }
+
+                        @if (BR["id"] == R["id"])
+                        {
+                            <a href="@g["adm_href"]&amp;recnum=@recnum&amp;p=@p&amp;id=@BR["id"]"><span class="name on">@BR["name"]</span><span class="id">(@BR["id"])</span></a>    
+                        }
+                        else
+                        {
+                            <a href="@g["adm_href"]&amp;recnum=@recnum&amp;p=@p&amp;id=@BR["id"]"><span class="name">@BR["name"]</span><span class="id">(@BR["id"])</span></a>  
+                        }
+			        </li>                   
+                }
+            }
+			</ul>
+		</div>
+
+		</form>
+	</div>
+
+
+	<div id="catinfo">
+
+        <form name="procForm" action="@g["s"]/" method="post" target="@Html.Raw("_action_frame_" + m)" enctype="multipart/form-data" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="moduleid" value="@R["id"]" />
+		<input type="hidden" name="a" value="moduleinfo_update" />
+
+		<div class="title">
+
+			<div class="xleft">
+				모듈 등록정보
+			</div>
+			<div class="xright">
+				<a href="@g["s"]/?r=@r&amp;m=@m&amp;module=market&amp;front=pack&amp;type=module">모듈추가</a>
+			</div>
+
+		</div>
+
+		<div class="notice">
+            <div class="icon" style="background:url('@g["url_root"]/@g["path_module_url"]@R["id"]/icon.gif') center center no-repeat;""></div>
+			<div class="ment">
+			<div>@R["name"]<span>(@R["id"])</span></div>
+			선택된 모듈에 대한 등록정보입니다.<br />
+			시스템 기본모듈은 삭제할 수 없습니다.<br />
+			</div>
+			<div class="clear"></div>
+		</div>
+
+	
+		<table>
+			<tr>
+				<td class="td1">모듈아이디</td>
+				<td class="td2 b">
+					@R["id"]
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">모 듈 이 름</td>
+				<td class="td2">
+					<input type="text" name="name" value="@R["name"]" class="input sname" />
+                    @if (R["system"] == null || R["system"] == "0")
+                    {
+                        <span class="btn01"><a href="@g["s"]/?r=@r&amp;m=@module&amp;a=module_delete&amp;moduleid=@R["id"]" target="@frame_name" onclick="return confirm('관련파일/DB데이터가 모두 삭제됩니다.\n정말로 삭제하시겠습니까?     ')">모듈삭제</a></span>    
+                    }
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">모듈아이콘</td>
+				<td class="td2">
+					<input type="File" name="upfile" value="" class="input supload" />
+					<div>gif/jpg/png 파일가능 - 60*60픽셀 사이즈로 자동조정됩니다</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">모듈감추기</td>
+				<td class="td2 shift">
+                @if (R["hidden"] == "1")
+                {
+                    <input type="checkbox" name="hidden" value="1"@chkStr />@:모듈패널(모듈리스트)에서 출력제외
+                }
+                else
+                {
+                    <input type="checkbox" name="hidden" value="1" />@:모듈패널(모듈리스트)에서 출력제외
+                }
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">모바일관리</td>
+				<td class="td2 shift">
+                @if (R["mobile"] != null && R["mobile"] != "")
+                {
+                    <input type="checkbox" name="mobile" value="1"@chkStr />@:모바일전용 관리자페이지에 출력함
+                }
+                else
+                {
+                    <input type="checkbox" name="mobile" value="1" />@:모바일전용 관리자페이지에 출력함
+                    
+                }				
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">테이블생성</td>
+				<td class="td2">
+                @if (R["tblnum"] != 0)
+                {
+                    @:DB테이블 @R["tblnum"]개가 생성되었습니다.
+                }
+                else
+                {
+                    @:이 모듈은 DB테이블을 생성하지 않습니다.
+                }
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">모듈등록일</td>
+				<td class="td2">
+					@R["d_regis"].ToString("yyyy/MM/dd")
+				</td>
+			</tr>
+		</table>
+
+
+		<div class="submitbox">
+        @{
+            string typeStr = "모듈추가";
+
+            if (R["id"] != null && R["id"] != "")
+            {
+                typeStr = "모듈속성 변경";
+                
+                <input type="button" class="btngray" value="모듈실행" onclick="window.open('@g["s"]/?r=@r&m=@R["id"]');" />
+			    <input type="button" class="btngray" value="모듈관리" onclick="goHref('@g["s"]/?r=@r&m=@m&amp;module=@R["id"]');" />             
+            }
+        }
+			<input type="submit" class="btnblue" value="@typeStr" />
+			<div class="clear"></div>
+		</div>
+
+		</form>
+		
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+function saveCheck(f)
+{
+	if (f.name.value == '')
+	{
+		alert('모듈이름을 입력해 주세요.     ');
+		f.name.focus();
+		return false;
+	}
+	return confirm('정말로 실행하시겠습니까?         ');
+}
+function showCheck(id,hidden)
+{   
+	@Html.Raw("frames._action_frame_" + m + ".location.href = '?r=" + r + "&m=" + module + "&a=moduleshow_update&moduleid='+id+'&hidden='+hidden;")
+}
+function mobileCheck(id,mobile)
+{
+	@Html.Raw("frames._action_frame_" + m + ".location.href = '?r=" + r + "&m=" + module + "&a=modulemobile_update&moduleid=' + id + '&mobile=' + mobile;")
+}
+dragsort.makeListSortable(getId("moduleorder3"));
+//]]>
+</script>
+
+
+

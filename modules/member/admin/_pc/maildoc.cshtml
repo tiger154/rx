@@ -1,0 +1,193 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var typeset = new Dictionary<string, object>();
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var front = Request["front"];
+    var type = Request["type"];
+    
+    string frame_name = "_action_frame_" + m;
+
+    typeset.Add("_join", "회원가입축하 양식");
+    typeset.Add("_auth", "이메일인증 양식");
+    typeset.Add("_pw", "비밀번호요청 양식");
+    
+    if (type == null || type == "")
+    {
+        type = "_join";
+    }
+
+    string tdir = g["path_root_ps"] + g["path_module"] + module + "\\doc\\";
+    string contentStr = File.ReadAllText(tdir + type + ".txt", System.Text.Encoding.UTF8);
+}
+
+<div id="catebody">
+	<div id="category">
+		<div class="title">
+			이메일양식
+		</div>
+
+		<div class="tree">
+		<ul>
+
+        @foreach (string dirs in Directory.GetFiles(tdir))
+        {
+            string skin = dirs.Substring(tdir.Length, dirs.Length - tdir.Length);
+            
+            if (skin == "." || skin == "..")
+            {
+                continue;
+            }
+
+            string _type = skin.Replace(".txt", "");
+
+            <li>
+            @if (typeset.ContainsKey(_type))
+            {
+                <a href="@Html.Raw(g["adm_href"] + "&type=" + _type)"><span class="name @Html.Raw(_System.isEqual(_type, type, "on", ""))">@typeset[_type]<span class="@_type">(@_type)</span></span></a>
+            }
+            else
+            {
+                <a href="@Html.Raw(g["adm_href"] + "&type=" + _type)"><span class="name @Html.Raw(_System.isEqual(_type, type, "on", ""))">@_type</span></a>
+            }
+		    </li>
+        }
+
+		</ul>
+		</div>
+
+	</div>
+
+
+	<div id="catinfo">
+
+
+		<form name="procForm" action="@g["s"]/" method="post" target="_action_frame_@(m)" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="maildoc_regis" />
+		<input type="hidden" name="type" value="@type" />
+
+		<div class="title">
+			<div class="xleft">
+				양식등록정보
+			</div>
+			<div class="xright">
+
+			</div>
+		</div>
+
+		<div class="notice">
+			이메일 양식 소스코드를 등록해 주세요. 이미지 파일경로는 반드시 http://를 포함한 전체주소이어야 합니다.<br />
+			내용에는 다음과 같은 치환문자를 사용할 수 있습니다.<br />
+			회원이름 : {NAME} / 닉네임 {NICK} / 아이디 {ID} / 이메일 {EMAIL}
+		</div>
+
+		
+		<div class="xwrap">
+		<div class="iconbox">
+			<a class="hand" onclick="window.open('@g["s"]/?r=@r&m=@m&module=filemanager&front=main&fileupload=Y&iframe=Y&pwd=./files/_etc/&pwd1=email');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" />이미지 첨부하기</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="OpenWindow('@g["s"]/?r=@r&system=popup.image&folder=./files/_etc/&sfolder=email&iframe=Y');" /><img src="@g["img_core"]/_public/ico_photo.gif" alt="" />이미지 불러오기</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('layout');">레이아웃</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('table');">테이블</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('box');">박스</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('link');">링크</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="ToolCheck('icon');">아이콘</a>
+			<img src="@g["img_core"]/_public/split_01.gif" alt="" class="split" />
+			<a class="hand" onclick="frames.editFrame.ToolboxShowHide(0);" /><img src="@g["img_core"]/_public/ico_edit.gif" alt="" />편집</a>
+		</div>
+
+		<input type="hidden" name="html" id="editFrameHtml" value="HTML" />
+		<input type="hidden" name="content" id="editFrameContent" value="@contentStr" />
+		<iframe name="editFrame" id="editFrame" src="@g["s"]/?r=@r&m=editor&toolbox=Y" width="100%" height="450" frameborder="0" scrolling="no"></iframe>
+		</div>
+		
+		<div class="submitbox">
+        @if (typeset.ContainsKey(type) && typeset[type] == "")
+        {
+            <input type="button" class="btngray" value=" 삭제 " onclick="delCheck('@type');" />
+        }        
+			<input type="submit" class="btnblue" value=" 수정 " />
+			또는 이 양식을 
+			<input type="text" name="newdoc" value="" size="15" class="input" title="영문소문자+숫자+_ 조합만 입력가능합니다." />으로
+			<input type="submit" class="btngray" value=" 등록 " />
+		</div>
+
+		</form>
+		
+
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+function ToolCheck(compo)
+{
+	frames.editFrame.showCompo();
+	frames.editFrame.EditBox(compo);
+}
+function delCheck(t)
+{
+	if (confirm('정말로 삭제하시겠습니까?   '))
+	{
+		frames._action_frame_@(m).location.href = g["s"] + '/?r=@r&m=@module&a=maildoc_delete&type=' + t;
+	}
+}
+function saveCheck(f)
+{
+	frames.editFrame.getEditCode(f.content,f.html);
+	if (f.content.value == '')
+	{
+		alert('내용을 입력해 주세요.       ');
+		frames.editFrame.getEditFocus();
+		return false;
+	}
+	if (f.newdoc.value != '')
+	{
+		if (!chkIdValue(f.newdoc.value))
+		{
+			alert('양식명은 영문소문자/숫자/_ 만 사용가능합니다.      ');
+			f.newdoc.value = '';
+			f.newdoc.focus();
+			return false;
+		}
+	}
+
+	return confirm('정말로 실행하시겠습니까?         ');
+}
+//]]>
+</script>

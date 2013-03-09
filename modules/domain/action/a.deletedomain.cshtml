@@ -1,0 +1,71 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var name = Request["name"];    
+    var cat = Request["cat"];
+    var parent = Request["parent"];
+    
+    string subQue = "";
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    Session["arr_sql"] = null;
+    
+    if(cat == "" || cat == null) {
+        @_System.getLink("./?m=admin&module=" + m, "parent.", "", "");
+    }
+    
+    @_Menu.getMenuCodeToSql(AppState["table_s_domain"].ToString(), cat, "uid").ToString();
+    subQue = Session["arr_sql"].ToString().Substring(0, Session["arr_sql"].ToString().Length - 4);
+    
+    if(subQue != "")
+    {
+        string DAT = "select * from " + AppState["table_s_domain"] + " where " + subQue;
+
+        foreach (var R in _DB.Query(DAT)) {
+            string DEL_SQL = "delete from " + AppState["table_s_domain"] + " where uid=" + R["uid"];
+            @_DB.Execute(DEL_SQL);
+        }
+        
+        if(parent != "" && parent != null)
+        {
+            int CNT_P = _DB.GetDbData_Count(AppState["table_s_domain"].ToString(), "parent=" + parent);
+            
+            if (CNT_P == 0)
+            {
+                string UP_SQL = "update " + AppState["table_s_domain"] + " set isson='0' where uid=" + parent;
+                @_DB.Execute(UP_SQL);
+            }
+        }
+    }
+    
+    @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=" + m + "&cat=" + parent, "parent.", "", "");
+    return;
+}
+    

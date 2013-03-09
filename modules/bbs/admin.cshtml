@@ -1,0 +1,40 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    dynamic g = PageData[0];
+    dynamic my = PageData[1];
+    dynamic _HM = PageData[2];
+    dynamic _HP = PageData[3];
+    dynamic _HS = PageData[11];
+    
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    var front = PageData[16];    
+    
+    var module = Request["module"];
+
+    if (g["mobile"] != "" && Session["pcmode"] != "Y")
+    {
+        @RenderPage(g["path_module"] + module + "\\admin\\_mobile\\" + front + ".cshtml", g, my, _HM, _HP, system, _page, m, bid, _mod, referer, skin, _HS, s, c, p, r, front)
+        
+    }
+    else
+    {
+        @RenderPage(g["path_module"] + module + "\\admin\\_pc\\" + front + ".cshtml", g, my, _HM, _HP, system, _page, m, bid, _mod, referer, skin, _HS, s, c, p, r, front)
+    }
+}

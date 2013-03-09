@@ -1,0 +1,468 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var theme = Request["theme"];
+    
+    string frame_name = "_action_frame_" + m;
+    string LEVEL_sql = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid asc";
+
+    if(theme == null)
+    {
+        theme = "";
+    }
+    else if(theme.Contains("/"))
+    {
+        theme = theme.Replace("/","\\");
+    }
+    dynamic d_theme = _DB.Get_bbstheme(theme);
+}
+
+<div id="catebody">
+	<div id="category">
+		<div class="title">
+			<span class="add">
+			<a href="?r=@r&amp;m=@m&amp;module=market&amp;front=pack&amp;type=theme" title="테마 추가"><img src="@g["img_core"]/_public/btn_add.gif" alt="" /></a>
+			</span>
+			테마 리스트
+		</div>
+		
+		<div class="tree">
+			<ul>
+            @{
+                string xdir = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\";
+
+                if (!Directory.Exists(g["path_root_ps"] + "\\modules\\" + module + "\\theme\\"))
+                {
+                    <div class="none">등록된 테마가 없습니다.</div>
+                }
+
+                else
+                {
+                    // pc theme
+                    string tdir_pc = xdir + "_pc\\";
+
+                    string[] dirs_pc = Directory.GetDirectories(tdir_pc);
+                    foreach (string skin in dirs_pc)
+                    {
+                        string skin_name = skin.Substring(tdir_pc.Length, skin.Length - tdir_pc.Length);
+
+                        <li>
+                            <img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+                            @{
+                                string OnStr = "";
+                        
+                                if (theme.Contains(skin_name))
+                                {
+                                    OnStr = "on";
+                                }
+                            }
+                            <a href="@g["adm_href"]&amp;theme=_pc/@skin_name"><span class="name @OnStr"><span class="b">[P]</span>@_System.getFolderName(skin, "name.txt")</span></a><span class="id">(@skin_name)</span>
+                        </li>                                
+                    }
+
+                    // mobile theme
+                    string tdir_mb = xdir + "_mobile\\";
+                    string[] dirs_mb = Directory.GetDirectories(tdir_mb);
+                    
+                    foreach (string skin in dirs_mb)
+                    {
+                        string skin_name = skin.Substring(tdir_mb.Length, skin.Length - tdir_mb.Length);
+
+                        <li>
+                            <img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+                            @{
+                                string OnStr = "";
+                        
+                                if (theme == "_mobile\\" + skin_name)
+                                {
+                                    OnStr = "on";
+                                }
+                            }
+                            <a href="@g["adm_href"]&amp;theme=_mobile/@skin_name"><span class="name @OnStr"><span class="b">[M]</span>@_System.getFolderName(skin, "name.txt")</span></a><span class="id">(@skin_name)</span>
+                        </li>                         
+                    }
+                }
+            }
+			</ul>
+		</div>
+	</div>
+
+	<div id="catinfo">
+		<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="theme_config" />
+		<input type="hidden" name="theme" value="@theme" />
+		<div class="title">
+			<div class="xleft">
+				테마 세부설정 변수
+			</div>
+			<div class="xright">
+
+            @if (theme != null && theme != "")
+            {                    
+                <a href="?r=@r&amp;m=@module&amp;a=theme_delete&amp;theme=@theme" target="@frame_name" onclick="return confirm('정말로 이 테마를 삭제하시겠습니까?       ');">테마삭제</a>
+            }
+			</div>
+		</div>
+        
+        @if (theme == null || theme == "")
+        {
+ 		    <div class="notice">
+			    테마가 선택되지 않았습니다. 테마를 선택해 주세요.<br />
+			    테마설정은 해당 테마를 사용하는 모든 게시판에 적용됩니다.
+		    </div>
+
+		    <ul>
+		    <li>테마는 게시판의 외형을 변경할 수 있는 요소입니다.</li>
+		    <li>테마설정은 게시판의 외형만 제어하며 게시판의 내부시스템에는 영향을 주지 않습니다.</li>
+		    <li>테마의 속성을 변경하면 해당테마를 사용하는 모든 게시판에 적용됩니다.</li>
+		    </ul>                       
+        }
+        else
+        {   
+            if(d_theme!=null){
+                    
+  		    <div class="notice">
+			    <span class="b">@_System.getFolderName(xdir + theme, "name.txt")</span> 테마가 선택되었습니다.<br />
+			    이 테마를 사용하는 모든 게시판에 아래의 설정값이 적용됩니다.
+		    </div>
+            
+            <div class="title_sub">
+                <div class="xleft_sub">rss발행사용</div>             
+            </div>
+    
+            <table>
+            <tr>
+            <td class="td1">rss 발행</td>
+            <td class="td2">				
+                <select name="use_rss" class="select1">
+                <option value="1" @_System.getSltStr(d_theme["use_rss"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_rss"], 0)>사용안함</option>
+                </select>
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">분류별 등록 수</td>
+            <td class="td2">         
+                <select name="show_catnum" class="select1">                           
+                <option value="1" @_System.getSltStr(d_theme["show_catnum"], 1)>출력</option>
+				<option value="0" @_System.getSltStr(d_theme["show_catnum"], 0)>감춤</option>
+				</select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">사진사이즈 (가로-갤러리)</td>
+            <td class="td2"><input type="text" name="picwidth" value="@d_theme["picwidth"]" size="5" class="input" />px</td>
+            </tr>		                
+
+            <tr>
+            <td class="td1">사진사이즈 (세로-갤러리)</td>
+            <td class="td2"><input type="text" name="picheight" value="@d_theme["picheight"]" size="5" class="input" />px</td>
+            </tr>		                
+                
+            <tr>
+            <td class="td1">페이지 스킵 숫자 갯수</td>
+            <td class="td2"><input type="text" name="pagenum" value="@d_theme["pagenum"]" size="5" class="input" />개</td>
+            </tr>		                
+                
+            <tr>
+            <td class="td1">검색 폼 출력</td>
+            <td class="td2">         
+ 				<select name="search" class="select1">                                    
+				<option value="1" @_System.getSltStr(d_theme["search"], 1)>출력</option>
+				<option value="0" @_System.getSltStr(d_theme["search"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+            </table>
+                            
+            <div class="title_sub">
+                <div class="xleft_sub">본 문</div>             
+            </div>
+
+            <table>
+            <tr>
+            <td class="td1">신고 사용</td>
+            <td class="td2">         
+                <select name="use_singo" class="select1">                           
+	            <option value="1" @_System.getSltStr(d_theme["use_singo"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_singo"], 0)>사용안함</option>
+                </select>                           
+            </td>
+            </tr>
+            
+            <tr>
+            <td class="td1">인쇄 사용</td>
+            <td class="td2">         
+                <select name="use_print" class="select1">                   
+                <option value="1" @_System.getSltStr(d_theme["use_print"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_print"], 0)>사용안함</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">스크랩 사용</td>
+            <td class="td2">         
+                <select name="use_scrap" class="select1">                               
+                <option value="1" @_System.getSltStr(d_theme["use_scrap"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_scrap"], 0)>사용안함</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">글꼴사용</td>
+            <td class="td2">         
+                <select name="use_font" class="select1">                     
+                <option value="1" @_System.getSltStr(d_theme["use_font"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_font"], 0)>사용안함</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">엮인글 사용</td>
+            <td class="td2">         
+                <select name="use_trackback" class="select1">                         
+                <option value="1" @_System.getSltStr(d_theme["use_trackback"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_trackback"], 0)>사용안함</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">답변 사용</td>
+            <td class="td2">
+                <select name="use_reply" class="select1">
+                <option value="1" @_System.getSltStr(d_theme["use_reply"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_reply"], 0)>사용안함</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">이미지 자동 리사이즈</td>
+            <td class="td2">         
+                <select name="use_autoresize" class="select1">              
+                <option value="1" @_System.getSltStr(d_theme["use_autoresize"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_autoresize"], 0)>사용안함</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">태그 출력</td>
+            <td class="td2">         
+                <select name="show_tag" class="select1">
+                <option value="1" @_System.getSltStr(d_theme["show_tag"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["show_tag"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">첨부파일 출력</td>
+            <td class="td2">         
+                <select name="show_upfile" class="select1">                            
+                <option value="1" @_System.getSltStr(d_theme["show_upfile"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["show_upfile"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">공감 출력</td>
+            <td class="td2">         
+                <select name="show_score1" class="select1">                         
+                <option value="1" @_System.getSltStr(d_theme["show_score1"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["show_score1"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">공감 출력</td>
+            <td class="td2">         
+                <select name="show_score2" class="select1">                           
+                <option value="1" @_System.getSltStr(d_theme["show_score2"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["show_score2"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">열람시 리스트 출력</td>
+            <td class="td2">         
+                <select name="show_list" class="select1">                              
+                <option value="1" @_System.getSltStr(d_theme["show_list"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["show_list"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">게시글 SNS 내보내기</td>
+            <td class="td2">         
+                <select name="snsping" class="select1">                              
+                <option value="1" @_System.getSltStr(d_theme["snsping"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["snsping"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+            </table>
+
+            <div class="title_sub">
+                <div class="xleft_sub">글 쓰 기</div>             
+            </div>
+            
+            <table>
+            <tr>
+            <td class="td1">위지위그 에디터 사용가능 레벨</td>
+            <td class="td2">
+                <select name="edit_html" class="select1">
+                <option value="0">&nbsp;+ 전체허용</option>
+                <option value="0">--------------------------------</option>
+                @{                                    
+                    foreach (var _L in _DB.Query(LEVEL_sql))
+                    {          
+                        <option value="@_L["uid"]" @_System.getSltStr(_L["uid"], d_theme["edit_html"])>ㆍ @_L["name"] (@_L["num"]) 이상</option>                                     
+                    }
+                }
+                </select>
+            </td>
+            </tr>	
+
+            <tr>
+            <td class="td1">글쓰기 폼 높이</td>
+            <td class="td2"><input type="text" name="edit_height" value="@d_theme["edit_height"]" size="5" class="input" />픽셀</td>
+            </tr>	
+                        
+            <tr>
+            <td class="td1">편집기 아이콘 출력</td>
+            <td class="td2">         
+ 			    <select name="show_edittool2" class="select1">
+                <option value="1" @_System.getSltStr(d_theme["show_edittool2"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["show_edittool2"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">파일첨부 권한</td>
+            <td class="td2">
+                <select name="perm_upload" class="select1">
+                <option value="0">&nbsp;+ 전체허용</option>
+                <option value="0">--------------------------------</option>
+                @{                                    
+                    foreach (var _L in _DB.Query(LEVEL_sql))
+                    {          
+                        <option value="@_L["uid"]" @_System.getSltStr(_L["uid"], d_theme["perm_upload"])>ㆍ @_L["name"] (@_L["num"]) 이상</option>                                     
+                    }
+                }
+                </select>
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">사진첨부 권한</td>
+            <td class="td2">
+                <select name="perm_photo" class="select1">
+                <option value="0">&nbsp;+ 전체허용</option>
+                <option value="0">--------------------------------</option>
+                @{
+                    foreach (var _L in _DB.Query(LEVEL_sql))
+                    {
+                        <option value="@_L["uid"]" @_System.getSltStr(_L["uid"], d_theme["perm_photo"])>ㆍ @_L["name"] (@_L["num"]) 이상</option>    
+                    }
+                }
+                </select>
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">태그필드 출력</td>
+            <td class="td2">         
+                <select name="show_wtag" class="select1">
+                <option value="1" @_System.getSltStr(d_theme["show_wtag"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["show_wtag"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">트랙백 출력</td>
+            <td class="td2">         
+                <select name="show_trackback" class="select1">                            
+                <option value="1" @_System.getSltStr(d_theme["show_trackback"], 1)>출력</option>
+                <option value="0" @_System.getSltStr(d_theme["show_trackback"], 0)>감춤</option>
+                </select>                           
+            </td>
+            </tr>
+
+            <tr>
+            <td class="td1">비밀글</td>
+            <td class="td2">         
+                <select name="use_hidden" class="select1">                              
+                <option value="1" @_System.getSltStr(d_theme["use_hidden"], 1)>사용</option>
+                <option value="0" @_System.getSltStr(d_theme["use_hidden"], 0)>사용안함</option>
+                </select>                           
+            </td>
+            </tr>
+            </table>   
+       
+ 		    <div class="submitbox">
+			    <input type="submit" class="btnblue" value=" 확인 " />
+			    <div class="clear"></div>
+		    </div>                        
+            }
+        }              
+        
+		</form>
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function saveCheck(f) {
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+//]]>
+</script>
+
+
+
+
+

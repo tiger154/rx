@@ -1,0 +1,212 @@
+﻿@{
+    /*****************************************************************
+    //
+    //// Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var _m = PageData[1];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string recnum = Request["recnum"];
+    string where = Request["where"];
+    string keyword = Request["keyword"];
+    string front = Request["front"];
+    string page = Request["page"];
+    string type = Request["type"];
+    string iframe = Request["iframe"];
+    string skin = Request["skin"];
+    
+    decimal TPG = 0;
+        
+    if(sort == null || sort == "") {
+        sort = "uid";
+    }
+    if(orderby == null || orderby == "") {
+        orderby = "asc";
+	}        
+    if(recnum == null || recnum == "" || Convert.ToInt32(recnum) >= 200) {
+        recnum = "20";
+	}
+    
+    string bbsque = "mbruid="+my["uid"]+" AND site="+s;
+    
+    if(where != null && where != "" && keyword != null && keyword != "") {
+        string where_set = "(";
+                
+        char[] delimiter = {'|'};
+        string[] strArray = where.Split(delimiter);
+        int str_int = 0;
+                
+        bbsque = bbsque+" AND ";
+                
+        foreach(var tmp in strArray) {
+           if(str_int > 0) {
+                where_set = where_set+" OR ";
+			}
+                    
+            where_set = where_set+tmp+" LIKE '%"+keyword+"%'";
+            str_int++;
+        }
+        where_set = where_set + ")";                
+        bbsque = bbsque + where_set;
+	}
+    
+    int list_start = (Convert.ToInt32(p)-1) * Convert.ToInt32(recnum);      // 페이지별 리스트 개수
+    int NUM = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), bbsque);
+
+    string RCD_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", bbsque, sort, orderby, list_start, recnum);
+    
+    TPG = @_System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));     // 총 페이지수
+
+    @RenderPage("_menu.cshtml", g, m);            // 개별 페이지 상단 메뉴부
+}
+
+<div id="bbslist">
+	<div class="info">
+		<div class="article">
+			@string.Format("{0:#,0}", Convert.ToInt32(NUM))개(@p/@TPG 페이지)
+		</div>
+		
+		<div class="category">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+
+	<table summary="댓글리스트 입니다.">
+	<caption>댓글리스트</caption> 
+	<colgroup> 
+	<col width="50"> 
+	<col> 
+	<col width="70"> 
+	<col width="90"> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1">번호</th>
+	<th scope="col">제목</th>
+	<th scope="col">조회</th>
+	<th scope="col" class="side2">날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+
+	@if(NUM == 0) {
+    	<tr>
+	    <td>1</td>
+	    <td class="sbj1">댓글이 없습니다.</td>
+	    <td class="hit b">-</td>
+	    <td>@date["totime"].ToString().Substring(0, 10)</td>
+	    </tr> 
+    }
+    else {
+        int _rec = 0;
+        
+        foreach(var R in _DB.Query(RCD_sql)) {
+            int tmp_num = ((Convert.ToInt32(p)-1) * Convert.ToInt32(recnum) + _rec++);
+            int tmp_num2 = NUM - tmp_num;
+
+            string mobile_chk = _System.isMobileConnect(R["agent"]);     // 모바일 체크
+
+            <tr>
+	        <td>@tmp_num2</td>
+        	<td class="sbj">
+		        @if(mobile_chk != "") {
+                    <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@mobile_chk)로 등록된 글입니다" />
+                }
+
+                <a href="@Html.Raw(_System.getCyncURL(R["cync"], 6, '[', ',', ':')+"&CMT="+R["uid"]+"#CMT")" target="_blank"><img src="@g["img_core"]/_public/ico_blank.gif" alt="" title="새창으로보기" /></a>
+        		<a href="@Html.Raw(_System.getCyncURL(R["cync"], 6, '[', ',', ':')+"&CMT="+R["uid"]+"#CMT")">@R["subject"]</a>
+        
+                @if (R["content"].ToLower().IndexOf(".jpg") > -1)
+                {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+                }
+		        @if(R["upload"] == "1") {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+                }
+		        @if(R["hidden"] == "1") {
+                    <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+                }
+		        @if(R["oneline"] > 0) {
+                    <span class="comment">[@R["oneline"]]</span>
+                }
+		        @if(_System.getNew(R["d_regis"].ToString(), 24) == true) {
+                    <span class="new">new</span>
+                }                
+        	</td>
+	        <td class="hit b">@R["hit"]</td>
+	        <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+            </tr>
+        }
+    }
+                
+	</tbody>
+	</table>
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>
+
+
+	<div class="searchform">
+		<form name="bbssearchf" action="@g["s"]/">
+        <input type="hidden" name="r" value="@r" />
+		@if(_mod != null && _mod != "") {
+    		<input type="hidden" name="mod" value="@_mod" />            
+		}
+        else {
+            <input type="hidden" name="m" value="@m" />
+		    <input type="hidden" name="front" value="@front" />            
+		}
+
+        <input type="hidden" name="page" value="@page" />
+		<input type="hidden" name="sort" value="@sort" />
+		<input type="hidden" name="orderby" value="@orderby" />
+		<input type="hidden" name="recnum" value="@recnum" />
+		<input type="hidden" name="type" value="@type" />
+		<input type="hidden" name="iframe" value="@iframe" />
+		<input type="hidden" name="skin" value="@skin" />
+        
+        @{
+            string subject_select = "";
+            string content_select = "";
+    
+            if(where == "subject|tag") {
+                subject_select = "selected='selected'";
+			}
+            if(where == "content") {
+                content_select = "selected='selected'";
+			}
+		}
+        
+		<select name="where">
+		<option value="subject" @Html.Raw(@subject_select)>제목</option>
+		<option value="content" @Html.Raw(@content_select)>본문</option>
+		</select>
+		
+		<input type="text" name="keyword" size="30" value="@_keyword" class="input" />
+		<input type="submit" value=" 검색 " class="btngray" />
+        
+        </form>
+	</div>
+
+</div>
+

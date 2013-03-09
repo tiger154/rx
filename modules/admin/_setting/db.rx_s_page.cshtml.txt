@@ -1,0 +1,17 @@
+﻿CREATE TABLE rx_s_page ( 
+uid  int  identity(1,1)  NOT NULL , 
+pagetype  nvarchar(2)   NOT NULL , 
+ismain  nvarchar(2)   NOT NULL , 
+mobile  nvarchar(2)   NOT NULL , 
+id  nvarchar(20)   NOT NULL , 
+category  nvarchar(50)   NOT NULL , 
+name  nvarchar(200)   NOT NULL , 
+perm_g  nvarchar(200)   NOT NULL , 
+perm_l  tinyint   NOT NULL , 
+layout  nvarchar(200)   NOT NULL , 
+joint  nvarchar(200)   NOT NULL , 
+hit  int   NOT NULL , 
+d_regis  datetime   , 
+d_update  datetime   , 
+sosokmenu  nvarchar(100)   ,
+PRIMARY KEY (uid));

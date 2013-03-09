@@ -1,0 +1,7 @@
+﻿#editbox {}
+#editbox .iconbox {border-left:#e0e0e0 solid 1px;border-top:#e0e0e0 solid 1px;border-right:#e0e0e0 solid 1px;background:#f9f9f9;padding:6px 0 8px 7px;}
+#editbox .iconbox a {padding:0 3px 0 3px;font-size:11px;font-family:dotum;color:#333;}
+#editbox .iconbox a:hover {color:#7899C7;}
+#editbox .iconbox a img {position:relative;top:2px;left:-2px;margin-right:3px;}
+#editbox .iconbox .split {padding:0 2px 0 2px;margin-bottom:-1px;}
+#editbox .btnbox {text-align:center;}

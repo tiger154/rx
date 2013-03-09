@@ -1,0 +1,160 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var g = PageData[0];
+    var r = PageData[1];
+    var d_layout = PageData[2];
+    var my = PageData[3];
+    var _HS = PageData[4];
+    
+    string _themeConfig = Request["_themeConfig"];
+    string m_layout = "";
+    string m_rb = "";
+    string adtype1 = "";
+    string adtype2 = "";
+    string adtype3 = "";
+    string adtype4 = "";
+    string ad_target1 = "";
+    string ad_target2 = "";
+    
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);   
+    
+    if(LAYOUT_ARR["adtype"] == "0")
+    {
+        adtype1 = "checked='checked'";
+    }
+    else if(LAYOUT_ARR["adtype"] == "1")
+    {
+        adtype2 = "checked='checked'";
+    }
+    else if(LAYOUT_ARR["adtype"] == "2")
+    {
+        adtype3 = "checked='checked'";
+    }
+    else if(LAYOUT_ARR["adtype"] == "3")
+    {
+        adtype4 = "checked='checked'";
+    }
+    
+    if(LAYOUT_ARR["ad_imgtarget"] == "_blank")
+    {
+        ad_target1 = "checked='checked'";
+    }    
+    if(LAYOUT_ARR["ad_imgtarget"] == "_self")
+    {
+        ad_target2 = "checked='checked'";
+    }    
+}
+
+<div class="guide">
+<span class="b">@my[_HS["nametype"]]님의 홈페이지에 광고를 노출해 보세요.</span><br /><br />
+이미지,텍스트 혹은 외부광고를 홈페이지에 간단히 노출시킬 수 있습니다.<br />
+광고의 종류와 형식을 선택해 주세요.<br />
+광고의 폭은 가로/세로 470*60 픽셀에 고정됩니다.<br />
+</div>
+
+<form name="themeForm" method="post" action="@g["s"]/" enctype="multipart/form-data" onsubmit="return configCheck1(this);">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="_layoutAction" value="config" />
+<input type="hidden" name="nowLayout" value="@d_layout["dir"]" />
+<input type="hidden" name="changeType" value="@_themeConfig" />
+
+
+<table>
+<tr>
+<td class="t1">광고의 형식</td>
+<td class="t2">:</td>
+<td class="t3">
+	<label><input type="radio" name="adtype" value="0" @Html.Raw(adtype1) />광고 노출안함</label>
+	<label><input type="radio" name="adtype" value="1" @Html.Raw(adtype2) />이미지</label>
+	<label><input type="radio" name="adtype" value="2" @Html.Raw(adtype3) />플래쉬</label>
+	<label><input type="radio" name="adtype" value="3" @Html.Raw(adtype4) />HTML/스크립트</label>
+</td>
+</tr>
+
+<tr>
+<td class="t1">이미지/링크</td>
+<td class="t2">:</td>
+<td class="t3">
+<input type="file" name="upfile" class="file" value="" /> / 
+<input type="text" name="ad_imglink" class="input" value="@LAYOUT_ARR["ad_imglink"]" />
+<select name="ad_imgtarget">
+<option value="_blank" @Html.Raw(ad_target1)>새창</option>
+<option value="_self" @Html.Raw(ad_target2)>현재창</option>
+</select>
+</td>
+</tr>
+
+@if (File.Exists(g["path_root_ps"] + g["path_layout"] + d_layout["dir"] + "/_var/" + LAYOUT_ARR["ad_img"]) == true)
+{
+    <tr>
+    <td></td>
+    <td></td>
+    <td class="t3">
+    <br />
+    <img src="@Html.Raw(g["s"] + "/layouts/" + d_layout["dir"] + "/_var/" + LAYOUT_ARR["ad_img"])" width="470" height="60" alt="" />
+    <br /><br />
+    <a href="@g["s"]/?r=@r&amp;_layoutAction=logodelete&amp;imgType=ad_img&amp;nowLayout=@d_layout["dir"]" onclick="return hrefCheck(this,true,'정말로 삭제하시겠습니까?');">이 이미지 삭제하기</a>
+    <br />
+    <br />
+    </td>
+    </tr>
+}
+    
+<tr>
+<td class="t1">플래쉬</td>
+<td class="t2">:</td>
+<td class="t3">
+<input type="file" name="upfile1" class="file" value="" />
+</td>
+</tr>
+@if (File.Exists(g["path_root_ps"] + g["path_layout"] + d_layout["dir"] + "/_var/" + LAYOUT_ARR["ad_swf"]) == true)
+{
+    <tr>
+    <td></td>
+    <td></td>
+    <td class="t3">
+    <br />
+    <embed src="@Html.Raw(g["s"] + "/layouts/" + d_layout["dir"] + "/_var/" + LAYOUT_ARR["ad_swf"])" width="570" height="60"></embed>
+    <br /><br />
+    <a href="@g["s"]/?r=@r&amp;_layoutAction=logodelete&amp;imgType=ad_swf&amp;nowLayout=@d_layout["dir"]" onclick="return hrefCheck(this,true,'정말로 삭제하시겠습니까?');">이 플래쉬 삭제하기</a>
+    <br />
+    <br />
+    </td>
+    </tr>
+}
+
+<tr>
+<td class="t1">HTML/스크립트</td>
+<td class="t2">:</td>
+<td class="t3">
+<textarea name="adcode" rows="8" cols="70">
+@{
+    string source_path_m = g["path_root_ps"] + g["path_layout"] + d_layout["dir"] + "/_var/_ad.cshtml";
+    
+    if (File.Exists(source_path_m))
+    {
+        using (StreamReader writer = new StreamReader(source_path_m))
+        {
+            @Html.Raw(writer.ReadToEnd());
+        }
+    }
+}
+</textarea>
+</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+<td><br /><br /><input type="submit" value=" 변경하기 " class="btnblue" /></td>
+</tr>
+</table>
+
+</form>

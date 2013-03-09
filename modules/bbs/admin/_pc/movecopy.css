@@ -1,0 +1,40 @@
+﻿#toolbox {}
+
+#toolbox .header {height:36px;border-bottom:#c0c0c0 solid 1px;background:#efefef;}
+#toolbox .header .xleft {float:left;}
+#toolbox .header .xleft ul {margin:0;padding:0;}
+#toolbox .header .xleft li {text-align:center;list-style-type:none;float:left;border-top:#c0c0c0 solid 1px;border-right:#c0c0c0 solid 1px;border-bottom:#c0c0c0 solid 1px;background:#dfdfdf;}
+#toolbox .header .xleft li a {display:block;width:100px;height:25px;padding:10px 0 0 0;}
+#toolbox .header .xleft .selected {background:#ffffff;font-weight:bold;border-bottom:#ffffff solid 1px;}
+#toolbox .header .xright {float:right;padding:13px 15px 0 0;}
+#toolbox .header .xright img {position:relative;top:2px;left:-3px;}
+#toolbox .header .xright a {font-size:11px;font-family:dotum;font-weight:bold;}
+
+#toolbox .xbody {height:400px;padding:35px 15px 15px 15px;overflow:auto;}
+
+#toolbox .xbody table {width:100%;border-spacing:0px;border-collapse:collapse;}
+#toolbox .xbody table caption {display:none;}
+#toolbox .xbody thead th {height:28px;border-top:#D2D2D2 solid 1px;border-bottom:#D2D2D2 solid 1px;background:url('../../../../../_core/image/_public/bg_list_tt.jpg');font-size:11px;font-family:dotum;font-weight:normal;color:#787878;}
+#toolbox .xbody thead .side1 {border-left:#D2D2D2 solid 1px;}
+#toolbox .xbody thead .side2 {border-right:#D2D2D2 solid 1px;}
+#toolbox .xbody tbody td {text-align:center;color:#888888;font-family:arial;font-size:10px;border-bottom:#E6E6E6 dotted 1px;}
+#toolbox .xbody .bbsid {font-size:11px;font-family:arial;}
+#toolbox .xbody .sbj {text-align:left;padding:5px 0 3px 10px;letter-spacing:0px;}
+#toolbox .xbody .sbj .imgpos {margin-bottom:-1px;}
+#toolbox .xbody .sbj .imgpos1 {margin-bottom:-4px;}
+#toolbox .xbody .sbj a {font-size:12px;font-family:gothic,gulim;color:#222222;text-decoration:none;line-height:150%;letter-spacing:-1px;}
+#toolbox .xbody .sbj a:hover {text-decoration:underline;}
+#toolbox .xbody .sbj .new {color:#ff0000;}
+#toolbox .xbody .sbj .comment {font:normal 11px arial;color:#FC6138;}
+#toolbox .xbody .sbj .trackback {font:normal 11px arial;color:#02ACD6;}
+#toolbox .xbody .sbj1 {text-align:left;padding:5px 0 3px 10px;font-size:12px;font-family:gothic,gulim;color:#222222;line-height:150%;}
+#toolbox .xbody .hit {font-size:10px;color:#515190;}
+
+
+
+
+#toolbox .footer {border-top:#c0c0c0 solid 1px;background:#efefef;height:150px;padding:15px;}
+#toolbox .footer .s1 {font-size:11px;font-family:dotum;}
+#toolbox .footer .td1 {padding:7px 0 7px 0;width:80px;}
+#toolbox .footer .td2 {width:20px;}
+#toolbox .footer .td3 {color:#888;}

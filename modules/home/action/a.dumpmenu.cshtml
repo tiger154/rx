@@ -1,0 +1,138 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    if (type == "xml")
+    {
+        string filename = "menu_" + _HS["id"] + ".xml";
+        string filepath = g["path_root_ps"] + g["path_var"] + "xml\\" + filename;
+
+        int file_size = 0;
+
+        if (!Directory.Exists(g["path_root_ps"] + g["path_var"] + "xml\\"))
+        {
+            Directory.CreateDirectory(g["path_root_ps"] + g["path_var"] + "xml\\");
+        }
+        
+        FileStream fs = new FileStream(filepath, FileMode.Append, FileAccess.Write, FileShare.Write);
+        file_size = Convert.ToInt32(fs.Length);
+        fs.Close();
+        StreamWriter sw = new StreamWriter(filepath);
+        
+        
+        
+        sw.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        sw.WriteLine("<menu>");
+        sw.WriteLine("");
+        sw.WriteLine("\t<!-- " + _HS["name"] + "-메뉴구조 -->");
+        sw.WriteLine(@_MENU_DUMP.getMenuXml(s, AppState["table_s_menu"], 0, 0, 0, 0, "", r, _HS));
+        sw.WriteLine("</menu>");
+        sw.WriteLine("");
+        sw.Close();
+        
+        @:<?xml version="1.0" encoding="utf-8"?>
+        @:<menu>
+        @: 
+        @:@("\t")<!-- @(_HS["name"]) -메뉴구조 -->
+        @:@_MENU_DUMP.getMenuXml(s, AppState["table_s_menu"], 0, 0, 0, 0, "", r, _HS)
+        @:</menu>
+        @:         
+
+    
+        Response.ContentType = "application/octet-stream";
+        //Response.AddHeader("Content-Length", file_size.ToString());
+        Response.AddHeader("Content-Disposition", "attachment; filename=" + filename);
+        //Response.AddHeader("Pragmar", "no-cache");
+        //Response.CacheControl = "Private";
+        //Response.AddHeader("Expires", "0");
+
+        return;
+    }
+
+    else if (type == "xls")
+    {
+        string[] mset = { "", "모듈", "위젯", "코딩" };
+
+        Response.AddHeader("Content-Disposition", string.Format("attachment; filename=menu_" + _HS["id"] + ".xls"));
+        Response.ContentType = "application/vnd.ms-excel";
+        //Response.AddHeader("Content-Disposition", "Razor Generated Data");
+        
+        
+@:<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+@:<table border="1">
+@:<thead>
+@:<th>단계</th>
+@:<th>1차메뉴</th>
+@:<th>2차메뉴</th>
+@:<th>3차메뉴</th>
+@:<th>4차메뉴</th>
+@:<th>5차메뉴</th>
+@:<th>고유키(PK)</th>
+@:<th>메뉴코드</th>
+@:<th>현재주소</th>
+@:<th>물리주소</th>
+@:<th>메뉴형식</th>
+@:<th>모바일</th>
+@:<th>새창</th>
+@:<th>차단</th>
+@:<th>리다이렉트</th>
+@:<th>연결주소</th>
+@:</thead>
+@:<tbody>
+@:@_MENU_DUMP.getMenuXls(s, AppState["table_s_menu"], 0, 0, 0, 0, mset, "", r, _HS)
+@:</tbody>
+@:</table>
+
+        return;
+
+    }
+    else
+    {   
+        
+@:@(_HS["name"])-메뉴구조
+@:-------------------------------------------------------------------------@("\r")
+@:@("\r")
+@:@_MENU_DUMP.getMenuTxt(s, AppState["table_s_menu"], 0, 0, 0, 0, "", r, _HS)
+
+        Response.AddHeader("Content-Disposition", "attachment; filename=menu_" + _HS["id"] + ".txt");
+        Response.ContentType = "application/octet-stream";
+        //Response.AddHeader("Content-Disposition", "Razore Generated Data");
+
+        return;  
+    }
+}
+    
+
+    
+
+                                       
+                                       

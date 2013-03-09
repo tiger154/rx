@@ -1,0 +1,324 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+
+    if (p != null && p > 200)
+    {
+        @_System.getLink("", "", "200페이지까지만 조회가능합니다.", "-1")
+        return;
+    }
+
+    string frame_name = "_action_frame_" + m;
+
+    string SITES_sql = "SELECT * FROM " + AppState["table_s_site"] + " ORDER BY gid asc";
+    int SITE_cnt = _DB.GetDbData_Count(AppState["table_s_site"], "");
+
+    string year1 = Request["year1"] != null && Request["year1"] != "" ? Request["year1"] : date["year"];
+    string month1 = Request["month1"] != null && Request["month1"] != "" ? Request["month1"] : date["month"];
+    string day1 = Request["day1"] != null && Request["day1"] != "" ? Request["day1"] : "01";
+    string year2 = Request["year2"] != null && Request["year2"] != "" ? Request["year2"] : date["year"];
+    string month2 = Request["month2"] != null && Request["month2"] != "" ? Request["month2"] : date["month"];
+    string day2 = Request["day2"] != null && Request["day2"] != "" ? Request["day2"] : date["day"];
+
+    p = (p != null && p != 0 ? p : 1);
+    string recnum = (Request["recnum"] != null && Request["recnum"] != "" && Convert.ToInt32(Request["recnum"]) < 200 ? Request["recnum"] : "20");
+    string sort = (Request["sort"] != null && Request["sort"] != "" ? Request["sort"] : "uid");
+    string orderby = (Request["orderby"] != null && Request["orderby"] != "" ? Request["orderby"] : "desc");
+
+    string accountQue = Request["account"] != null && Request["account"] != "" ? "site=" + Request["account"] + " and " : "";
+    string _WHERE = accountQue + "d_regis BETWEEN '" + year1 + "-" + month1 + "-" + day1 + " 00:00:00' AND '" + year2 + "-" + month2 + "-" + day2 + " 23:59:59'";
+
+    if (Request["where"] != null && Request["where"] != "" && Request["keyw"] != null && Request["keyw"] != "")
+    {
+        _WHERE += " and " + Request["where"] + " like %" + Request["keyw"].Trim() + "%'";
+    }
+
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+    string RCD_sql = _System.GetQuery(AppState["table_s_referer"].ToString(), "", _WHERE, sort, orderby, list_start, recnum);
+    int NUM = _DB.GetDbData_Count(AppState["table_s_referer"], _WHERE);
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+
+}
+
+<form name="procForm" action="@g["s"]/" method="get">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="m" value="@m" />
+<input type="hidden" name="module" value="@module" />
+<input type="hidden" name="front" value="@Request["front"]" />
+
+<div class="sbox">
+
+	<select name="account" class="account" onchange="this.form.submit();">
+	<option value="">&nbsp;+ 전체사이트</option>
+	<option value="">---------------------------</option>
+    @foreach (var S in _DB.Query(SITES_sql))
+    {        
+        <option value="@S["uid"]" @_System.getSltStr(Request["account"], S["uid"])>ㆍ@(S["name"])</option>
+    }
+
+    @if (SITE_cnt == 0)
+    {
+        <option value="">등록된 사이트가 없습니다.</option>
+    }
+	</select>
+
+    <div>
+ 	<select name="year1">
+    @for (int i = Convert.ToInt32(date["year"]); i > 2009; i--)
+    {
+        <option value="@i" @_System.getSltStr(year1, i)>@(i)년</option>
+    }
+	</select>
+	<select name="month1">
+    @for (int i = 1; i < 13; i++)
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(month1, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)월</option>
+    }  
+	</select>
+    <select name="day1">
+    @for (int i = 1; i < 32; i++)
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(day1, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)일</option>
+    } 
+    </select>
+	~
+	<select name="year2">
+    @for (int i = Convert.ToInt32(date["year"]); i > 2009; i--)
+    {
+        <option value="@i" @_System.getSltStr(year2, i)>@(i)년</option>
+    }
+    </select>
+    <select name="month2">
+    @for (int i = 1; i < 13; i++)
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(month2, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)월</option>
+    }
+    </select>              
+    <select name="day2">
+    @for (int i = 1; i < 32; i++)
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(day2, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)일</option>
+    } 
+    </select>
+            
+    <input type="button" class="btngray" value="기간적용" onclick="this.form.submit();" />
+	<input type="button" class="btngray" value="어제" onclick="dropDate('@date["_yester"]','@date["_yester"]');" />
+	<input type="button" class="btngray" value="오늘" onclick="dropDate('@date["totime"]','@date["totime"]');" />
+	<input type="button" class="btngray" value="일주" onclick="dropDate('@date["_week"]','@date["totime"]');" />
+	<input type="button" class="btngray" value="한달" onclick="dropDate('@date["_month"]','@date["totime"]');" />
+    <input type="button" class="btngray" value="당월" onclick="dropDate('@date["curMonth"]','@date["totime"]');" />
+	<input type="button" class="btngray" value="전월" onclick="dropDate('@date["preMonth1"]','@date["preMonth2"]');" />
+	<input type="button" class="btngray" value="전체" onclick="dropDate('2009-01-01','@date["totime"]');" />
+    </div>
+
+	<div>
+	<select name="sort" onchange="this.form.submit();">
+	<option value="uid" @_System.getSltStr(sort, "uid")>접속순</option>
+	</select>
+        
+	<select name="recnum" onchange="this.form.submit();">
+	<option value="20" @_System.getSltStr(recnum, 20)>20개</option>
+	<option value="35" @_System.getSltStr(recnum, 350)>35개</option>
+	<option value="50" @_System.getSltStr(recnum, 50)>50개</option>
+	<option value="75" @_System.getSltStr(recnum, 75)>75개</option>
+	<option value="90" @_System.getSltStr(recnum, 90)>90개</option>
+	</select>
+        
+	<select name="where">
+	<option value="ip" @_System.getSltStr(Request["where"], "ip")>IP</option>
+	<option value="uid" @_System.getSltStr(Request["where"], "uid")>회원UID</option>l
+	<option value="referer" @_System.getSltStr(Request["where"], "referer")>접속경로</option>
+	</select>
+
+	<input type="text" name="keyw" value="@_System.stripslashes(Request["keyw"])" class="input" />
+
+    <input type="submit" value="검색" class="btnblue" />
+	<input type="button" value="리셋" class="btngray" onclick="location.href='@g["adm_href"]';" />
+	</div>
+</div>
+</form>
+
+<form name="listForm" action="@g["s"]/" method="post" target="@frame_name">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="m" value="@module" />
+<input type="hidden" name="a" value="" />
+
+<table cellspacing="1">
+	<colgroup> 
+	<col width="30"> 
+	<col width="50"> 
+	<col width="100"> 
+	<col width="80"> 
+	<col width="190"> 
+	<col width="80"> 
+	<col width="120">
+	<col width="120">
+	<col>
+	</colgroup>
+	<thead>
+	<tr>
+		<th scope="col"><img src="@g["img_core"]/_public/ico_check_01.gif" alt="선택/반전" class="hand" onclick="chkFlag('members');" /></th>
+		<th scope="col">번호</th>
+		<th scope="col">IP</th>
+		<th scope="col">회원여부</th>
+		<th scope="col">접속경로</th>
+		<th scope="col">브라우져</th>
+		<th scope="col">키워드</th>
+		<th scope="col">접속시간</th>
+		<th scope="col"></th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @{  
+        int j = 0;
+        int _recnum = Convert.ToInt32(recnum);
+        
+        foreach (var R in _DB.Query(RCD_sql))
+        {
+            //j++;
+            
+            string _engine = _System.getSearchEngine(R["referer"]);
+            string _outkey = _System.getKeyword(R["referer"]);
+            string _browser = _System.getBrowser(R["agent"]);
+            string _domain = _System.getDomain(R["referer"]);
+            string _mobile = _System.isMobileConnect(R["agent"]);
+            
+            //<tr class="@("rooptd" + (++i % 2).ToString())">
+            <tr class="@("rooptd" + (++j % 2).ToString())">
+		        <td class="check"><input type="checkbox" name="members" value="@R["uid"]" /></td>
+		        <td class="number">@(NUM - (((Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum)) + _recnum++))</td>
+		        <td class="name"><a href="#." onclick="whoisSearch('@R["ip"]');" title="후이즈 IP정보">@R["ip"]</a></td>
+		        <td>                
+                @if (R["mbruid"] != 0)
+                {
+                    dynamic M = _DB.getDbData(AppState["table_s_mbrdata"], "memberuid=" + R["mbruid"], "*");
+                    
+                    <a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=member&front=manager&page=log&mbruid=@M["memberuid"]');" title="접속기록">@M[_HS["nametype"]]</a>              
+                }     
+		        </td>
+                <td>                
+                @if (_engine == "etc")
+                {
+                    <a href="@R["referer"]" target="_blank">@_domain</a>
+                }
+                else
+                {
+                    <a href="@R["referer"]" target="_blank"><img src="@g["img_module_admin"]/ico_@(_engine).gif" title="@_domain" /></a>
+                }
+                </td>		        
+		        <td class="agent">                
+                @if (_mobile != "")
+                {
+                    <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@_mobile)접속" />
+                }    
+                @_browser.ToUpper()                
+		        </td>
+		        <td><a href="@R["referer"]" target="_blank" class="keyword">@_outkey</a></td>
+		        <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm:ss")</td>
+		        <td></td>
+	        </tr>                
+        }
+    }
+
+	</tbody>
+</table>
+
+@if (j == 0)
+{
+    <div class="nodata"><img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> 지정된 기간내에 유입된 접속기록이 없습니다.</div>    
+}
+        
+<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10,@p,@TPG,"@g["img_core"]/page/default");</script>
+</div>
+
+<div class="prebox">
+	<input type="button" class="btngray" value="선택/해제" onclick="chkFlag('members');" />
+	<input type="button" class="btnblue" value="삭제" onclick="actQue('referer_delete');" />
+</div>
+
+</form>
+
+<form name="whois_search_form">
+<input type="hidden" name="domain_name" value="" />
+</form>
+
+<script type="text/javascript">
+//<![CDATA[
+function dropDate(date1, date2) {
+    var f = document.procForm;
+        
+    f.year1.value = date1.substring(0, 4);
+    f.month1.value = date1.substring(5, 7);
+    f.day1.value = date1.substring(8, 10);
+
+    f.year2.value = date2.substring(0, 4);
+    f.month2.value = date2.substring(5, 7);
+    f.day2.value = date2.substring(8, 10);
+
+    f.submit();
+}
+
+function actQue(flag) {
+    var f = document.listForm;
+    var l = document.getElementsByName('members');
+    var n = l.length;
+    var i;
+    var j = 0;
+    var s = '';
+
+    for (i = 0; i < n; i++) {
+        if (l[i].checked == true) {
+            j++;
+            s += l[i].value + ',';
+        }
+    }
+
+    if (!j) {
+        alert('내역을 선택해 주세요.     ');
+        return false;
+    }
+
+    if (flag == 'referer_delete') {
+        if (!confirm('정말로 삭제하시겠습니까?     ')) {
+            return false;
+        }
+    }
+    f.a.value = flag;
+    f.submit();
+}
+
+function whoisSearch(ip) {
+    var f = document.whois_search_form;
+
+    f.domain_name.value = ip;
+    f.target = "_blank";
+    f.method = "post";
+    f.action = "http://whois.kisa.or.kr/result.php";
+    f.submit();
+}
+//]]>
+</script>

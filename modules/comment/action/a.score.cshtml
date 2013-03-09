@@ -1,0 +1,77 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var value = Request["value"];
+    var score = Request["score"];
+
+    if (my["uid"] == 0) 
+    {
+        @_System.getLink("", "", "로그인해 주세요.", "")
+        return;        
+    }
+
+    dynamic R = _DB.Get_module_data(AppState["table_s_comment"], "uid", uid);
+    
+    if (R["uid"] == 0)
+    {        
+        return;
+    }
+
+    int score_limit = 1; //점수한계치(이 점수보다 높은 갚을 임의로 보낼 경우 제한)    
+    
+    if (score == null || score == "" || score == "0" || score.AsInt() > score_limit)
+    {
+        score = score_limit.ToString();
+    }    
+
+    if (Session["module_" + m + "_score"] == null || !Session["module_" + m + "_score"].Contains("[" + R["uid"] + "]"))
+    {
+        if (value == "good")
+        {
+            string UPDATE_SCORE_SQL = "UPDATE " + AppState["table_s_comment"] + " SET score1=score1+" + score + " WHERE uid=" + R["uid"];
+            @_DB.Execute(UPDATE_SCORE_SQL);
+        }
+        else
+        {
+            string UPDATE_SCORE_SQL2 = "UPDATE " + AppState["table_s_comment"] + " SET score2=score2+" + score + " WHERE uid=" + R["uid"];
+            @_DB.Execute(UPDATE_SCORE_SQL2);
+        }
+
+        Session["module_" + m + "_score"] = Session["module_" + m + "_score"] + "[" + R["uid"] + "]";
+    }
+    else
+    {
+        @_System.getLink("", "", "이미 평가하신 댓글입니다.", "")
+        return;
+    }
+    
+    @_System.getLink("reload", "parent.", "회원님의 평가가 반영되었습니다.", "")
+    return;
+}

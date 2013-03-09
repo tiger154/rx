@@ -1,0 +1,58 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var members = Request["members"];    
+    
+    string[] memArr = members.Split(',');    
+
+    if(my["uid"] == 0) 
+    {
+	    @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }  
+    
+    if (my["admin"]== "1")
+    {
+        foreach(var val in memArr)            
+        {   
+            string DELETE_SCR_SQL = "DELETE FROM " + AppState["table_s_scrap"] + " WHERE uid= " + val.Trim();
+            @_DB.Execute(DELETE_SCR_SQL);
+        }
+    }
+    else {
+        foreach(var val in memArr)
+        {
+            string DELETE_SCR_SQL2 = "DELETE FROM " + AppState["table_s_scrap"] + " WHERE uid=" + val.Trim() + " and mbruid=" + my["uid"];
+            @_DB.Execute(DELETE_SCR_SQL2);
+        }
+    }
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

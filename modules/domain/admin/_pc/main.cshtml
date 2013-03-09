@@ -1,0 +1,345 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var account = Request["account"];
+    var vtype = Request["vtype"];
+    var type = Request["type"];
+    var selsite = Request["selsite"];
+    var cat = Request["cat"];
+    string frame_name = "_action_frame_" + m;
+    string tree_set = "tree";
+    string CINFO_name = "";
+    string CINFO_site = "";
+    string delparent = "";
+    string sosok_name = "";
+    string sosok_uid = "";
+    string sosok_parent = "";
+    string sosok_pname = "";
+    string site_sql = "SELECT * FROM "+AppState["table_s_site"]+" ORDER BY gid ASC";
+
+    int site_Row = _DB.getDbRows(site_sql);
+
+    dynamic CINFO = new Dictionary<string, object>();
+    int ctnum = 0;
+    
+    bool is_fcategory = false;
+    bool is_regismode = false;
+    
+    CINFO = _DB.getFromDB(CINFO, null, AppState["table_s_domain"]);
+
+    // 한쪽은 DB, 다른쪽은 일반 Array 이므로
+    string[] strArray = null;
+    string[] sosokArr = null;
+    string[] CXA = null;
+    string[] CXA2 = null;
+    Session["MenuOpen"] = null;
+    Session["arr_uid"] = null;
+    
+    int ISCAT = _DB.GetDbData_Count(AppState["table_s_domain"].ToString(), "");
+
+    if (Request["cat"] != null && Request["cat"] != "")
+    {   
+        CINFO = _DB.getVar(CINFO, AppState["table_s_domain"], "uid='" + Request["cat"] + "'");
+
+        @_Menu.getMenuCodeToPath_Domain(AppState["table_s_domain"].ToString(), Request["cat"], 0)
+
+        strArray = Session["arr_uid"].ToString().Split('|');
+        CXA = strArray;
+        sosokArr = CXA[0].Split(',');
+        sosok_uid = sosokArr[1];
+        sosok_parent = sosokArr[3];
+        sosok_pname = _DB.GetDbData_S(AppState["table_s_domain"].ToString(), "uid=" + sosok_parent, "name").ToString();
+        
+        if(sosok_parent != "") {
+            sosok_name = sosok_pname;            
+        }
+        else {
+            sosok_name = sosokArr[2];
+        }
+        CINFO_name = CINFO["name"];
+        CINFO_site = CINFO["site"].ToString();
+        ctnum = strArray.Count() - 1;
+    }
+    else {
+        cat = "0";
+    }
+
+    if(CINFO["uid"] > 0 && vtype != "sub")
+    {
+        is_fcategory = true;
+    }
+
+    if(CINFO["uid"] == 0 || vtype == "sub")
+    {
+        is_regismode = true;
+    }
+    
+    if(is_regismode == true)
+    {
+    	CINFO_name = "";
+	    CINFO_site = "";
+    }    
+    
+    // CXA setting
+    for (int i = ctnum - 1; i >= 0; i--)
+    {
+        CXA2 = CXA[i].ToString().Split(',');
+    }      
+}
+
+<div id="catebody">
+	<div id="category">
+		<div class="title">
+			연결도메인
+		</div>
+        
+		@if (ISCAT > 0) 
+        {
+    		<div class="joinimg"></div>
+        
+            if(Request["HTTP_USER_AGENT"].IndexOf("MSIE 7") > -1)
+            {
+                tree_set = tree_set + " ie7";
+            }
+        
+            <div class="@tree_set">
+            <script type="text/javascript">
+            //<![CDATA[
+            var TreeImg = "@g["img_core"]/tree/default_none";
+            var ulink = "@g["adm_href"]&amp;cat=";
+            //]]>
+            </script>
+            <script type="text/javascript" src="@g["url_root"]/_core/js/tree.js"></script>
+            <script type="text/javascript">
+            //<![CDATA[
+            var TREE_ITEMS = [['', null, @_Menu.getMenuShow_Domain(Convert.ToInt32(s), AppState["table_s_domain"].ToString(), 0, 0, 0, Convert.ToInt32(cat), CXA2, "0", g)]];
+            new tree(TREE_ITEMS, tree_tpl);
+            @Session["MenuOpen"]
+            //]]>
+            </script>
+            </div>
+        }
+        else {
+            <div class="none">등록된 도메인이 없습니다.</div>
+        }
+	</div>
+
+
+	<div id="catinfo">
+		<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="regisdomain" />
+		<input type="hidden" name="account" value="@account" />
+		<input type="hidden" name="cat" value="@CINFO["uid"]" />
+		<input type="hidden" name="depth" value="@CINFO["depth"]" />
+		<input type="hidden" name="parent" value="@CINFO["uid"]" />
+		<input type="hidden" name="vtype" value="@vtype" />
+
+		<div class="title">
+			<div class="xleft">
+			@if(is_regismode == true) {
+				if(vtype == "sub") {
+                    @:서브도메인 등록
+                }
+                else {
+                    @:메인도메인 등록
+                }
+			}
+            else {
+				@:도메인 등록정보
+		    }
+			
+			</div>
+			<div class="xright">
+				<a href="@g["adm_href"]&amp;type=makedomain">메인도메인 등록</a>
+			</div>
+		</div>
+
+		<div class="notice">
+			도메인을 등록하면 도메인별로 사이트를 연결할 수 있습니다.<br />
+			1차도메인 및 서브도메인을 구분할 수 있으며 포트지정에 대해서도 적용됩니다.<br />
+			도메인을 동록하지 않으면 개설된 사이트중 첫번째 사이트에 접속됩니다.
+		</div>
+
+		<table>
+			@if(vtype == "sub") {
+			<tr>
+				<td class="td1">소속도메인</td>
+				<td class="td2 b">
+				@for(int i = 0; i < ctnum; i++) {
+				    <a href="@g["adm_href"]&amp;cat=@sosok_uid">@sosok_name</a>
+				
+                    if(i < ctnum-1) {
+                        @:&gt;
+                    }
+			    }
+				</td>
+			</tr>
+            }
+            else {
+                if(cat != "" && cat != null) {
+                <tr>
+                    <td class="td1">소속도메인</td>
+                    <td class="td2 b">
+                        
+                    @for(int i = 0; i < ctnum-1; i++) {
+                        <a href="@g["adm_href"]&amp;cat=@sosok_uid">@sosok_name</a>
+                    
+                        if(i < ctnum - 2) {
+                            @:&gt;
+                        }
+                        
+                        delparent = sosok_pname;
+                    }
+                    @if(delparent == "") {
+                        @:최상위도메인
+                    }
+                    </td>
+                </tr>
+                }
+            }
+			<tr>
+				<td class="td1">
+                @if(vtype == "sub") {
+                    @:서브도메인
+                }
+                else {
+                    @:도메인주소
+                }
+                </td>
+				<td class="td2">
+					<input type="text" name="name" value="@CINFO_name" class="input sname" />
+					
+                    @if(is_fcategory == true) {
+					    <span class="btn01">
+                        <a href="@g["s"]/?r=@r&amp;m=@module&amp;a=deletedomain&amp;cat=@cat&amp;parent=@delparent" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?     ')">도메인삭제</a>
+                        </span>
+					    
+                        if(CINFO["depth"] == 1) {
+        					<span class="btn01"><a href="@g["adm_href"]&amp;cat=@cat&amp;vtype=sub">서브도메인 등록</a></span>
+					    }
+					}
+				</td>
+			</tr>
+            <tr>
+				<td class="td1">연결사이트</td>
+				<td class="td2">
+					<select name="site" class="select1">
+					<option value="">&nbsp;+ 선택하세요</option>
+					<option value="">--------------------------------</option>
+                    @foreach(var S in _DB.Query(site_sql)) {
+                        string acc_select = "";
+                        
+                        if(CINFO_site == S["uid"].ToString() || selsite == S["uid"].ToString()) {
+                            acc_select = "selected='selected'";
+                        }
+            
+                        <option value="@S["uid"]" @acc_select>ㆍ @S["name"]</option>
+                    }
+                    @if(site_Row == 0) {
+                        <option value="">등록된 사이트가 없습니다.</option>
+                    }
+
+					</select>
+					<a href="@g["s"]/?r=@r&amp;m=@m&amp;module=home&amp;type=makesite" class="dn"><img src="@g["img_core"]/_public/btn_add.gif" alt="사이트추가" title="사이트추가" /></a>
+				</td>
+			</tr>
+
+		</table>
+		
+		<div class="submitbox">
+			@if(cat != "0") {
+                <input type="button" class="btngray" value="접속하기" onclick="viewDomainMode('@CINFO_name');" />
+            }
+			
+            @if(vtype == "sub") {
+                <input type="button" class="btngray" value="등록취소" onclick="history.back();" />
+            }
+            
+            @{
+                string btn_prn = "";
+            
+                if(is_fcategory == true) {
+                    btn_prn = "도메인속성 변경";
+                }                
+                else {
+                    if(vtype == "sub") {
+                        btn_prn = "서브도메인 등록";
+                    }
+                    else {
+                        btn_prn = "신규도메인 등록";
+                    }
+                }
+            }
+			<input type="submit" class="btnblue" value="@btn_prn" />
+			<div class="clear"></div>
+		</div>
+
+		</form>
+		
+
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function viewDomainMode(domain)
+{
+	var ux = location.href.split('?');
+	var us = ux[0].split('/');
+	var uh = 'http://'+domain+'/'+us[us.length-2].replace('index.cshtml','')+'/';
+
+	window.open(uh);
+}
+function saveCheck(f)
+{
+	if (f.name.value == '')
+	{
+		alert('도메인을 입력해 주세요.      ');
+		f.name.focus();
+		return false;
+	}
+	if (f.site.value == '')
+	{
+		alert('연결사이트를 지정해 주세요.      ');
+		f.site.focus();
+		return false;
+	}
+	return confirm('정말로 실행하시겠습니까?         ');
+}
+
+@{
+    if(type == "makedomain") {
+        Html.Raw("document.procForm.name.focus();\n");
+    }
+}
+//]]>
+</script>

@@ -1,0 +1,190 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var NCD = PageData[18];
+    var RCD = PageData[19];
+
+    string uid = g["uid"];
+
+    int TPG = Convert.ToInt32(g["TPG"]);
+    int NUM = Convert.ToInt32(g["NUM"]);
+    int _ol = 0;
+}
+
+<div id="clist">
+
+	<table summary="댓글리스트입니다.">
+	<caption>댓글리스트</caption> 
+	<colgroup> 
+	<col> 
+	<col width="80"> 
+	<col width="50"> 
+	<col width="50"> 
+	<col width="90"> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"></th>
+	<th scope="col">이름</th>
+	<th scope="col">조회</th>
+	<th scope="col">공감</th>
+	<th scope="col" class="side2">날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @foreach (var R in NCD)
+    {   // notice comment
+
+        string mobile_chk = _System.isMobileConnect(R["agent"]);
+        string hidden_prn = _System.getStrCut(_System.Strip_tags(R["content"]), 100, "...");
+        string class_set = "";
+                            
+        <tr class="noticetr">
+        <td class="sbj">
+        <img src="@g["img_module_skin"]/ico_notice.gif" alt="공지" class="imgpos2" />                    
+            
+        @if (mobile_chk != "")
+        {
+            <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos1" alt="모바일" title="모바일(@mobile_chk)로 등록된 글입니다" />
+        }
+        @if (R["uid"].ToString() == uid)
+        {
+            class_set = "class='b'";
+        }
+
+        <a href="@Html.Raw(g["cment_view"] + R["uid"] + "#CMT" + R["uid"])" title="@Html.Raw(hidden_prn)" onmouseover="qTilePop(this);" onmouseout="qTilePopKill(this);" @Html.Raw(class_set)>@R["subject"]</a>
+                
+        @if (_System.getFileType(R["content"]) == 2)
+        {
+            <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />    
+        }
+        @if (R["upload"] != "")
+        {
+            <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+        }
+        @if (R["hidden"] == "1")
+        {
+            <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+        }
+        @if (R["oneline"] > 0)
+        {
+            <span class="comment">@Html.Raw("[" + R["oneline"] + "]")</span>
+        }
+        @if (_System.getNew(R["d_regis"].ToString(), 24))
+        {
+            <span class="new">new</span>
+        }
+	    </td>
+	    <td class="name">@R[_HS["nametype"]]</td>
+	    <td>@R["hit"]</td>
+	    <td>@R["score1"]</td>
+        <td class="hit b">@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	    </tr>                      
+    }
+    
+    @if (NUM == 0)
+    {
+ 	    <tr class="none">
+   	    <td class="sbj">등록된 댓글이 없습니다.</td>
+   	    <td>-</td>
+   	    <td>-</td>
+   	    <td>-</td>
+   	    <td>-</td>
+        </tr>
+    }
+    else
+    {
+        foreach (var R in RCD)
+        {   // normla comment
+
+            string mobile_chk = _System.isMobileConnect(R["agent"]);
+            string hidden_prn = _System.getStrCut(_System.Strip_tags(R["content"]), 100, "...");
+            string class_set = "";
+            string tr_set = "";
+
+            if (R["hidden"] == "1")
+            {
+                hidden_prn = "비공개 댓글입니다.";
+            }
+
+            if (NUM == ++_ol)
+            {
+                tr_set = "none";
+            }            
+      
+            <tr class="dotline @tr_set">
+            <td class="sbj">
+
+            @if (mobile_chk != "")
+            {
+                <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos1" alt="모바일" title="모바일(@mobile_chk)로 등록된 글입니다" />
+            }
+            @if (R["uid"].ToString() == uid)
+            {
+                class_set = "class='b'";
+            }
+            
+            <a href="@Html.Raw(g["cment_view"] + R["uid"] + "#CMT" + R["uid"])" title="@Html.Raw(hidden_prn)" onmouseover="qTilePop(this);" onmouseout="qTilePopKill(this);" @Html.Raw(class_set)>@R["subject"]</a>
+                
+            @if (_System.getFileType(R["content"]) == 2)
+            {
+                <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />    
+            }
+            @if (R["upload"] != "")
+            {
+                <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+            }
+            @if (R["hidden"] == "1")
+            {
+                <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+            }
+            @if (R["oneline"] > 0)
+            {
+                <span class="comment">@Html.Raw("[" + R["oneline"] + "]")</span>
+            }
+            @if (_System.getNew(R["d_regis"].ToString(), 24))
+            {
+                <span class="new">new</span>
+            }
+            
+            </td>
+            <td class="name">@R[_HS["nametype"]]</td>
+            <td>@R["hit"]</td>
+            <td>@R["score1"]</td>
+            <td class="hit b">@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+            </tr>
+        }
+    }
+    
+	</tbody>
+	</table>
+	
+	<div class="page pagebox01">
+		<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>	
+</div>
+
+
+<div id="qTilePopDiv"></div>
+<script type="text/javascript">
+//<![CDATA[
+if (myagent != 'ie') document.captureEvents(Event.MOUSEMOVE);
+document.onmousemove = get_mouse;
+
+var skn = getId('qTilePopDiv');
+var itt = '';
+//]]>
+</script>
+        

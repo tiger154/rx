@@ -1,0 +1,124 @@
+﻿@helper getPrintdir(int nTab, string filepath, bool state, int dir_ex,
+            dynamic g, string pwd, int step_start, string iframe, dynamic set1)
+{   
+    if (step_start != null && step_start != 0)
+    {
+        nTab = nTab - step_start;
+    }
+
+    string css = "alldir";
+
+    if (pwd.Contains(filepath))
+    {
+        css = "nowdir";
+    }
+
+    string fname1 = _System.getFolderName(filepath);
+    string fname2 = getTPLname(set1, fname1);
+    
+    int width = nTab * 17 + 3;    
+
+    @:<div class="dir01">
+    @:<img src="@g["img_module_admin"]/blank.gif" width="@width" height="1" alt="" />
+    @:<a href="@g["adm_href"]&pwd=@Server.UrlEncode(filepath)" title="@fname1">
+
+    Session["pwd"] = Server.UrlEncode(filepath);
+    
+    if (state != null && state && dir_ex != null && dir_ex != 0)
+    {
+        @:<img src="@g["img_module_admin"]/dir_closef.gif" align="absmiddle" alt="" />
+        @:<img src="@g["img_module_admin"]/close_dir.gif" alt=""> <span class="@css">@fname2
+    }
+    else if ((state == null || !state) && (dir_ex != null && dir_ex != 0)) 
+    {
+        @:<img src="@g["img_module_admin"]/dir_openf.gif" align="absmiddle" alt="" />
+        @:<img src="@g["img_module_admin"]/open_dir.gif" alt=""> <span class="@css">@fname2
+    }
+    else 
+    {
+        @:<img src="@g["img_module_admin"]/blank.gif" width="11" height="18" align="absmiddle" alt="" />
+        @:<img src="@g["img_module_admin"]/close_dir.gif" alt=""> <span class="@css">@fname2
+    }
+    @:</span></a></div>
+}
+
+@helper getDirlist(string dirpath, int nStep, dynamic g, string pwd, int step_start, string iframe, dynamic set1, int depth)
+{  
+    if (Directory.Exists(dirpath))
+    {
+        string[] arrPath = pwd.Split('\\');
+
+        foreach(string files in Directory.GetDirectories(dirpath))    
+        {      
+            string file_name = files.Substring(dirpath.Length, files.Length - dirpath.Length);
+            string subDir = files + "\\";
+            string tmp_dir = subDir + file_name;
+            
+            if (Directory.Exists(subDir) && file_name != "." && file_name != "..")
+            {
+                @getPrintdir(nStep, subDir, !pwd.Contains(subDir), getDirexists(subDir), g, pwd, step_start, iframe, set1)
+
+                if (_System.arrCount(arrPath) - depth <= arrPath.Length && arrPath[_System.arrCount(arrPath) - depth] == file_name)
+                {             
+                    @getDirlist(subDir, nStep + 1, g, pwd, step_start, iframe, set1, depth - 1)
+                }
+            }
+        }
+    }   
+}
+
+@functions {
+    public static string getTPLname(dynamic set1, string fname)
+    {
+
+        string nName = "";
+        
+        if (set1.ContainsKey(fname))
+        {
+            nName = set1[fname];
+        }
+        
+        if (nName != "")
+        {
+            return nName;
+        }
+        else
+        {
+            return fname;
+        }
+    }
+
+    public static string getFILEname(dynamic set2, string fname)
+    {
+        string[] fexp = fname.Split('.');
+        string nName = fname.Replace("." + fexp[fexp.Length - 1], "");
+
+        if (nName != "" || fname.Contains(".") == true)
+        {
+            return nName + "." + fexp[fexp.Length - 1];
+        }
+        else
+        {
+            return fname;   //getKRtoUTF(fname);
+        }
+    }
+
+    public static int getDirexists(string dir)
+    {
+        int fex = 0;
+
+        foreach (string file in Directory.GetDirectories(dir))
+        {
+            string file_name = file.Substring(dir.Length, file.Length - dir.Length);
+       
+            if (file_name != "." && file_name != ".." && Directory.Exists(file))
+            {
+                fex = 1;
+                break;
+            }
+       
+        }
+        
+        return fex;
+    }
+}

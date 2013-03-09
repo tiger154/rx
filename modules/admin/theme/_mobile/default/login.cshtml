@@ -1,0 +1,162 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var _m = PageData[1];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+    var date = PageData[15];
+    var referer = PageData[16];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var nosite = Request["nosite"];
+
+    string frame_name = "_action_frame_" + m;
+    dynamic d_member = _DB.Get_code("member");
+    
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+    Cookie_svshop = Request.Cookies["id_save_Cookie"];
+}
+<div id="pages_login">
+
+	<h2>관리자 로그인</h2>
+
+	<div class="msg">
+        @if (nosite == "Y")
+        {
+		    <span class="nosite">
+		    사이트가 등록되지 않았습니다. 로그인 후 사이트를 등록해 주세요.<br />
+		    </span>            
+        }
+		관리자일 경우 아이디와 비밀번호를 입력해 주세요.<br />
+	</div>
+
+	<div class="agreebox">
+		
+		<form name="loginform" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return loginCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="a" value="login" />
+		<input type="hidden" name="referer" value="@_System.RW("m=admin", g["r"], _HS)" />
+		<input type="hidden" name="usessl" value="@d_member["login_ssl"]" />
+		<input type="hidden" name="usertype" value="admin" />
+
+
+		<div class="tblbox">
+		<table>
+			<tr>
+			<td class="key">@(d_member["login_emailid"] != "" ? "이메일" : "아이디")</td>
+			<td>
+				<input type="text" name="id" class="input xinput" value="@_System.getArrayCookie(Cookie_svshop, '|', 0)" />
+			</td>
+			</tr>
+			<tr>
+			<td class="key">비밀번호</td>
+			<td>
+				<input type="password" name="pw" class="input xinput" value="@_System.getArrayCookie(Cookie_svshop, '|', 1)" />
+			</td>
+			</tr>
+			<tr>
+			<td class="key"></td>
+			<td class="xfont shift">
+				<input type="checkbox" name="idpwsave" value="checked" onclick="remember_idpw(this)" @_System.getChkStr(Cookie_svshop != null && Cookie_svshop.Value != null, true) />@(d_member["login_emailid"] == "1" ? "이메일" : "아이디") 기억
+
+                @if (d_member["login_ssl"] != "")
+                {
+                    @:<br ><input type="checkbox" name="ssl" value="checked" />보안로그인(SSL)    
+                }
+			</td>
+			</tr>
+		</table>
+		</div>
+
+		<div class="submitbox">
+			<input type="button" value="취소" class="btngray" onclick="goHref('@g["r"]/');" />
+			<input type="submit" value="로그인" class="btnblue" />
+		</div>
+
+		</form>
+
+		<form name="SSLLoginForm" action="@g["url_root_host"].Replace("http", "https")" method="post" target="@frame_name">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="a" value="login" />
+		<input type="hidden" name="referer" value="@_System.RW("m=admin", g["r"], _HS)" />
+		<input type="hidden" name="id" value="" />
+		<input type="hidden" name="pw" value="" />
+		<input type="hidden" name="idpwsave" value="" />
+		<input type="hidden" name="usertype" value="admin" />
+		</form>
+
+	</div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function loginCheck(f)
+{
+	if (f.id.value == '')
+	{
+	    alert('@(d_member["login_emailid"] == "1" ? "이메일을" : "아이디를") 입력해 주세요.');
+		f.id.focus();
+		return false;
+	}
+	if (f.pw.value == '')
+	{
+		alert('비밀번호를 입력해 주세요.');
+		f.pw.focus();
+		return false;
+	}
+	if (f.usessl.value == '1')
+	{
+		if (f.ssl.checked == true)
+		{
+			var fs = document.SSLLoginForm;
+			fs.id.value = f.id.value;
+			fs.pw.value = f.pw.value;
+			if(f.idpwsave.checked == true) fs.idpwsave.value
+			fs.submit();
+			return false;
+		}
+	}
+}
+function remember_idpw(ths)
+{
+	if (ths.checked == true)
+	{
+		if (!confirm('\n\n패스워드정보를 저장할 경우 다음접속시 \n\n패스워드를 입력하지 않으셔도 됩니다.\n\n그러나, 개인PC가 아닐 경우 타인이 로그인할 수 있습니다.     \n\nPC를 여러사람이 사용하는 공공장소에서는 체크하지 마세요.\n\n정말로 패스워드를 기억시키겠습니까?\n\n'))
+		{
+			ths.checked = false;
+		}
+	}
+}
+
+window.onload = function()
+{
+	document.loginform.id.focus();
+}
+//]]>
+</script>

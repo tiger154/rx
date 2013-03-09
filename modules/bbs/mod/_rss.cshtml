@@ -1,0 +1,199 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rb (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rb
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    dynamic g = PageData[0];
+    dynamic _HS = PageData[1];
+    var s = PageData[2];    
+    var r = PageData[3];
+    var p = PageData[4];
+    var m = PageData[5];
+    var bid = PageData[6];
+    dynamic d_bbs = PageData[7];
+    
+    dynamic B = null;
+    dynamic M = null;
+
+    string type = Request["type"];
+    string mbruid = Request["mbruid"];
+    string TCD_sql = "";
+    string RCD_sql = "";
+    string postTitle = "";
+    string sort = "gid";
+    string orderby = "asc";
+    
+    int recnum = 20;
+
+    if (d_bbs["rss"] != "1")
+    {
+        @_System.getLink("", "", "RSS발행을 지원하지 않는 게시판입니다.", "close")
+        return;
+    }
+
+    if (bid != null && bid != "" && bid != "0")
+    {
+        B = _DB.Get_module_data(AppState["table_" + m + "list"], "id", bid);
+    }
+
+    string _QUE = "site=" + s + " AND hidden=0";
+
+    if (mbruid != null && mbruid != "" && mbruid != "0")
+    {
+        _QUE += " AND mbruid=" + mbruid;
+    }
+
+    if (B["uid"] != 0)
+    {
+        _QUE += " AND bbs=" + B["uid"];
+    }
+
+    if (mbruid != null && mbruid != "" && mbruid != "0")
+    {
+        M = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", mbruid);
+        TCD_sql = _System.GetQuery(AppState["table_" + m + "data"].ToString(), "", _QUE, sort, orderby, p, recnum);
+        RCD_sql = TCD_sql;
+    }
+    else
+    {
+        TCD_sql = _System.GetQuery(AppState["table_" + m + "data"].ToString(), "", _QUE, sort, orderby, p, recnum);
+        RCD_sql = TCD_sql; //while($_R = db_fetch_array($TCD)) $RCD[] = getDbData($table[$m.'data'],'gid='.$_R['gid'],'*');    
+    }
+
+    if (mbruid != null && mbruid != "" && mbruid != "0")
+    {
+        postTitle = M[_HS["nametype"]] + "님의 포스트";
+    }
+    else
+    {
+        if (B["name"] != "")
+        {
+            postTitle = B["name"];
+        }
+        else
+        {
+            postTitle = _HS["name"];
+        }
+    }
+
+    Response.ContentType = "text/xml";
+    Response.AddHeader("Cache-Control", "no-cache,must-revalidate");
+    Response.AddHeader("Pragma", "no-cache");
+
+<?xml version="1.0" encoding="utf-8"?>
+
+    if (type == "rss1")
+    {
+    <rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>
+        <channel>
+            <title>@postTitle</title>
+            <link>@Request.ServerVariables["HTTP_HOST"]/?r=@r&amp;m=@m@Html.Raw(_System.isEqual(B["uid"], 0, "", "&amp;bid=" + B["id"]))</link> 
+            <dc:language>@_HS["lang"].Substring(0, 2)</dc:language>
+    
+            @foreach (var R in _DB.Query(RCD_sql))
+            {
+            <item>
+                <title>(@R["subject"])</title>
+                <description>@Html.Raw("<![CDATA[" + _System.getContents(R["content"], R["html"]) + "]]>")</description>
+                <link>@Request.ServerVariables["HTTP_HOST"]/?r=@r&amp;m=@m&amp;bid=@R["bbsid"]&amp;uid=@R["uid"]</link>
+                <dc:creator>@(R[_HS["nametype"]])</dc:creator>
+                <category>@Html.Raw("<![CDATA[" + R["category"] + "]]>")</category>
+    
+                @if (R["tag"] != "")
+                {
+                    string[] tags = R["tag"].Split(',');
+                    int tagn = tags.Length;
+    
+                    for (int i = 0; i < tagn; i++)
+                    {
+                        if (tags[i].Trim() == "")
+                        {
+                            continue;
+                        }
+                        
+                        <category>@Html.Raw("<![CDATA[" + tags[i] + "]]>")</category>
+                    }
+                }
+                
+                <guid>@Request.ServerVariables["HTTP_HOST"]/?r=@r&amp;m=@m&amp;bid=@R["bbsid"]&amp;uid=@R["uid"]</guid>
+                <dc:date>@R["d_regis"]</dc:date>
+                <dc:subject></dc:subject>
+            </item>        
+        }
+        </channel>
+    </rss>
+    }
+    else if (type == "atom")
+    {
+    <feed version="0.3" xmlns="http://purl.org/atom/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:taxo="http://purl.org/rss/1.0/modules/taxonomy/" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/">
+    
+        <title>@postTitle</title>
+    
+        <id>@Request.ServerVariables["HTTP_HOST"]/?r=@r&amp;m=@m@Html.Raw(_System.isEqual(B["uid"], 0, "", "&amp;bid=" + B["id"]))</id> 
+        <author><name>@Html.Raw(_System.isEqual(B["name"] == "", "ture", _HS["name"], B["name"]))</name></author>
+        <info><![CDATA[@Html.Raw(_System.isEqual(B["name"] == "", "ture", _HS["name"], B["name"]))]]></info>
+        
+        @foreach (var R in _DB.Query(RCD_sql))
+        {
+        <entry>
+            <title>@R["subject"]</title>
+            <link rel="alternate" type="text/html" href="@g["r"]/?m=@m&amp;uid=@R["uid"]" />
+            <id>@Request.ServerVariables["HTTP_HOST"]/?r=@r&amp;m=@m&amp;bid=@R["bbsid"]&amp;uid=@R["uid"]</id>
+            <created>@R["d_regis"]</created>
+            <modified>@R["d_modify"]</modified>
+            <summary type="text/html" mode="escaped">@Html.Raw("<![CDATA[" + R["content"] + "]]>")</summary>
+        </entry>
+        }
+    </feed> 
+    }
+    else
+    {
+    <rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.s1/'>
+        <channel>
+            <title>@postTitle</title>
+            <link>@Request.ServerVariables["HTTP_HOST"]/?r=@r&amp;amp;m=@m@Html.Raw(_System.isEqual(B["uid"], 0, "", "&amp;amp;bid=" + B["id"]))</link> 
+            <dc:language>@_HS["lang"].Substring(0, 2)</dc:language>
+    
+            @foreach (var R in _DB.Query(RCD_sql))
+            {
+            <item>
+                <title>@R["subject"]</title>
+                <description>@Html.Raw("<![CDATA[" + @_System.getContents(R["content"], R["html"]) + "]]>")</description>
+                <link>@Request.ServerVariables["HTTP_HOST"]/?r=@r&amp;m=@m&amp;bid=@R["bbsid"]&amp;uid=@R["uid"]</link>
+                <dc:creator>@R[_HS["nametype"]]</dc:creator>
+                <category>@Html.Raw("<![CDATA[" + R["category"] + "]]>")</category>
+                
+                @if (R["tag"] != "")
+                {
+                    string[] tags = R["tag"].Split(',');
+                    int tagn = tags.Length;
+        
+                    for (int i = 0; i < tagn; i++)
+                    {
+                        if (tags[i].Trim() == "")
+                        {
+                            continue;
+                        }
+                        
+                        <category><![CDATA[@tags[i]]]></category>
+                    }
+                }
+                <guid>@Request.ServerVariables["HTTP_HOST"]/?r=@r&amp;m=@m&amp;bid=@R["bbsid"]&amp;uid=@R["uid"]</guid>
+                <dc:date>@R["d_regis"]</dc:date>
+                <dc:subject></dc:subject>
+                
+            </item>
+            }
+        </channel>
+    </rss>
+    }
+    
+    return;
+}
+

@@ -1,0 +1,71 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var p = PageData[1];
+    var m = PageData[2];
+    var c = PageData[3];
+ 
+    string skin = Request["skin"];
+    string iframe = Request["iframe"];
+    string orderby = Request["orderby"];
+    string sort = Request["sort"];
+    string recnum = Request["recnum"];
+    string where = Request["where"];
+    string _keyword = Request["keyword"];
+    
+    dynamic R = Session["R"];
+}
+
+
+
+<div id="pwbox">
+	<div id="chkbox">
+
+		<div class="msg">
+			<h3><img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> 비밀번호 확인</h3>
+			<div>댓글 등록시에 입력했던 비밀번호를 입력해 주세요.</div>
+		</div>
+
+
+		<form name="checkForm" method="post" action="@g["s"]/" onsubmit="return permCheck(this);">
+		<input type="hidden" name="type" value="" />
+		<input type="hidden" name="c" value="@c" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="skin" value="@skin" />
+		<input type="hidden" name="iframe" value="@iframe" />
+		<input type="hidden" name="p" value="@p" />
+		<input type="hidden" name="sort" value="@sort" />
+		<input type="hidden" name="orderby" value="@orderby" />
+		<input type="hidden" name="recnum" value="@recnum" />		
+		<input type="hidden" name="where" value="@where" />
+		<input type="hidden" name="keyword" value="@_keyword" />
+		<input type="hidden" name="uid" value="@R["uid"]" />
+
+		<div class="ibox">
+			<input type="password" name="pw" class="input" />
+			<input type="submit" value=" 확인 " class="btnblue" />
+			<input type="button" value=" 취소 " class="btngray" onclick="history.back();" />
+		</div>
+
+		</form>
+	</div>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+    var layer = getId('pwbox');
+    var chkbx = getId('chkbox');
+    layer.style.width = '99.8%';
+    chkbx.style.width = '100%';
+    layer.style.display = 'block';
+    layer.style.left = '0px';
+    layer.style.top = '10px';
+    document.checkForm.pw.style.width = '120px';
+//]]>
+</script>

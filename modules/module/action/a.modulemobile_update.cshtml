@@ -1,0 +1,49 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var mobile = Request["mobile"];
+    var moduleid = Request["moduleid"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    if (mobile != null && mobile != "0") 
+    {
+        mobile = "0";
+    }
+    else 
+    {
+        mobile = "1";
+    }
+    
+    string UPDATE_MODULE_SQL = "UPDATE " + AppState["table_s_module"].ToString() + " SET mobile=" + mobile + " WHERE id='" + moduleid + "'";
+    @_DB.Execute(UPDATE_MODULE_SQL);
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

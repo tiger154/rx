@@ -1,0 +1,118 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    string id = Request["new_id"].Trim();
+    string pw_a	= Request["new_pw_a"].Trim();
+    string pw1	= Request["new_pw1"].Trim();
+    string pw2	= Request["new_pw2"].Trim();
+    
+    string alert = "";
+    string pushmsg = "";
+    
+    int result_num = 1;
+
+    if (id == null || id == "") 
+    {
+	    @_System.getLink("", "", "아이디를 입력해 주세요.", "")
+        return;
+    }
+
+    int M_count = _DB.GetDbData_Count(AppState["table_s_mbrid"].ToString(), "id='"+id+"'");
+
+    if(M_count == 0) 
+    {
+	    @_System.getLink("", "", "존재하지 않는 아이디입니다.", "")
+        return;
+    }    
+    else 
+    {
+        var M = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "id='"+id+"'", "uid");
+        dynamic R = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid="+M);
+
+        if(pw_a != "") {
+            if(pw_a == R["pw_a"]) {
+        		result_num = 3;
+		        alert = "인증되셨습니다.재 등록할 패스워드를 입력해 주세요.";                
+                pw1 = FormsAuthentication.HashPasswordForStoringInConfigFile(pw1, "SHA1");       // SHA 암호화
+
+                if(pw1 != "" && pw2 != "") {
+                    string pw_up1_sql = "UPDATE "+AppState["table_s_mbrid"]+" SET pw='"+pw1+"' WHERE uid="+M;
+                    string pw_up2_sql = "UPDATE "+AppState["table_s_mbrdata"]+" SET last_pw=getdate() WHERE memberuid="+M;
+                    
+                    @_DB.Execute(pw_up1_sql);
+                    @_DB.Execute(pw_up1_sql);
+            
+                    @_System.getLink(_System.RW("mod=login", g["r"], _HS), "parent.", "", "")
+                    return;
+				}
+			}
+            else {
+                result_num = 2;
+                alert = "질문에 대한 답변이 일치하지 않습니다.";
+			}
+		}
+        else {
+        	result_num = 2;
+	        alert = "질문에 대한 답변을 입력해 주세요.";
+	        pushmsg = R["pw_q"];            
+		}
+	}
+    
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title></title>
+    <script type="text/javascript">
+    //<![CDATA[
+    function pwStepCheck(n) {	
+	    parent.getId('pwauth_step_1').style.display = 'none';
+	    parent.getId('pwauth_step_2').style.display = 'none';
+	    parent.getId('pwauth_step_3').style.display = 'none';
+
+	    parent.getId('pwauth_step_'+n).style.display = 'block';
+	    parent.getId('id_auth').value = n;
+	    parent.getId('pwsearchStep_'+n).focus();
+    }
+    pwStepCheck(@result_num);
+
+    @if(pushmsg != "") {
+        @Html.Raw("parent.getId('pw_question').innerHTML = \""+@pushmsg+"\";\n");
+    }
+    @if(alert != "") {
+        @Html.Raw("alert('"+@alert+"');\n");
+    }
+    
+    //]]>
+    </script>
+    </head>
+    <body></body>
+    </html>    
+}

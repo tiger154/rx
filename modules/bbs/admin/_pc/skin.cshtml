@@ -1,0 +1,186 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var theme = Request["theme"];
+
+    string frame_name = "_action_frame_" + m;
+    string LEVEL_sql = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid asc";
+
+    if (theme == null)
+    {
+        theme = "";
+    }
+    else if (theme.Contains("/"))
+    {
+        theme = theme.Replace("/", "\\");
+    }
+    
+    dynamic d_theme = _DB.Get_bbstheme(theme);
+}
+
+<div id="catebody">
+	<div id="category">
+		<div class="title">
+			<span class="add">
+			<a href="@g["s"]/?r=@r&m=@m&module=market&front=pack&type=theme" title="테마 추가"><img src="@g["img_core"]/_public/btn_add.gif" alt="" /></a>
+			</span>
+			테마리스트
+		</div>
+		
+		<div class="tree">
+			<ul>
+            @{
+                int i = 0;
+                string xdir = g["path_root_ps"] + g["path_module"] + module + "\\theme\\";
+                string tdir = xdir + "_pc\\";
+
+                foreach (string skin in Directory.GetDirectories(tdir))
+                {
+                    string skin_name = skin.Substring(tdir.Length, skin.Length - tdir.Length);
+
+                    if (skin_name == "." || skin_name == ".." || File.Exists(skin))
+                    {
+                        continue;
+                    }
+
+                    i++;
+                    
+                    <li>
+				        <img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+				        <a href="@g["adm_href"]&theme=_pc/@skin_name"><span class="name@(Html.Raw(_System.isEqual(theme, "_pc\\" + skin_name, " on", "")))"><span class="b">[P]</span>@_System.getFolderName(skin, "name.txt")</span></a><span class="id">(@skin_name)</span>
+			        </li>
+                }
+
+                tdir = xdir + "_mobile\\";
+
+                foreach (string skin in Directory.GetDirectories(tdir))
+                {
+                    string skin_name = skin.Substring(tdir.Length, skin.Length - tdir.Length);
+
+                    if (skin_name == "." || skin_name == ".." || File.Exists(skin))
+                    {
+                        continue;
+                    }
+
+                    i++;
+                    
+			        <li>
+				        <img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+				        <a href="@g["adm_href"]&theme=_mobile/@skin_name"><span class="name@(Html.Raw(_System.isEqual(theme, "_mobile\\" + skin_name, " on", "")))"><span class="b">[M]</span>@_System.getFolderName(skin, "name.txt")</span></a><span class="id">(@skin_name)</span>
+			        </li>
+                }               
+            }
+			</ul>
+		</div>
+
+        @if (i == 0)
+        {
+            <div class="none">등록된 테마가 없습니다.</div>    
+        }
+	</div>
+
+
+	<div id="catinfo">
+
+
+		<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="theme_config" />
+		<input type="hidden" name="theme" value="@theme" />
+		<div class="title">
+
+			<div class="xleft">
+				테마 세부설정 변수
+			</div>
+			<div class="xright">
+            @if (theme != null && theme != "")
+            {
+                <a href="@g["s"]/?r=@r&m=@module&a=theme_delete&theme=@theme" target="@frame_name" onclick="return confirm('정말로 이 테마를 삭제하시겠습니까?       ');">테마삭제</a>
+            }
+			</div>
+
+		</div>
+
+        @if (theme != null && theme != "")
+        {
+		    <div class="notice">
+			    <span class="b">@_System.getFolderName(xdir + theme, "name.txt")</span> 테마가 선택되었습니다.<br />
+			    이 테마를 사용하는 모든 게시판에 아래의 설정값이 적용됩니다.
+		    </div>
+
+		    <textarea name="theme_var" rows="10" cols="70">
+            @{
+            string source_path = g["path_root_ps"] + g["path_module"] + module + "\\theme\\" + theme + "\\_var.cshtml";
+
+                using (StreamReader sr = new StreamReader(source_path, System.Text.Encoding.UTF8, true)) { 
+                    @Html.Raw(sr.ReadToEnd())
+                }
+            }
+            </textarea>
+		
+		    <div class="submitbox">
+			    <input type="submit" class="btnblue" value=" 확인 " />
+			    <div class="clear"></div>
+		    </div>		
+        }
+        else
+        {
+		    <div class="notice">
+			    테마가 선택되지 않았습니다. 테마를 선택해 주세요.<br />
+			    테마설정은 해당 테마를 사용하는 모든 게시판에 적용됩니다.
+		    </div>
+
+		    <ul>
+		    <li>테마는 게시판의 외형을 변경할 수 있는 요소입니다.</li>
+		    <li>테마설정은 게시판의 외형만 제어하며 게시판의 내부시스템에는 영향을 주지 않습니다.</li>
+		    <li>테마의 속성을 변경하면 해당테마를 사용하는 모든 게시판에 적용됩니다.</li>
+		    </ul>            
+        }
+		</form>
+		
+
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function saveCheck(f) {
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+//]]>
+</script>
+
+
+
+
+

@@ -1,0 +1,495 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var bid = Request["bid"];
+    var front = Request["front"];
+    var type = Request["type"];
+    var account = Request["account"];
+    var where = Request["where"];
+    var notice = Request["notice"];
+    var hidden = Request["hidden"];
+    var keyw = Request["keyw"];    
+    
+    string frame_name = "_action_frame_" + m;
+
+    string SITES_sql = "";
+    string LIST_sql = "";
+    string RCD_sql = "";    
+    
+    int SITE_NUM = 0;
+    int LIST_NUM = 0;
+    int NUM = 0;
+
+    decimal TPG = 0;
+
+    string year1 = Request["year1"] != null && Request["year1"] != "" ? Request["year1"] : date["year"];
+    string month1 = Request["month1"] != null && Request["month1"] != "" ? Request["month1"] : date["month"];
+    string day1 = Request["day1"] != null && Request["day1"] != "" ? Request["day1"] : "01";
+    string year2 = Request["year2"] != null && Request["year2"] != "" ? Request["year2"] : date["year"];
+    string month2 = Request["month2"] != null && Request["month2"] != "" ? Request["month2"] : date["month"];
+    string day2 = Request["day2"] != null && Request["day2"] != "" ? Request["day2"] : date["day"];
+
+    string recnum = (Request["recnum"] != null && Request["recnum"] != "" && Convert.ToInt32(Request["recnum"]) < 200 ? Request["recnum"] : "20");
+    string sort = (Request["sort"] != null && Request["sort"] != "" ? Request["sort"] : "gid");
+    string orderby = (Request["orderby"] != null && Request["orderby"] != "" ? Request["orderby"] : "asc");
+    string accountQue = (Request["account"] != null && Request["account"] != "" ? "site=" + Request["account"] + " and " : "");
+    string _WHERE = accountQue + "d_regis BETWEEN '" + year1 + "-" + month1 + "-" + day1 + " 00:00:00' AND '" + year2 + "-" + month2 + "-" + day2 + " 23:59:59'";
+ 
+    if (bid != null && bid != "") 
+    {
+        _WHERE += " and bbs=" + bid;
+    }
+    if (notice != null && notice != "") 
+    {
+        _WHERE += " and notice=1";
+    }
+    if (hidden != null && hidden != "") 
+    {
+        _WHERE += " and hidden=1";
+    }
+
+    if (where != "" && where != null) 
+    {
+        if (keyw != "" && keyw != null) 
+        {
+            if (where.Contains("[name][nic][id][ip]")) 
+            {
+                _WHERE += " and " + where + "='" + keyw + "'";
+            }
+            else 
+            {
+                if(keyw.Length > 2) 
+                {                   // 2 byte over
+                    _WHERE += _System.getSearchSql(where, keyw, "", "or");	
+                }
+                else {
+                    @_System.getLink("", "", "검색어는 3자 이상 입니다.", "-1")
+                    return;
+                }
+            }
+        }
+    }
+
+    
+    SITES_sql = "SELECT * FROM " + AppState["table_s_site"].ToString() + " ORDER BY gid asc";
+    
+    LIST_sql = _System.GetQuery(AppState["table_" + module + "list"].ToString(), "", "", "gid", "asc", 0, "");    
+    RCD_sql = _System.GetQuery(AppState["table_" + module + "data"].ToString(), "", _WHERE, sort, orderby, (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum), recnum);
+
+    SITE_NUM = _DB.GetDbData_Count(AppState["table_s_site"].ToString(), "");
+    LIST_NUM = _DB.GetDbData_Count(AppState["table_" + module + "list"].ToString(), "");
+    
+    NUM = _DB.GetDbData_Count(AppState["table_" + module + "data"].ToString(), _WHERE);    
+    TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));     // total page count  
+}
+
+<div id="bbslist">
+	<div class="sbox">
+		<form name="procForm" action="@g["s"]/" method="get">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="module" value="@module" />
+		<input type="hidden" name="front" value="@front" />
+
+		<select name="account" class="account" onchange="this.form.submit();">
+		<option value="">&nbsp;+ 전체사이트</option>
+		<option value="">---------------------------</option>
+        
+        @if (SITE_NUM == 0)
+        {
+            <option value="">등록된 사이트가 없습니다.</option>
+        }
+        else
+        {
+            foreach (var S in _DB.Query(SITES_sql))
+            {
+            	<option value="@S["uid"]"@_System.getSltStr(account, S["uid"]);>ㆍ @S["name"]</option>    
+            }
+        }        
+        
+        </select>
+
+        <select name="bid" onchange="this.form.submit();">
+		<option value="">&nbsp;+ 전체게시판</option>
+		<option value="">---------------------------</option>
+        
+        @if (LIST_NUM == 0)
+        {
+		    <option value="">등록된 게시판이 없습니다.</option>                
+        }
+        else
+        {
+            foreach (var _B in _DB.Query(LIST_sql))
+            {                       
+     		    <option value="@_B["uid"]" @_System.getSltStr(bid, _B["uid"])>ㆍ @_B["name"] (@_B["id"] - @string.Format("{0:#,0}", Convert.ToInt32(_B["num_r"])))</option>
+            }
+        }
+            
+        
+		</select>
+
+        <div>
+		<select name="year1">
+
+        @for (int i = Convert.ToInt32(date["year"]); i > 2000; i--)
+        {    
+            <option value="@i"@_System.getSltStr(year1, _System.DateSet(i))>@Html.Raw(i + "년")</option>               
+        }
+
+        </select>
+
+        <select name="month1">
+
+        @for (int i = 1; i < 13; i++)
+        {
+            <option value="@_System.DateSet(i)" @_System.getSltStr(month1, _System.DateSet(i))>@_System.DateSet(i)월</option>         
+        }
+
+        </select>
+
+        <select name="day1">
+
+        @for (int i = 1; i < 32; i++)
+        {
+            <option value="@_System.DateSet(i)" @_System.getSltStr(day1, _System.DateSet(i))>@_System.DateSet(i)일</option>
+        }
+
+        </select>
+		~
+		<select name="year2">
+
+        @for (int i = Convert.ToInt32(date["year"]); i > 2000; i--)
+        {
+            <option value="@i" @_System.getSltStr(year2, _System.DateSet(i))>@Html.Raw(i + "년")</option>
+        }   
+
+        </select>
+
+        <select name="month2">
+
+        @for (int i = 1; i < 13; i++)
+        {                
+            <option value="@_System.DateSet(i)" @_System.getSltStr(month2, _System.DateSet(i))>@_System.DateSet(i)월</option>
+        }   
+        
+        </select>
+              
+        <select name="day2">
+        
+        @for (int i = 1; i < 32; i++)
+        {
+            <option value="@_System.DateSet(i)" @_System.getSltStr(day2, _System.DateSet(i))>@_System.DateSet(i)일</option>
+        }  
+
+        </select>
+        <input type="button" class="btngray" value="기간적용" onclick="this.form.submit();" />
+		<input type="button" class="btngray" value="어제" onclick="dropDate('@date["_yester"]','@date["_yester"]');" />
+		<input type="button" class="btngray" value="오늘" onclick="dropDate('@date["totime"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="일주" onclick="dropDate('@date["_week"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="한달" onclick="dropDate('@date["_month"]','@date["totime"]');" />
+        <input type="button" class="btngray" value="당월" onclick="dropDate('@date["curMonth"]','@date["totime"]');" />
+		<input type="button" class="btngray" value="전월" onclick="dropDate('@date["preMonth1"]','@date["preMonth2"]');" />
+		<input type="button" class="btngray" value="전체" onclick="dropDate('2009-01-01','@date["totime"]');" />
+        </div>
+
+		<div>
+		<select name="sort" onchange="this.form.submit();">
+            <option value="gid" @_System.getSltStr(sort, "gid")>등록일</option>
+            <option value="hit" @_System.getSltStr(sort, "hit")>조회</option>
+            <option value="down" @_System.getSltStr(sort, "down")>다운</option>
+            <option value="comment" @_System.getSltStr(sort, "comment")>댓글</option>
+            <option value="oneline" @_System.getSltStr(sort, "oneline")>한줄의견</option>
+            <option value="trackback" @_System.getSltStr(sort, "trackback")>트랙백</option>
+            <option value="score1" @_System.getSltStr(sort, "score1")>점수1</option>
+            <option value="score2" @_System.getSltStr(sort, "score2")>점수2</option>
+            <option value="singo" @_System.getSltStr(sort, "singo")>신고</option>
+        </select>
+
+		<select name="orderby" onchange="this.form.submit();">
+            <option value="desc" @_System.getSltStr(orderby, "desc")>역순</option>
+            <option value="asc" @_System.getSltStr(orderby, "asc")>정순</option>
+		</select>
+
+		<select name="recnum" onchange="this.form.submit();">
+            <option value="20" @_System.getSltStr(recnum, 20)>20개</option>
+            <option value="35" @_System.getSltStr(recnum, 35)>35개</option>
+            <option value="50" @_System.getSltStr(recnum, 50)>50개</option>
+            <option value="75" @_System.getSltStr(recnum, 75)>75개</option>
+            <option value="90" @_System.getSltStr(recnum, 90)>90개</option>
+        </select>
+        
+		<select name="where">        
+            <option value="subject|tag" @_System.getSltStr(where, "subject")>제목+태그</option>
+            <option value="content" @_System.getSltStr(where, "content")>본문</option>
+            <option value="name" @_System.getSltStr(where, "name")>이름</option>     
+            <option value="nic" @_System.getSltStr(where, "nic")>닉네임</option>
+            <option value="id" @_System.getSltStr(where, "id")>아이디</option>
+            <option value="ip" @_System.getSltStr(where, "ip")>아이피</option>     
+		</select>
+ 
+		<input type="text" name="keyw" value="@_System.stripslashes(keyw)" class="input" />
+		<input type="submit" value="검색" class="btnblue" />
+		<input type="button" value="리셋" class="btngray" onclick="location.href='@g["adm_href"]';" />
+        <input type="checkbox" name="notice" id="notice" value="Y" @_System.getChkStr(notice, "Y") onclick="this.form.submit();" /><label for="notice">공지글</label>
+        <input type="checkbox" name="hidden" id="hidden" value="Y" @_System.getChkStr(hidden, "Y") onclick="this.form.submit();" /><label for="hidden">비밀글</label>
+
+            
+		</div>
+		</form>
+	</div>
+
+    <div class="info">
+		<div class="article">
+            @string.Format("{0:#,0}", Convert.ToInt32(NUM))개(@p/@TPG 페이지)
+		</div>
+		
+		<div class="category">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+
+
+	<form name="listForm" action="@g["s"]/" method="post" target="@frame_name">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="" />
+
+	<table summary="전체 게시물리스트 입니다.">
+	<caption>전체게시물</caption> 
+	<colgroup> 
+	<col width="30"> 
+	<col width="50"> 
+	<col width="300"> 
+	<col width="80"> 
+	<col width="50"> 
+	<col width="50"> 
+	<col width="50"> 
+	<col width="50"> 
+	<col width="50"> 
+	<col width="90"> 
+	<col> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" class="hand" alt="" onclick="chkFlag('post_members');" /></th>
+	<th scope="col">번호</th>
+	<th scope="col">제목</th>
+	<th scope="col">이름</th>
+	<th scope="col">조회</th>
+	<th scope="col">다운</th>
+	<th scope="col">점수1</th>
+	<th scope="col">점수2</th>
+	<th scope="col">신고</th>
+	<th scope="col">날짜</th>
+	<th scope="col" class="side2"></th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @if (NUM == 0)
+    {
+        <tr>
+	    <td><input type="checkbox" disabled="disabled" /></td>
+	    <td>1</td>
+	    <td class="sbj1">게시물이 없습니다.</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td class="hit b">-</td>
+	    <td>@date["totime"].ToString("yyyy.MM.dd HH:mm")</td>
+	    <td></td>
+	    </tr> 
+    }
+    else
+    {
+        int _rec = 0;
+
+        foreach (var R in _DB.Query(RCD_sql))
+        {
+            int tmp_num = NUM - ((Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum) + (_rec++));
+            
+            if (tmp_num == 0)
+            {
+                break;
+            }
+            
+            <tr>
+	        <td><input type="checkbox" name="post_members" value="@R["uid"]" /></td>
+	        <td>
+            
+            @if (R["uid"].ToString() != uid)
+            {
+                @tmp_num
+            }
+            else
+            {
+                _rec++;                        
+                <span class="now">&gt;&gt;</span>
+            }
+            		        
+	        </td>
+
+            <td class="sbj">
+            @{                
+            string mobile_chk = _System.isMobileConnect(R["agent"]);     // 모바일 체크
+            string olString = "";
+
+            if (R["notice"] != "0")
+            {
+                    <img src="@g["img_core"]/_public/ico_notice.gif" class="imgpos1" alt="공지글" title="공지글" />
+            }
+            if (mobile_chk != "")
+            {
+                    <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos" alt="모바일" title="모바일(@mobile_chk)로 등록된 글입니다" />
+            }
+            if (R["category"] != "")
+            {
+                    <span class="cat">[@R["category"]]</span>
+            }               
+                
+    		     <a href="@_System.getPostLink(s, R, g["r"], _HS)" target="_blank">@R["subject"]</a>                
+                
+            if (R["content"].Contains(".jpg") == true)
+            {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+            }
+            if (R["upload"] != "")
+            {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+            }
+            if (R["hidden"] == "1")
+            {
+                    <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+            }
+            if (R["comment"] != 0)
+            {
+                if (R["oneline"] != 0)
+                {
+                    olString = "+" + R["oneline"];
+                }  
+                    
+                    <span class="comment">[@R["comment"]@olString]</span>
+            }
+            if (R["trackback"] != 0)
+            {
+                    <span class="trackback">[@R["trackback"]]</span>
+            }
+            if (_System.getNew(R["d_regis"].ToString(), 24))
+            {
+                    <span class="new">new</span>
+            }
+            }
+	        </td>
+            
+            @if (R["id"] != "")
+            {
+                <td><a href="javascript:OpenWindow('@g["s"]/?r=@r&iframe=Y&m=member&front=manager&page=post&mbruid=@R["mbruid"]');" title="게시정보">@R[@_HS["nametype"]]</a></td>                
+            }
+            else
+            {
+                <td>@R[@_HS["nametype"]]</td>
+            }
+
+	        <td class="hit b">@R["hit"]</td>
+	        <td>@R["down"]</td>
+	        <td>@R["score1"]</td>
+	        <td>@R["score2"]</td>
+	        <td>@R["singo"]</td>
+	        <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	        <td></td>
+	        </tr>             
+        }
+    }
+	</tbody>
+	</table>
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10, @p, @TPG,'@g["img_core"]/page/default');</script>
+	</div>
+
+	<input type="button" value="선택/해제" class="btngray" onclick="chkFlag('post_members');" />
+	<input type="button" value="삭제" class="btnblue" onclick="actCheck('multi_delete');" />
+	<input type="button" value="복사" class="btnblue" onclick="actCheck('multi_copy');" />
+	<input type="button" value="이동" class="btnblue" onclick="actCheck('multi_move');" />
+	</form>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function dropDate(date1, date2) {
+        var f = document.procForm;
+
+        f.year1.value = date1.substring(0, 4);
+        f.month1.value = date1.substring(5, 7);
+        f.day1.value = date1.substring(8, 10);
+
+        f.year2.value = date2.substring(0, 4);
+        f.month2.value = date2.substring(5, 7);
+        f.day2.value = date2.substring(8, 10);
+
+        f.submit();
+    }
+
+    function actCheck(act) {
+        var f = document.listForm;
+        var l = document.getElementsByName('post_members');
+        var n = l.length;
+        var j = 0;
+        var i;
+        var s = '';
+
+        for (i = 0; i < n; i++) {
+            if (l[i].checked == true) {
+                j++;
+                s += '[' + l[i].value + ']';
+            }
+        }
+
+        if (!j) {
+            alert("선택된 게시물이 없습니다.      ");
+            return false;
+        }
+
+        if (act == 'multi_delete') {
+            if (confirm("정말로 삭제하시겠습니까?    ")) {
+                f.a.value = act;
+                f.submit();
+            }
+        }
+        else {
+            OpenWindow('@g["s"]/?r=@r&iframe=Y&m=@m&module=@module&front=movecopy&type=' + act + '&postuid=' + s);
+        }
+        return false;
+    }
+//]]>
+</script>

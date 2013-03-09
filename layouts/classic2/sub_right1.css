@@ -1,0 +1,13 @@
+﻿
+
+
+#content {float:left;width:650px;padding:20px 40px 20px 0px;}
+
+#container .snb {float:left;width:260px;padding:20px 0 20px 0;}
+#container .snb .submenu {padding:0;margin:0;list-style-type:none;}
+#container .snb .submenu .s1 {padding:0 0 25px 0;}
+#container .snb .submenu .s1 a {font-weight:bold;color:#555555;}
+#container .snb .submenu .s1 ul {padding:10px 0 0 0;margin:0;list-style-type:none;}
+#container .snb .submenu .s1 li {background:url('./image/arr_box.gif') left 7px no-repeat;padding:3px 0 3px 10px;}
+#container .snb .submenu .s1 li a {font-weight:normal;color:#3C81B8;}
+#container .snb .submenu .s1 li .on {text-decoration:underline;}

@@ -1,0 +1,88 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var comment_members = Request["comment_members"];
+    var uid = Request["uid"];
+    var my_admin = Request["admin"];
+    var skin = Request["skin"];
+    var iframe = Request["iframe"];
+    var p = Request["p"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var pw = Request["pw"];
+    //string backUrl = "";
+
+    @_System.checkAdmin(my_admin, 0)
+
+    string[] cmt_mem = comment_members.Split(',');    
+
+    foreach(string val in cmt_mem){
+       
+        dynamic R = _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "uid=" + val);       
+        //if (!R["uid"]) continue;
+        
+               
+        
+        //동기화 부분 미구현 (댓글삭제시 table[rb_bbs_data] - comment 업데이트 구현안됨)
+        
+        
+        //첨부파일삭제 미구현
+
+
+        
+        // 한줄의견 삭제
+        if(R["oneline"] > 0) {
+            string OL_SQL = "SELECT * FROM "+AppState["table_s_oneline"]+" WHERE parent="+R["uid"];
+            
+            foreach(var _O in _DB.Query(OL_SQL)) {
+                string UPDATE_OL_SQL = "UPDATE "+AppState["table_s_numinfo"]+" SET oneline=oneline-1 WHERE date='"+_O["d_regis"].ToString("yyyyMMdd")+"' AND site="+_O["site"];
+                
+                @_DB.Execute(UPDATE_OL_SQL);
+            }
+            string DELETE_OL_SQL = "DELETE FROM "+AppState["table_s_oneline"]+" WHERE parent="+R["uid"];
+    
+            @_DB.Execute(DELETE_OL_SQL);
+        }
+        
+        string DELETE_CM_SQL = "DELETE FROM "+AppState["table_s_comment"]+" WHERE uid="+R["uid"];
+        string UPDATE_NUMINFO_SQL = "UPDATE "+AppState["table_s_numinfo"]+" SET comment=comment-1 WHERE date='"+R["d_regis"].ToString("yyyyMMdd")+"' AND site="+R["site"];
+
+        @_DB.Execute(DELETE_CM_SQL);
+        @_DB.Execute(UPDATE_NUMINFO_SQL);
+        
+        
+        
+    }
+    
+    @_System.getLink("reload", "parent.", "", "");
+    
+}

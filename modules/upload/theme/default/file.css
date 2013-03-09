@@ -1,0 +1,48 @@
+﻿
+#filebox {}
+fileorder
+#filebox .header {height:35px;background:#484848;}
+#filebox .header .xl {float:left;}
+#filebox .header .xl .logo {position:relative;top:8px;left:8px;}
+#filebox .header .xr {float:right;}
+#filebox .header .xr .cupload {padding:8px 5px 0 0;}
+#filebox .header .xr .cupload .file {height:21px;border:#222 solid 1px;background:#c0c0c0;position:relative;top:-2px;}
+#filebox .header .xr .dupload {padding:10px 10px 0 0;font-size:11px;font-family:dotum;font-size:11px;}
+#filebox .header .xr .dupload a {color:#666;}
+#filebox .header .xr .dupload a:hover {text-decoration:underline;}
+
+#filebox .bar {height:25px;background:#ffffff;padding:10px 20px 0 20px;}
+#filebox .bar .xl {float:left;}
+#filebox .bar .xl img {position:relative;top:9px;left:2px;}
+#filebox .bar .xl .dragstr {font-family:dotum;font-size:11px;color:#888888;position:relative;left:2px;top:7px;letter-spacing:-1px;}
+#filebox .bar .xr {float:right;}
+
+
+
+#filebox .body {height:205px;padding:15px 20px 0 20px;}
+#filebox .body .fbox {background:#F6F6F6;border:#efefef solid 3px;margin:0;padding:2px 2px 10px 2px;}
+#filebox .body .fbox .title {height:20px;}
+#filebox .body .fbox .title .info {position:relative;top:8px;left:10px;font-size:11px;font-family:dotum;color:#555;}
+
+#filebox .body .fbox .ibox {background:#ffffff;border:#dfdfdf solid 1px;padding:0 0 0 3px;margin:10px 10px 0 10px;height:140px;overflow:auto;position:relative;}
+#filebox .body .fbox .ibox input {display:none;}
+#filebox .body .fbox .ibox ul {margin:0;padding:0;}
+#filebox .body .fbox .ibox li {list-style-type:none;padding:2px 0 2px 5px;cursor:move;font-family:arial;font-size:11px;color:#222;}
+#filebox .body .fbox .ibox li img {position:relative;top:2px;}
+#filebox .body .fbox .ibox li span {position:relative;top:0;left:3px;font-size:10px;color:#999;}
+#filebox .body .fbox .ibox li:hover {background:#F2F2F2;}
+
+#filebox .footer {background:#ffffff;height:50px;text-align:center;padding:10px 0 0 0;}
+
+
+
+
+#progress {display:none;position:absolute;width:336px;top:125px;left:37px;border:#A1BDF5 solid 5px;padding:10px;background:#ffffff;filter:alpha(opacity=90);opacity:0.9;}
+#progress table {}
+#progress td {height:16px;}
+#progress .td1 {width:60px;}
+#progress .td2 {width:225px;}
+#progress .td3 {width:30px;}
+#progress .bggrap {display:block;width:215px;height:10px;border:#c0c0c0 solid 1px;background:#dfdfdf;}
+#progress .grap {display:block;width:0px;height:100%;background:#ff0000;}
+

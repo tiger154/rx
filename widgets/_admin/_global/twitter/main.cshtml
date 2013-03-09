@@ -1,0 +1,105 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var g = PageData[0];
+    var _m = PageData[1];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+    var date = PageData[15];
+    var referer = PageData[16];
+    var wdgvar = PageData[17];    
+
+    if (!wdgvar.ContainsKey("id"))
+    {
+        wdgvar.Add("id", "");
+    }
+    if (!wdgvar.ContainsKey("width"))
+    {
+        wdgvar.Add("width", "200");
+    }
+    if (!wdgvar.ContainsKey("height"))
+    {
+        wdgvar.Add("height", "300");
+    }
+    if (!wdgvar.ContainsKey("num"))
+    {
+        wdgvar.Add("num", "10");
+    }
+    if (!wdgvar.ContainsKey("bgcolor1"))
+    {
+        wdgvar.Add("bgcolor1", "efefef");
+    }
+    if (!wdgvar.ContainsKey("color1"))
+    {
+        wdgvar.Add("color1", "333333");
+    }
+    if (!wdgvar.ContainsKey("bgcolor"))
+    {
+        wdgvar.Add("bgcolor", "ffffff");
+    }
+    if (!wdgvar.ContainsKey("color"))
+    {
+        wdgvar.Add("color", "666666");
+    }
+    if (!wdgvar.ContainsKey("link"))
+    {
+        wdgvar.Add("link", "2276BB");
+    }
+    if (!wdgvar.ContainsKey("behavior"))
+    {
+        wdgvar.Add("behavior", "alternative");
+    }  
+}
+
+
+<script type="text/javascript" src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+new TWTR.Widget({
+  version: 2,
+  type: 'profile',
+  rpp: @wdgvar["num"],
+  interval: 5000,
+  width: @wdgvar["width"],
+  height: @(Convert.ToInt32(wdgvar["height"]) - 100),
+  theme: {
+    shell: {
+      background: '#@wdgvar["bgcolor1"]',
+      color: '#@wdgvar["color1"]'
+    },
+    tweets: {
+      background: '#@wdgvar["bgcolor"]',
+      color: '#@wdgvar["color"]',
+      links: '#@wdgvar["link"]'
+    }
+  },
+  features: {
+    scrollbar: true,
+    loop: true,
+    live: true,
+    hashtags: true,
+    timestamp: true,
+    avatars: false,
+    behavior: '@wdgvar["behavior"]'
+  }
+}).render().setUser('@wdgvar["id"]').start();
+//]]>
+</script>
+

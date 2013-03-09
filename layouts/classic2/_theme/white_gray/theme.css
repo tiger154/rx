@@ -1,0 +1,11 @@
+/* white gray */
+#header .headertop {background:#ffffff;border-bottom:#C6C6C6 solid 1px;}
+#header .logo h1 a {color:#555555;}
+#header .menutops {font-family:dotum;color:#c0c0c0;}
+#header .menutops a {color:#999997;}
+#header .menutabs li a {color:#454442;}
+#header .menutabs li a:hover {color:#716E69;}
+#header .menutabs .on {color:#575654;background:#EFEFEF;border-top:#C6C6C6 solid 1px;border-left:#C6C6C6 solid 1px;border-right:#C6C6C6 solid 1px;border-radius:4px 4px 0 0;}
+#header .menutabs .on:hover {color:#454442;}
+#container .mainbox {background:#EFEFEF;}
+#container .subbox {background:#EFEFEF;border-bottom:#DFDFDF solid 1px;}

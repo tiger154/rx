@@ -1,0 +1,94 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var members = Request["members"];
+    var R_uid = Request["R_uid"];
+    var pointType = Request["pointType"];    
+    
+    dynamic P = null;
+
+    if (my["uid"] == 0)
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+        
+    if (pointType == null || pointType == "") 
+    {
+        pointType = "point";
+    }
+    
+    if(my["admin"] == "1") 
+    {
+        foreach (string val in members.Split(','))
+        {
+            P = _DB.GetDbData_M(AppState["table_s_" + pointType].ToString(), "uid=" + val.Trim());
+            
+            if (P == null) 
+            {
+                continue;
+            }
+
+            
+        
+            string DELETE_PTYPE_SQL = "DELETE " + AppState["table_s_" + pointType].ToString() + " WHERE uid=" + P["uid"];
+            @_DB.Execute(DELETE_PTYPE_SQL);
+
+            /*
+            int prePoint = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "memberuid=" + P["my_mbruid"], pointType).ToString().AsInt();
+            string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"].ToString() + " SET " + pointType + "=" + (prePoint - P["price"]) + " WHERE memberuid=" + P["my_mbruid"];
+            @_DB.Execute(UPDATE_MBR_SQL);*/
+            
+        }       
+    }
+    else 
+    {
+        foreach(string val in members.Split(','))
+        {
+            P = _DB.GetDbData_M(AppState["table_s_" + pointType].ToString(), "uid=" + val.Trim());
+            
+            if (P == null || my["uid"] != P["my_mbruid"]) 
+            {
+                continue;
+            }
+            
+            string DELETE_PTYPE_SQL = "DELETE " + AppState["table_s_" + pointType].ToString() + " WHERE uid=" + val + " and my_mbruid=" + my["uid"];
+
+            @_DB.Execute(DELETE_PTYPE_SQL);
+
+            /*
+            int prePoint = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "memberuid=" + my["uid"], pointType).ToString().AsInt();
+            string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"].ToString() + " SET " + pointType + "=" + (prePoint - P["price"]) + " WHERE memberuid=" + my["uid"];
+            @_DB.Execute(UPDATE_MBR_SQL);*/
+        }            
+    }
+
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

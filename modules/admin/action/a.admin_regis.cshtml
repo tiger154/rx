@@ -1,0 +1,57 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var admin_id = Request["admin_id"].Trim();    
+    
+    @_System.checkAdmin(my["admin"], 0)     // 관리자 체크                                                
+    
+    dynamic R = _DB.Get_module_data(AppState["table_s_mbrid"], "id", admin_id);    
+    
+    if (R["uid"] == 0)
+    {
+        @_System.getLink("", "", "존재하지 않는 회원아이디입니다.", "")
+        return;
+    }
+
+    dynamic M = _DB.Get_module_data(AppState["table_s_mbrdata"], "memberuid", R["uid"]);
+
+    if (M["admin"] == "1")
+    {
+        @_System.getLink("", "", "이미 관리자로 지정된 회원입니다.", "")
+        return;
+    }
+
+    string UPDATE_MBRDT_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET admin='1', adm_name='관리자', adm_view='' WHERE memberuid=" + R["uid"];
+    @_DB.Execute(UPDATE_MBRDT_SQL);
+    
+    File.WriteAllText(g["path_root_ps"] + g["dir_module"] + "var\\users\\" + R["id"] + ".widget.cshtml", "", System.Text.Encoding.UTF8);
+
+    @_System.getLink("reload", "parent.", "추가되었습니다.", "")
+    return;
+}

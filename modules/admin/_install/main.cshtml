@@ -1,0 +1,318 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var m = PageData[3];
+
+    string sitelang = Request["sitelang"];
+    string site_sel = "";
+    string frame_name = "_action_frame_" + m;
+    
+    if(sitelang == "" || sitelang == null)
+    {
+        sitelang = g["sys_lang"];
+    }
+
+    string lang_RS = "SELECT nation FROM " + AppState["table_code_g_lang"].ToString() + " GROUP BY nation";
+    dynamic lang_VAR = _DB.Get_code_lang(sitelang);
+}
+<div id="lang">
+<div class="box">
+<form action="@g["s"]/" method="post">
+Language : 
+<select name="sitelang" onchange="this.form.submit();">
+
+@foreach (var _R in _DB.Query(lang_RS))
+{    
+    <option value="@_R["nation"]" @_System.getSltStr(sitelang, _R["nation"]) title="@_R["nation"]">@Html.Raw("ㆍ" + _R["nation"])</option>    
+}
+
+</select>
+</form>
+</div>
+</div>
+<div id="header">
+
+	<h1>KIMSQ-RX INSTALL</h1>
+
+</div>
+<div id="container">
+<div class="snb">
+
+	<ul>
+	<li id="li1" class="lix_now">@lang_VAR["licence"]</li>
+	<li id="li2" class="lix">@lang_VAR["user"]</li>
+	<li id="li3" class="lix">@lang_VAR["site"]</li>
+	</ul>
+
+</div>
+<div id="content">
+	<form name="procForm" action="@g["s"]/" method="post" onsubmit="return installCheck(this);">
+	<input type="hidden" name="m" value="@m" />
+	<input type="hidden" name="a" value="install" />
+	<input type="hidden" name="sitelang" value="@sitelang" />
+
+
+	<div id="step1">
+
+		<h2>@lang_VAR["licence"]</h2>
+		<div class="guide">
+			@lang_VAR["msg1_1"]<br />
+			@Html.Raw(lang_VAR["msg1_2"])
+		</div>
+		
+		<div class="stepbody">
+
+            <textarea class="licence" rows="10" cols="50">
+            @{
+                string source_path = g["path_root_ps"] + "LICENCE";
+            
+                using (StreamReader sr = new StreamReader(source_path, System.Text.Encoding.UTF8, true)) {
+                    @Html.Raw(sr.ReadToEnd())
+                }            
+            }                
+            </textarea>
+		
+		<div class="agreebox shift">
+		<input type="checkbox" id="licence_agree" onclick="agreeCheck(this);" /><label for="licence_agree">@lang_VAR["msg1_3"]</label>
+		</div>
+		</div>
+
+		<div class="bottom">
+			<input type="button" value="@lang_VAR["prev"]" disabled="disabled" />
+			<input type="button" value="@lang_VAR["next"]" id="next_01" disabled="disabled" onclick="goStep(2);" />
+		</div>
+	</div>
+
+	<div id="step2" class="hide">
+
+		<h2>@lang_VAR["user"]</h2>
+		<div class="guide">
+			@lang_VAR["msg3_1"]<br />
+			@lang_VAR["msg3_2"]<br />
+		</div>
+		<div class="stepbody">
+		<table>
+			<tr>
+			<td class="td1">@lang_VAR["user_name"]</td>
+			<td class="td2"><input type="text" name="name" value="" class="input" /></td>
+			</tr>
+			<tr>
+			<td class="td1">@lang_VAR["user_id"]</td>
+			<td class="td2"><input type="text" name="id" value="" class="input" /> @lang_VAR["user_idrule"]</td>
+			</tr>
+			<tr>
+			<td class="td1">@lang_VAR["user_pw1"]</td>
+			<td class="td2"><input type="password" name="pw0" value="" class="input" /></td>
+			</tr>
+			<tr>
+			<td class="td1">@lang_VAR["user_pw2"]</td>
+			<td class="td2"><input type="password" name="pw1" value="" class="input" /></td>
+			</tr>
+			<tr>
+			<td class="td1">@lang_VAR["user_email"]</td>
+			<td class="td2"><input type="text" name="email" value="" class="input" /></td>
+			</tr>
+		</table>
+		<div class="guide1">
+			<img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+			@lang_VAR["msg4_1"]
+		</div>
+				
+		</div>
+		<div class="bottom">
+			<input type="button" value="@lang_VAR["prev"]" onclick="goStep(1);" />
+			<input type="button" value="@lang_VAR["next"]" onclick="goStep(3);" />
+		</div>	</div>
+
+	<div id="step3" class="hide">
+		<h2>@lang_VAR["site"]</h2>
+		<div class="guide">
+			@lang_VAR["msg4_2"]<br />
+			@lang_VAR["msg4_3"]
+		</div>
+		<div class="stepbody">
+		<table>
+
+			<tr>
+			<td class="td1">@lang_VAR["site_name"]</td>
+			<td class="td2"><input type="text" name="sitename" value="" class="input" /></td>
+			</tr>
+
+			<tr>
+			<td class="td1">@lang_VAR["site_layout"]</td>
+			<td class="td2 shift">
+				<input type="radio" name="layout" value="classic1/main.cshtml" checked="checked" />@lang_VAR["site_type1"]<br />
+				<input type="radio" name="layout" value="classic2/main.cshtml" />@lang_VAR["site_type2"]<br />
+				<input type="radio" name="layout" value="classic3/main.cshtml" />@lang_VAR["site_type3"]<br />
+				<input type="radio" name="layout" value="gallery1/main.cshtml" />@lang_VAR["site_type4"]<br />
+				<input type="radio" name="layout" value="gallery2/main.cshtml" />@lang_VAR["site_type5"]<br />
+			</td>
+			</tr>
+
+		</table>
+		</div>
+
+		<div class="bottom">
+			<input type="button" value="@lang_VAR["prev"]" onclick="goStep(2);" />
+			<input type="submit" value="@lang_VAR["install"]" />
+		</div>
+	</div>
+
+	</form>
+
+
+</div>
+<div class="clear"></div>
+</div>
+
+<div id="footer">
+
+
+</div>
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+function engineCheck(obj)
+{
+	if (obj.value == 'innoDB')
+	{
+		@Html.Raw("if(confirm('" + lang_VAR["alert_1"] + "'))\n")
+		{
+			obj.value = 'innoDB';
+		}
+		else {
+			obj.value = 'MyISAM';
+		}
+	}
+}
+function agreeCheck(obj)
+{
+	if (obj.checked == true)
+	{
+		getId('next_01').disabled = false;
+	}
+	else {
+		getId('next_01').disabled = true;
+	}
+}
+function goStep(n)
+{
+	var f = document.procForm;
+	var i;
+	
+	if (n > 1)
+	{
+		document.getElementById('lang').style.display = 'none';
+	}
+	else {
+		document.getElementById('lang').style.display = 'block';
+	}
+	if (n == 2)
+	{
+		if (getId('licence_agree').checked == false)
+		{
+			return false;
+		}
+	}
+	if (n == 3)
+	{
+		if (f.name.value == '')
+		{
+			@Html.Raw("alert('" + lang_VAR["alert_8"] + "    ');\n")
+			f.name.focus();
+			return false;
+		}
+		if (f.id.value.length < 4 || f.id.value.length > 12 || !chkIdValue(f.id.value))
+		{
+			@Html.Raw("alert('" + lang_VAR["alert_9"] + "    ');\n")
+			f.id.focus();
+			return false;
+		}
+		if (f.pw0.value == '')
+		{
+			@Html.Raw("alert('" + lang_VAR["alert_10"] + "    ');\n")
+			f.pw0.focus();
+			return false;
+		}
+		if (f.pw1.value == '')
+		{
+			@Html.Raw("alert('" + lang_VAR["alert_11"] + "    ');\n")
+			f.pw1.focus();
+			return false;
+		}
+		if (f.pw0.value != f.pw1.value)
+		{
+			@Html.Raw("alert('" + lang_VAR["alert_12"] + "    ');\n")
+			f.pw0.value = '';
+			f.pw1.value = '';
+			f.pw0.focus();
+			return false;
+		}
+		if (!chkEmailAddr(f.email.value))
+		{
+			@Html.Raw("alert('" + lang_VAR["alert_13"] + "    ');\n")
+			f.email.focus();
+			return false;
+		}
+	}
+
+	for (i = 1; i < 4; i++)
+	{
+		getId('step'+i).style.display = 'none';
+
+		getId('li'+i).style.fontWeight = 'normal';
+		getId('li'+i).style.color = '#555';
+		getId('li'+i).style.background = 'url() top left no-repeat';
+
+	}
+	for (i = 1; i < n; i++)
+	{
+		getId('li'+i).style.fontWeight = 'normal';
+		getId('li'+i).style.color = '#7C9B39';
+		getId('li'+i).style.background = @Html.Raw("'url(" + g["img_install"] + "/chk_01.gif) top left no-repeat';\n")
+	}
+
+
+	getId('step'+n).style.display = 'block';
+
+	getId('li'+n).style.fontWeight = 'bold';
+	getId('li'+n).style.color = '#000000';
+	getId('li'+n).style.background = @Html.Raw("'url(" + g["img_install"] + "/chk_02.gif) top left no-repeat';\n")
+}
+
+var isSubmit = false;
+
+function installCheck(f)
+{
+	if (isSubmit == true)
+	{
+		@Html.Raw("alert('" + lang_VAR["alert_14"] + "');\n")
+		return false;
+	}
+	if (f.sitename.value == '')
+	{
+		@Html.Raw("alert('" + lang_VAR["alert_15"] + "    ');\n")
+		f.sitename.focus();
+		return false;
+	}
+
+	@Html.Raw("if(confirm('" + lang_VAR["alert_16"] + "         '))\n")
+	{
+		isSubmit = true;
+		return true;
+	}
+	return false;
+}
+//]]>
+</script>

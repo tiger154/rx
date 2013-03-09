@@ -1,0 +1,145 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var module = Request["module"];
+    var pwd = Request["pwd"];
+    var pwd1 = Request["pwd1"];
+    var folder = Request["folder"];
+    var newfolder = Request["newfolder"];
+    var iframe = Request["iframe"];
+    var act = Request["act"];
+    var Filedata = Request["Filedata"];    
+    var uploadedFile = Request.Files[0];
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    string sess_upFiles = "";
+    int totalCnt = 0;
+    int totalSize = 0;
+
+    if (Session["upFiles"] != null && Session["upFiles"].ToString() != "")
+    {
+        sess_upFiles = Session["upFiles"].ToString();
+    }
+
+    if (Session["totalCnt"] != null && Session["totalCnt"].ToString() != "")
+    {
+        totalCnt = Convert.ToInt32(Session["totalCnt"]);
+    }
+
+    if (Session["totalSize"] != null && Session["totalSize"].ToString() != "")
+    {
+        totalSize = Convert.ToInt32(Session["totalSize"]);
+    }
+
+    if (act == "add_upload")
+    {
+        string savePath = g["path_root_ps"] + g["path_tmp"] + "filemanagerUploadedFile";
+        string saveFile = savePath + "\\" + uploadedFile.FileName;
+
+        if (!Directory.Exists(savePath))
+        {
+            Directory.CreateDirectory(savePath);
+        }
+        uploadedFile.SaveAs(saveFile);
+        
+        sess_upFiles += "[" + saveFile + "]";
+        totalSize += uploadedFile.ContentLength;
+        totalCnt++;
+        
+        Session["upFiles"] = sess_upFiles;
+        Session["totalCnt"] = totalCnt;
+        Session["totalSize"] = totalSize;
+
+        @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=filemanager&front=main&pwd=" + Server.UrlEncode(folder) + "&fileupload=Y&iframe=" + iframe, "parent.", "", "")
+        return;
+    }
+
+    else if (act == "new_folder")
+    {
+        if (!Directory.Exists(folder + newfolder + "\\"))
+        {
+            Directory.CreateDirectory(folder + newfolder + "\\");
+        }
+        if (pwd != null && pwd != "")
+        {
+            @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=filemanager&front=main&pwd=" + Server.UrlEncode(folder) + "&fileupload=Y&iframe=" + iframe, "parent.", "", "")
+            return;
+        }
+        else
+        {
+            @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=filemanager&front=main&pwd=" + Server.UrlEncode(folder) + "&folderadd=Y&iframe=" + iframe, "parent.", "", "")                        
+            return;
+        }
+    }
+
+    else if (act == "submit_form")
+    {
+        string savePath = pwd;
+
+        if (pwd1 != null && pwd1 != "")
+        {
+            savePath += "pwd1" + "\\";
+        }
+
+        foreach (string file in _System.getArrayString(sess_upFiles))
+        {
+            string saveFile = savePath + Path.GetFileName(file);
+
+            //같은 이름의 파일이 이미 존재 할 경우 -> 무시
+            if (File.Exists(saveFile))
+            {
+                continue;
+            }
+
+            File.Move(file, saveFile);
+        }
+
+        Session["upFiles"] = null;
+        Session["totalCnt"] = null;
+        Session["totalSize"] = null;
+        
+        @_System.getLink("reload", "parent.", "", "")
+        return;
+    }
+
+    else if (act == "cancel_upload")
+    {
+        foreach (string file in _System.getArrayString(sess_upFiles))
+        {
+            File.Delete(file);
+        }
+
+        Session["upFiles"] = null;
+        Session["totalCnt"] = null;
+        Session["totalSize"] = null;
+        
+        @_System.getLink("reload", "parent.", "", "")
+        return;
+    }
+}

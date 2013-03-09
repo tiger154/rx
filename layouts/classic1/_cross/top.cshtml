@@ -1,0 +1,229 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var my = PageData[1];
+    var r = PageData[2];
+    var s = PageData[3];
+    var _HP = PageData[4];
+    var _CA = PageData[5];
+    var _HS = PageData[6];
+    var d_layout = PageData[7];
+    var LAYOUT_ARR = PageData[8];    
+    
+    string _themeConfig = Request["_themeConfig"];
+    string _keyword = Request["_keyword"];
+    string l_bg = "";
+    string keyword_prn = "";
+    string menunum = LAYOUT_ARR["menunum"];
+
+    int _i = 0;
+
+    bool rewrite = false;
+    
+    if(d_layout["_bg"] != "")
+    {
+        l_bg = " nobg";
+    }
+}
+
+<div>
+<div id="header">
+	<div class="@Html.Raw("topline" + l_bg)">
+		<div class="wrap">
+			<div id="_layout_message_" class="ltop"@d_layout["_message_color"]>@LAYOUT_ARR["message"]</div>
+			<div id="_layout_memberlink_" class="rtop">
+				<img src="@g["img_core"]/blank.gif" width="1" height="20" alt="" />
+                @if(my["uid"] > 0) {
+                    if(my["admin"] == "1") {
+                        <a href="@g["s"]/?r=@r&_themeConfig=theme&prelayout=@Html.Raw(d_layout["dir"] + "/zone")" class="admin">레이아웃 설정하기</a> @("|")
+                    }
+                
+				<a href="@_System.RW("mod=mypage", g["r"], _HS)"@d_layout["_memberlink_color"]>나의계정</a> @("|") 
+				<a href="@g["s"]/?r=@r&a=logout"@d_layout["_memberlink_color"]>로그아웃</a>
+                if(LAYOUT_ARR["sns_hide"] != "1") {
+    				<a href="#." onclick="getLayerBox('@g["s"]/?r=@r&m=social&page=account&iframe=Y','소셜계정',600,650,event,false,'l');"@d_layout["_memberlink_color"]><img src="@g["img_layout"]/sns.png" alt="" title="소셜계정" /> SNS</a>
+                }
+                }
+                else {
+                    <a href="@_System.RW("mod=join", g["r"], _HS)"@d_layout["_memberlink_color"]>회원가입</a> @("|") 
+                    <a href="@_System.RW("mod=login", g["r"], _HS)"@d_layout["_memberlink_color"]>로그인</a>
+    
+                    if(LAYOUT_ARR["sns_hide"] != "1") {
+                    <a href="#." onclick="getLayerBox('@g["s"]/?r=@r&m=social&page=login&iframe=Y','소셜 로그인',350,300,event,false,'l');"@d_layout["_memberlink_color"]><img src="@g["img_layout"]/sns.png" alt="" title="소셜 로그인" /> SNS</a>
+                    }		
+                }
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>
+
+    <div class="wrap">
+		<div class="logo">
+            @Html.Raw(_System.getLayoutLogo(LAYOUT_ARR, d_layout, g, _HS))
+		</div>
+		<div class="tabmenu">
+			<div class="twrap">
+				<ul>
+				@if(LAYOUT_ARR["homestr_use"] != "") {
+                    string homestr_class = "";
+                    
+                    if(_HP["id"] == "main" && (_themeConfig == "" || _themeConfig == null)) {
+                        homestr_class = "class='on'";
+                    }
+                    
+                    <li><a href="./" @Html.Raw(homestr_class)>@LAYOUT_ARR["homestr"]</a></li>
+                    <li class="vline"></li>
+                }
+                
+                @{
+                    string _MENUS_sql = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND hidden=0 AND depth=1 ORDER BY gid ASC";
+                    var _MENUS_Row = _DB.getDbRows(_MENUS_sql);
+                    
+                    foreach (var _M1 in _DB.Query(_MENUS_sql))
+                    {
+                        string li_class1_1 = "";
+                        string M1_redirect = "";
+                        string _MENUS_sql2 = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND parent=" + _M1["uid"] + " AND hidden=0 AND depth=2 ORDER BY gid ASC";   
+                        
+                        <li onmouseover="showM('@_M1["uid"]');" onmouseout="hideM('@_M1["uid"]');">
+
+                        @if (_M1["isson"] == "1")
+                        {
+                        <div id="@Html.Raw("subMenuBox" + _M1["uid"])">
+                        <dl>
+                            
+                            @foreach (var _M2 in _DB.Query(_MENUS_sql2))
+                            {
+                                string li_class2_1 = "";
+
+                                if (_CA[1] == _M2["id"] || (g["_CA"] != null && g["_CA"][1] == _M2["id"]))
+                                {
+                                    li_class2_1 = "class='on1'";
+                                }
+                                
+                                <dt @Html.Raw(li_class2_1)><a href="@_System.RW("c=" + _M1["id"] + "/" + _M2["id"], g["r"], _HS)" target="@_M2["target"]">@_M2["name"]</a></dt>
+
+                                if (_M2["isson"] == "1")
+                                {
+                                    string _MENUS_sql3 = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND parent=" + _M2["uid"] + " AND hidden=0 AND depth=3 ORDER BY gid ASC";
+
+                                    foreach (var _M3 in _DB.Query(_MENUS_sql3))
+                                    {
+                                        <dd><a href="@_System.RW("c=" + _M1["id"] + "/" + _M2["id"] + "/" + _M3["id"], g["r"], _HS)" target="@_M3["target"]">@_M3["name"]</a></dd>
+                                    }
+                                }
+                            }         
+                            
+                        </dl>
+                        </div>                            
+                        }   
+                        
+                        @if(_M1["redirect"] == "1") {
+                            M1_redirect = _M1["joint"];
+                        }
+                        else {
+                            M1_redirect = _System.RW("c=" + _M1["id"], g["r"], _HS);
+                        }
+
+                        @if(_CA[0] == _M1["id"] || (g["_CA"] != null && g["_CA"][0] == _M1["id"]))
+                        {
+                            li_class1_1 = "class='on'";
+                        }
+                        
+                        <a href="@M1_redirect" target="@_M1["target"]" @Html.Raw(li_class1_1)>@_M1["name"]</a>
+                        </li>
+                    
+        				<li class="vline"></li>
+                    
+                        _i++;
+    
+                        if (_i >= menunum.AsInt())
+                        {
+                            break;
+                        }     
+                    }       // end foreach
+                    
+                    if (_i < _MENUS_Row)
+                    {
+                        _i = 0;
+                        
+                        <li onmouseover="showM('0');" onmouseout="hideM('0');">
+                        <div id="subMenuBox0">
+                        <dl>
+
+                        @foreach (var _M4 in _DB.Query(_MENUS_sql))
+                        {
+                            if (_i++ < menunum.AsInt())
+                            {
+                                continue;
+                            }
+                            string li_class1_2 = "";
+                            string _parent = "";
+                            string M4_redirect = "";
+        
+                            if (_CA[0] == _M4["id"].ToString())
+                            {
+                                li_class1_2 = "class='on1'";
+                                _parent = _M4["uid"].ToString();
+                            }
+                                
+                             if(_M4["redirect"] == "1") {
+                                M4_redirect = _M4["joint"];
+                            }
+                            else {
+                                M4_redirect = _System.RW("c=" + _M4["id"], g["r"], _HS);
+                            }
+                            
+                            <dt @Html.Raw(li_class1_2)><a href="@M4_redirect" target="@_M4["target"]">@_M4["name"]</a></dt>
+                                
+                            if(_M4["isson"] == "1")
+                            {
+                                string _MENUS_sql4 = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND parent=" + _M4["uid"] + " AND hidden=0 AND depth=2 ORDER BY gid ASC";
+                                    
+                                foreach (var _M5 in _DB.Query(_MENUS_sql4))
+                                {
+                                    <dd><a href="@_System.RW("c=" + _M4["id"] + "/" + _M5["id"], g["r"], _HS)" target="@_M5["target"]">@_M5["name"]</a></dd>
+                                }
+                            }
+                        }
+           				</dl>
+         				</div>
+                                
+          				<a href="#.">더보기 <img src="@g["img_layout"]/ico_more.gif" class="more" alt="" /></a>
+           				</li>
+                    }       // end if
+				        
+                    if(_i == 0)
+                    {
+         				<li class="none">메뉴를 등록해 주세요</li>
+                    }
+                }
+
+  				</ul>     
+			</div>
+		</div>
+
+        @if(_keyword != "" && _keyword != null) {
+            keyword_prn = "done";
+        }
+
+        <div class="search">
+			<form action="@g["s"]/" method="get">
+			<input type="hidden" name="r" value="@r" />
+			<input type="hidden" name="mod" value="search" />
+			<input type="text" name="keyword" placeholder="통합검색" class="keyword @keyword_prn" value="@_keyword" />
+			<input type="image" src="@g["img_layout"]/btn_search.gif" class="sbtn" alt="search" />
+			</form>
+		</div>
+		<div class="clear"></div>
+	</div>    
+</div>
+    
+<div id="container" class="wrap">

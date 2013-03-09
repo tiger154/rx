@@ -1,0 +1,91 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];  
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var escapevar = Request["escapevar"];
+    var mainheight = Request["mainheight"];
+    
+    @_System.checkAdmin(my["admin"], 0)     // 관리자 체크
+
+    if (escapevar != null && escapevar != "")
+    {
+        string DELETE_ID_SQL = "DELETE FROM " + AppState["table_code_d_page"].ToString() + " WHERE memberuid='" + m + "' and id ='name'";
+        string DELETE_SIZE_SQL = "DELETE FROM " + AppState["table_code_d_page"].ToString() + " WHERE memberuid='" + m + "' and id ='size'";
+        string DELETE_PROP_SQL = "DELETE FROM " + AppState["table_code_d_page"].ToString() + " WHERE memberuid='" + m + "' and id ='prop'";
+        @_DB.Execute(DELETE_ID_SQL);
+        @_DB.Execute(DELETE_SIZE_SQL);
+        @_DB.Execute(DELETE_PROP_SQL);
+
+        int step = 0;
+        string[] pageInfo = escapevar.Split('*');
+
+        foreach (string p in pageInfo)
+        {
+            if (p == "")
+            {
+                continue;
+            }
+
+            string name = p.Split('%')[0].Trim();
+            string size = p.Split('%')[1].Trim();
+            string prop = p.Split('%')[2].Trim();
+
+            if (prop.Contains("/"))
+            {
+                prop.Replace("/", "\\");
+            }
+
+            string INSERT_ID_SQL = "INSERT INTO " + AppState["table_code_d_page"].ToString() + " (module,memberuid,id,id_value,step) VALUES ('widget','" + m + "','name','" + name + "','" + step + "')";
+            string INSERT_SIZE_SQL = "INSERT INTO " + AppState["table_code_d_page"].ToString() + " (module,memberuid,id,id_value,step) VALUES ('widget','" + m + "','size','" + size + "','" + step + "')";
+            string INSERT_PROP_SQL = "INSERT INTO " + AppState["table_code_d_page"].ToString() + " (module,memberuid,id,id_value,step) VALUES ('widget','" + m + "','prop','" + prop + "','" + step + "')";
+            
+            @_DB.Execute(INSERT_ID_SQL);
+            @_DB.Execute(INSERT_SIZE_SQL);
+            @_DB.Execute(INSERT_PROP_SQL);
+
+            step++;
+        }
+    }
+
+    if (_DB.GetDbData_Count(AppState["table_code_d_page"].ToString(), "memberuid='" + m + "' and module='widget' and id='mainheight'") != 0)
+    {
+        string UPDATE_HEIGHT_SQL = "UPDATE " + AppState["table_code_d_page"].ToString() + " SET id_value=" + mainheight + " WHERE module='widget' and id='mainheight'";
+        @_DB.Execute(UPDATE_HEIGHT_SQL);
+    }
+    else
+    {
+        string INSERT_HEIGHT_SQL = "INSERT INTO " + AppState["table_code_d_page"].ToString() + " (module,memberuid,id,id_value,step) VALUES ('widget','" + m + "','mainheight','" + mainheight + "',0)";
+        
+        @_DB.Execute(INSERT_HEIGHT_SQL);
+    }
+
+    File.WriteAllText(g["path_root_ps"] + g["dir_module"] + "var\\users\\" + my["id"] + ".widget.cshtml", "", System.Text.Encoding.UTF8);
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;                
+}

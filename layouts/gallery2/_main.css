@@ -1,0 +1,62 @@
+﻿body {font-size:12px;font-family:gulim;}
+input,select,textarea {font-size:12px;font-family:gulim;}
+select {font-size:12px;font-family:dotum;}
+label {cursor:pointer;}
+a {text-decoration:none;color:#000;}
+a:hover {color:#666;}
+
+.wrap {width:960px;margin:auto;}
+
+#header {background:#424951;border-bottom:#D3D3D3 solid 1px;}
+#header .logo {float:left;width:180px;text-align:center;}
+#header .logo h1 {padding:0;margin:0;}
+#header .logo a {color:#ffffff;font-size:20px;font-family:"malgun gothic";outline:none;display:block;}
+#header .logo img {}
+
+#header .search {float:left;height:1px;position:relative;top:7px;}
+#header .search form .keyword {float:left;width:300px;height:12px;background:url('./image/bg_search.gif') 5px center no-repeat #efefef;border:1px solid #efefef;border-radius:4px 4px 4px 4px;color:#444444;font:13px Arial,sans-serif;padding:6px 5px 4px 6px;}
+#header .search form .keyword:hover {background:url('./image/bg_search.gif') 5px center no-repeat #f9f9f9;}
+#header .search form .keyword:focus {background:#ffffff;color:#444;outline:none;}
+#header .search form .sbtn {float:left;margin:0 0 0 6px;}
+#header .search form .done,#header .topbox .search form .done:hover {background:#ffffff;}
+
+#header .account {float:right;width:240px;height:38px;}
+
+#header .account .member {padding:8px 0 0 0;text-align:right;font-size:11px;font-family:dotum;letter-spacing:2px;font-family:dotum;color:#666666;}
+#header .account .member a {font-family:gulim;font-size:12px;letter-spacing:-1px;outline:none;color:#999999;}
+#header .account .member a:hover {text-decoration:underline;}
+#header .account .member img {margin-bottom:-3px;}
+#header .account .member .admin {font-size:11px;font-family:dotum;font-weight:bold;color:#FA5800;}
+
+#container {padding:20px 0 20px 0;}
+#container .snb {float:left;width:180px;padding:0;}
+#container .snb .titlepic {padding:0 0 20px 0;}
+#container .snb .about {font-size:11px;color:#333;line-height:150%;letter-spacing:-1px;padding-bottom:20px;}
+#container .snb .about span {display:block;font-weight:bold;font-family:arial;font-size:11px;color:#807E81;leeter-spacing:-1px;padding-bottom:5px;}
+#container .snb .titlepic img {width:180px;}
+#container .snb .ttitle {}
+#container .snb .ttitle span {font-weight:bold;color:#000000;position:relative;top:-4px;left:5px;}
+#container .snb .ttitle img {position:relative;top:2px;}
+#container .snb .joinimg {height:16px;background:url('../../_core/image/tree/default/line.gif') 0 2px repeat-y;}
+#container .snb .tree {position:relative;top:-10px;padding:0 0 20px 0;}
+#container .snb .tree img {vertical-align:top;}
+#container .snb .tree .name {color:#111;padding:2px 0 0 0;}
+#container .snb .tree .name:hover {color:#AECD63;}
+#container .snb .tree .hidden {color:#c0c0c0;}
+#container .snb .tree .hidden:hover {color:#c0c0c0;}
+#container .snb .tree .mobile {position:relative;top:-3px;}
+#container .snb .tree .on {background:#AECD63;color:#ffffff;padding:2px;}
+#container .snb .tree .num {font-family:arial;font-size:10px;color:#ff7700;padding-left:3px;}
+#container .snb .tree .none {height:15px;margin:10px 0 0 0;padding:3px 0 0 22px;background:url('../../_core/image/_public/ico_notice.gif') 0 2px no-repeat;font-family:dotum;font-size:13px;color:#c0c0c0;}
+
+#content {float:right;width:760px;padding:0 0 0 20px;}
+
+#footer {margin:15px 0 30px 0;}
+#footer .footer {padding:15px 0 0 0;border-top:#ebebeb solid 1px;}
+#footer .footer .slinks {float:left;}
+#footer .footer .slinks .elink {padding:10px 0 10px 0;font-size:11px;font-family:dotum;color:#c0c0c0;letter-spacing:2px;}
+#footer .footer .slinks .elink a {font-family:gulim;font-size:12px;letter-spacing:-1px;color:#666666;}
+#footer .footer .slinks .elink a:hover {text-decoration:underline;}
+#footer .footer .slinks .copyright {font-size:11px;font-family:arial;color:#999999;}
+#footer .footer .powered {float:right;}
+#footer .footer .kimsq {padding:10px 0 10px 0;font-size:11px;font-family:arial;color:#c0c0c0;}

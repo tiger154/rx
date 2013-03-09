@@ -1,0 +1,213 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var _HS = PageData[0];
+    var my = PageData[1];
+    var _CA = PageData[2];
+    var s = PageData[3];
+    var d_layout = PageData[4];
+    var g = PageData[5];
+    var keyword = PageData[6];
+    var p = PageData[7];
+    var system = PageData[8];
+    var _m = PageData[9];
+    var c = PageData[10];
+    var m = PageData[11];
+    var _mod = PageData[12];
+    var _keyword = PageData[13];
+    var _HM = PageData[14];
+    var r = PageData[15];
+    var bid = PageData[16];
+    var _HP = PageData[17];
+    var date = PageData[18];
+    var referer = PageData[19];
+
+    string showType = Request["showType"];
+    string mod = Request["mod"];
+
+    
+
+    dynamic d_layout2 = _DB.Get_code("layout");
+
+    int d_layout_newhour = Convert.ToInt32(d_layout2["newhour"]);
+    
+    
+    string d_layout_domain = "";
+}
+
+
+<div id="wrap">
+	<div id="header">
+		<h1>@_HS["title"]</h1>
+		<div class="lnb">
+		<ul>
+
+        @{
+            
+            string homeStr = "split";
+                
+            if ((mod == null || mod == "") && (showType == null || showType == "" || showType == "0") && (c == null || c == ""))
+            {
+                homeStr = "split selected";
+            }
+
+        }
+
+        <li class="@homeStr"><a href="@_System.RW("", g["r"], _HS)">HOME</a></li>
+        <li class="split @Html.Raw(_System.isEqual(showType, "menu", "selected", ""))"><a href="@g["s"]/?r=@r&showType=menu">메뉴</a></li>
+
+        @if (my["uid"] > 0)
+        {
+            <li class="split @Html.Raw(_System.isEqual(showType, "pypage", "selected", ""))"><a href="@g["s"]/?r=@r&mod=mypage">마이페이지</a></li>                
+    		<li><a href="@g["s"]/?r=@r&a=logout">로그아웃</a></li>            
+        }
+        else
+        {
+
+            <li class="split @Html.Raw(_System.isEqual(showType, "join", "selected", ""))"><a href="@_System.RW("mod=join", g["r"], _HS)">회원가입</a></li>    
+            <li @Html.Raw(_System.isEqual(mod, "login", "class='selected'", ""))><a href="@_System.RW("mod=login", g["r"], _HS)">로그인</a></li> 
+        }
+
+		</ul>
+		<div class="clear"></div>
+		</div>
+	</div>
+	<div id="content">
+    @if (showType == "menu")
+    {
+        string _MENUS1_sql = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND hidden=0 AND depth=1 AND mobile=1 ORDER BY gid ASC";
+        int _i = 0;
+        
+		<div id="menubox">
+		<ul>       
+        
+        @foreach (var _M1 in _DB.Query(_MENUS1_sql))
+        {
+            string MidStr1 = "";
+            
+            if (_M1["id"] == c)
+            {
+                MidStr1 = " selected1";
+            }
+		    <li class="m1 @Html.Raw(_System.isEqual(_M1["id"], c, "selected1", ""))">
+                   
+            <a href="@_System.RW("c=" + _M1["id"], g["r"], _HS)" target="@_M1["target"]">
+
+		    @_M1["name"]
+            
+            @if (_M1["num"] > 0)
+            {
+                <span class="num">(@_M1["num"])</span>
+            }
+            @if (_System.getNew(_M1["d_last"].ToString(), d_layout_newhour))
+            {
+                <span class="new">new</span>
+            }
+            </a>
+		    </li>            
+            
+            if (_M1["isson"] != "" && _M1["isson"] != "0")
+            {
+                string _MENUS2_sql = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " and parent=" + _M1["uid"] + " AND hidden=0 AND depth=2 AND mobile=1 ORDER BY gid asc";
+                foreach (var _M2 in _DB.Query(_MENUS2_sql))
+                {
+		            <li class="m2 @Html.Raw(_System.isEqual(_M1["id"] + "/" + _M2["id"], c, "selected2", ""))">
+		            <a href="@_System.RW("c=" + _M1["id"] + "/" + _M2["id"], g["r"], _HS)" target="@_M2["target"]">
+		            + @_M2["name"]
+
+                    @if (_M2["num"] > 0)
+                    {
+                        <span class="num">(@_M2["num"])</span>
+                    }
+                    @if (_System.getNew(_M2["d_last"].ToString(), d_layout_newhour))
+                    {
+                        <span class="new">new</span>
+                    }
+		            </a>
+		            </li>           
+                    if (_M2["isson"] != "" && _M2["isson"] != "0")
+                    {
+                        string _MENUS3_sql = "SELECT * FROM " + AppState["table_s_menu"].ToString() + " WHERE site=" + s + " and parent=" + _M2["uid"] + " and hidden=0 and depth=3 and mobile=1 ORDER BY gid asc";
+                        foreach (var _M3 in _DB.Query(_MENUS3_sql))
+                        {
+		                    <li class="m3 @Html.Raw(_System.isEqual(_M1["id"] + "/" + _M2["id"] + "/" + _M3["id"], c , "selected3", ""))">
+		                    <a href="@_System.RW("c=" + _M1["id"] + "/" + _M2["id"] + "/" + _M3["id"], g["r"], _HS)" target="@_M3["target"]">
+		                    ㆍ @_M3["name"]
+                            
+                            @if (_M3["num"] > 0)
+                            {
+                                if (_System.getNew(_M3["d_last"].ToString(), d_layout_newhour))
+                                {
+                                    <span class="new">new</span>
+                                }
+                                <span class="num">(@_M3["num"])</span>
+                            }
+
+		                    </a>
+		                    </li>                            
+                        }
+                    }
+
+                }
+            }
+
+            _i++;
+        }         
+
+        @if (_i == 0)
+        {
+		    <li class="m1"><a>등록된 메뉴가 없습니다.</a></li>            
+        }
+        
+        @if (my["admin"] == "1")
+        {
+            <li class="m1"><a href="@_System.RW("m=admin", g["r"], _HS)" class="admpage">관리자페이지</a></li>           
+        }
+		</ul>
+		</div>       
+        
+    }
+    else
+    {
+        //////////////////////////////////////////////////////////
+        ///// Main engine Start
+        //////////////////////////////////////////////////////////
+        @RenderPage("../../" + g["path_core"] + "engine/content.engine.cshtml", g, system, _m, c, m, p, _HS, my, d_layout, s, _keyword, _mod, r, bid, _HP, _HM, date, referer)                      
+    }
+
+	</div>
+	<div id="footer">
+		<div id="searchbox" class="searchbox">
+		<form action="@g["s"]/">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="mod" value="search" />
+		<input type="text" id="m_keyword" name="keyword" value="@_keyword" class="input" />
+		<input type="submit" value="검색" class="btngray" />
+		</form>
+		</div>
+		<div class="menu">
+		<ul>
+		<li class="split"><a onclick="searchBox();"><img src="@g["img_layout"]/ico_search.gif" alt="" /> 통합검색</a></li>
+		<li class="split"><a href="@g["s"]/?r=@r&a=pcmode"><img src="@g["img_layout"]/ico_pcmode.gif" alt="" /> PC화면</a></li>
+		<li><a href="javascript:window.scrollTo(1,0);"><img src="@g["img_layout"]/ico_top.gif" alt="" /> 맨위로</a></li>
+		</ul>
+		<div class="clear"></div>
+		</div>
+		<div class="copyright">Copyrights &copy; 
+        @if (d_layout_domain != "")
+        {
+            @d_layout_domain
+        }
+        else
+        {            
+            @Request["SERVER_NAME"]
+        }
+        </div>
+	</div>
+</div>

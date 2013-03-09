@@ -1,0 +1,268 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    string id = Request["id"];
+    string email = Request["email"];
+    string nic = Request["nic"];
+    string pw1 = Request["pw1"];
+    string comp = Request["comp"];
+    string name = Request["name"];
+    string home = Request["home"];
+    string sex = Request["sex"];
+    string birthtype = Request["birthtype"];
+    string foreign = Request["foreign"];
+    string job = Request["job"];
+    string mailing = Request["remail"];
+    string pw_q = Request["pw_q"];
+    string pw_a = Request["pw_a"];
+    string birth1 = Request["birth_1"];
+    string birth2 = Request["birth_2"];
+    string birth3 = Request["birth_3"];
+    string comp_num_1 = Request["comp_num_1"];    
+    string comp_num_2 = Request["comp_num_2"];    
+    string comp_num_3 = Request["comp_num_3"];    
+    string comp_name = Request["comp_name"];    
+    string comp_ceo = Request["comp_ceo"];    
+    string comp_upte = Request["comp_upte"];    
+    string comp_jongmok = Request["comp_jongmok"];    
+    string comp_tel_1 = Request["comp_tel_1"];    
+    string comp_tel_2 = Request["comp_tel_2"];    
+    string comp_tel_3 = Request["comp_tel_3"];    
+    string comp_fax_1 = Request["comp_fax_1"];    
+    string comp_fax_2 = Request["comp_fax_2"];    
+    string comp_fax_3 = Request["comp_fax_3"];    
+    string comp_zip_1 = Request["comp_zip_1"];    
+    string comp_zip_2 = Request["comp_zip_2"];    
+    string comp_addr1 = Request["comp_addr1"];    
+    string comp_addr2 = Request["comp_addr2"];    
+    string comp_part = Request["comp_part"];    
+    string comp_level = Request["comp_level"];    
+    string comp_type = Request["comp_type"];        
+    string check_nic = Request["check_nic"];
+    string check_email = Request["check_email"];
+    string memberuid = Request["memberuid"];
+    
+    string tel1 = "";
+    string tel2 = "";
+    string zip = "";
+    string addr0 = "";
+    string addr1 = "";
+    string addr2 = "";
+    string marr1 = "0";
+    string marr2 = "0";
+    string sms = "0";
+    string smail = "0";
+    string usepoint = "0";
+    string num_login = "1";
+    string now_log = "1";
+    string is_paper = "0";    
+    string last_log = date["totime"].ToString();
+    string last_pw = date["totime"].ToString();
+    string d_regis = date["totime"].ToString();
+    string addfield = "";
+    string auth;
+    string sosok;
+    string level;
+    string admin;
+    string adm_name = "";
+    string adm_view = "";
+    string photo = "";
+
+    dynamic d_member = _DB.Get_code("member");
+
+    // 관리자페이지 수정인가?
+    if (memberuid == null || memberuid == "" || memberuid == "0")
+    {
+        memberuid = my["uid"].ToString();
+	}
+
+    // uid, 닉네임체크, 이메일 체크를 해야한다.
+    if (my["uid"] == 0 || check_nic == null || check_nic == "" || check_nic == "0" || check_email == null || check_email == "" || check_email == "0")
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "");
+        return;
+	}
+    
+    var email_chk = "SELECT * FROM "+AppState["table_s_mbrdata"]+" WHERE memberuid<>"+memberuid+" AND email='"+email+"'";
+    var nic_chk = "SELECT * FROM "+AppState["table_s_mbrdata"]+" WHERE memberuid<>"+memberuid+" AND nic='"+nic+"'";
+
+    if (_DB.getDbRows(email_chk) > 0)
+    {
+        @_System.getLink("", "", "이미 존재하는 이메일 입니다.", "");
+        return;        
+	}
+    if (_DB.getDbRows(nic_chk) > 0 || _System.IsValue(d_member["join_cutnic"], nic, ',') == true)
+    {
+        @_System.getLink("", "", "이미 존재하는 닉네임 입니다.", "");
+        return;        
+	}
+        
+    if(birth2.Length == 1) {
+        birth2 = "0"+birth2;
+	}
+    if(birth3.Length == 1) {
+        birth3 = "0"+birth3;
+	}
+    
+    birth2 = birth2+birth3;    
+    
+    if(home != null) {
+        if(home.IndexOf("http://") == -1) {
+            home = "http://"+home;
+		}
+	}
+
+   if(sex == "" || sex == null) {
+        sex = "1";
+	}
+   if(birthtype == "" || birthtype == null) {
+        birthtype = "0";
+	}
+
+    if(pw_q != "" && pw_q != null) {
+        pw_q = pw_q.Trim();
+    }
+    if(pw_a != "" && pw_a != null) {
+        pw_a = pw_a.Trim();
+    }
+    
+    if(Request["tel1_1"] != null && Request["tel1_2"] != null && Request["tel1_3"] != null) {
+        tel1 = Request["tel1_1"]+"-"+Request["tel1_2"]+"-"+Request["tel1_3"];
+	}
+    
+    if(Request["tel2_1"] != null && Request["tel2_2"] != null && Request["tel2_3"] != null) {
+        tel2 = Request["tel2_1"]+"-"+Request["tel2_2"]+"-"+Request["tel2_3"];
+	}
+    
+    if(foreign == "" || foreign == null) {
+        zip = Request["zip_1"] + Request["zip_2"];
+        
+        if(Request["addr1"] != null && Request["addr2"] != null) {
+            addr0 = Request["addr1"].Substring(0, 2);
+		}
+        if(Request["addr1"] != null && Request["addr2"] != null) {
+            addr1 = Request["addr1"];
+		}
+        if(Request["addr2"] != null && Request["addr2"] != "") { 
+            addr2 = Request["addr2"].Trim();
+        }
+	}
+    else
+    {
+        zip = "";
+        addr0 = "해외";
+        addr1 = "";
+        addr2 = "";        
+    }
+    
+    if(job == "" && job == null) {
+        job = job.Trim();
+    }
+    
+    if(Request["marr_1"] != null && Request["marr_2"] != null && Request["marr_3"] != null) {
+        marr1 = Request["marr_1"];
+	}
+    if(Request["marr_1"] != null && Request["marr_2"] != null && Request["marr_3"] != null) {
+        marr2 = Request["marr_2"]+Request["marr_3"];
+	}
+    if(tel2 != "" && Request["sms"] != null) {
+        sms = "1";
+	}    
+    
+    string UPDATE_SQL = "UPDATE "+AppState["table_s_mbrdata"]+" SET comp='"+comp+"',email='"+email+"',name='"+name+"',nic='"+nic+"',home='"+home+"',sex='"+sex+"',birth1='"+birth1+"',birth2='"+birth2+"',";
+    UPDATE_SQL = UPDATE_SQL + "birthtype='"+birthtype+"',tel1='"+tel1+"',tel2='"+tel2+"',zip='"+zip+"',addr0='"+addr0+"',addr1='"+addr1+"',addr2='"+addr2+"',job='"+job+"',marr1='"+marr1+"',marr2='"+marr2+"',";
+    UPDATE_SQL = UPDATE_SQL + "sms='"+sms+"',mailing='"+mailing+"',pw_q='"+pw_q+"',pw_a='"+pw_a+"',addfield='' WHERE memberuid="+memberuid;
+    
+    @_DB.Execute(UPDATE_SQL);
+
+    // comp. Join
+    if (comp == "1")
+    {
+    	string comp_num	= "0";
+        string comp_tel = "";
+        string comp_fax = "";
+        string comp_zip = comp_zip_1 + comp_zip_2;
+        string comp_addr0 = "";
+        dynamic isCOMP = null;
+        
+        isCOMP = _DB.Get_module_data(AppState["table_s_mbrcomp"], "memberuid", memberuid);
+        
+        if (comp_num_1 != "" && comp_num_1 != null && comp_num_2 != "" && comp_num_2 != null && comp_num_3 != "" && comp_num_3 != null)
+        {
+            comp_num = comp_num_1 + comp_num_2 + comp_num_3;
+        }
+        if (comp_tel_1 != "" && comp_tel_1 != null && comp_tel_2 != "" && comp_tel_2 != null)
+        {
+            comp_tel = comp_tel_1 + "-" + comp_tel_2;
+            
+            if (comp_tel_3 != "" && comp_tel_3 != null)
+            {
+                comp_tel += "-" + comp_tel_3;
+            }
+        }
+        if (comp_fax_1 != "" && comp_fax_1 != null && comp_fax_2 != "" && comp_fax_2 != null && comp_fax_3 != "" && comp_fax_3 != null)
+        {
+            comp_fax = comp_fax_1 + "-" + comp_fax_2 + "-" +comp_fax_3;
+        }
+        if (comp_addr1 != "" && comp_addr1 != null && comp_addr2 != "" && comp_addr2 != null)
+        {
+            string addcomp0 = comp_addr1.Split(' ')[0];
+            comp_addr0 = addcomp0;
+        }
+        else
+        {
+            comp_addr1 = "";
+        }
+        
+        if (isCOMP == null)
+        {   // no exist comp infomation.
+            string CP_QUE = "(memberuid,comp_num,comp_type,comp_name,comp_ceo,comp_upte,comp_jongmok,";
+            CP_QUE += "comp_tel,comp_fax,comp_zip,comp_addr0,comp_addr1,comp_addr2,comp_part,comp_level)";
+
+            string CP_VAL = "(" + memberuid + "," + comp_num + ",'" + comp_type + "','" + comp_name + "','" + comp_ceo + "','" + comp_upte + "','" + comp_jongmok + "',";
+            CP_VAL += "'" + comp_tel + "','" + comp_fax + "','" + comp_zip + "','" + comp_addr0 + "','" + comp_addr1 + "','" + comp_addr2 + "','" + comp_part + "','" + comp_level + "')";
+
+            string CP_SQL = "INSERT INTO " + AppState["table_s_mbrcomp"] + " " + CP_QUE + " VALUES " + CP_VAL;
+            @_DB.Execute(CP_SQL);
+        }
+        else
+        {
+            string CP_VAL = "comp_num=" + comp_num + ", comp_type='" + comp_type + "', comp_name='" + comp_name + "', comp_ceo='" + comp_ceo + "', ";
+            CP_VAL += "comp_upte='" + comp_upte + "', comp_jongmok='" + comp_jongmok + "', comp_tel='" + comp_tel + "', comp_fax='" + comp_fax + "', ";
+            CP_VAL += "comp_zip='" + comp_zip + "', comp_addr0='" + comp_addr0 + "', comp_addr1='" + comp_addr1 + "', comp_addr2='" + comp_addr2 + "', ";
+            CP_VAL += "comp_part='" + comp_part + "', comp_level='" + comp_level + "'";
+
+            string CP_SQL = "UPDATE " + AppState["table_s_mbrcomp"] + " SET " + CP_VAL + " WHERE memberuid=" + memberuid;
+            @_DB.Execute(CP_SQL);
+        }
+    }
+    
+    @_System.getLink("reload", "parent.", "변경되었습니다.", "")
+    return;
+}

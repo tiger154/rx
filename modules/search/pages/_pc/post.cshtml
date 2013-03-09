@@ -1,0 +1,159 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    
+    var typeset = new Dictionary<string, string>();
+
+    var g = PageData[0];
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    int p = PageData[4];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    dynamic d_search = _DB.Get_code("search");
+    
+    string bbsque = Request["bbsque"];
+    string bbsuid = Request["bbsuid"];
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string recnum = Request["recnum"];
+    string keyword = Request["keyword"];
+    string ikeyword = Request["ikeyword"];
+
+    DateTime now_date2 = date["totime"];
+    string now_date = now_date2.ToString("yyMMdd");
+    string d_search_date = now_date2.AddMonths(-Convert.ToInt32(d_search["s_term"])).ToString("yyMMdd");
+
+
+    @RenderPage("_menu.cshtml", g, m)
+
+    if (sort == null || sort == "")
+    {
+        sort = "gid";
+    }
+    if (orderby == null || orderby == "")
+    {
+        orderby = "asc";
+    }
+    if (recnum == null || recnum == "" || Convert.ToInt32(recnum) >= 200)
+    {
+        recnum = d_search_date;
+    }
+
+    if (bbsuid != null && bbsuid != "")
+    {
+        bbsque += " and bbs=" + bbsuid;
+    }
+
+    bbsque += _System.getSearchSql("subject|tag", keyword, ikeyword, "OR");
+
+    int list_start = (p - 1) * Convert.ToInt32(recnum);
+
+    string RCD_sql = _System.GetQuery(AppState["table_bbsdata"].ToString(), "", "site='" + s + "' AND display=1" + bbsque, "gid", "ASC", list_start, recnum);
+    int NUM = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "site='" + s + "' AND display=1" + bbsque);
+
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+
+    string _BBS_sql = "SELECT * FROM " + AppState["table_bbslist"].ToString() + " ORDER BY gid asc"; 
+    
+     if (keyword == null || keyword == "")
+     {
+         NUM = 0;
+     }
+       
+}
+
+
+
+<div id="s_post">
+
+	<div class="subtitle">
+		<div class="xleft">
+		
+			<select onchange="goHref('@g["url_reset"]post&bbsuid='+this.value);">
+			<option value="">&nbsp;+ 게시판(전체)</option>
+			<option value="">---------------------</option>
+
+            @foreach (var _B in _DB.Query(_BBS_sql))
+            {
+                if (("," + d_search["s_cutbbs"] + ",").Contains("," + _B["id"] + ","))
+                {
+                    continue;
+                }
+                string uidStr = "";
+                if (bbsuid == _B["uid"].ToString())
+                {
+                    uidStr = " selected='selected'";
+                }
+			    <option value="@_B["uid"]"@uidStr>ㆍ @_B["name"] (@_B["num_r"])</option>                
+            }
+			</select>
+			
+			(검색결과 @string.Format("{0:#,0}", Convert.ToInt32(NUM))개)</div>
+		<div class="xright"><a href="@g["url_reset"]">통합검색</a></div>
+		<div class="clear"></div>
+	</div>
+
+
+	<div class="postbox">
+
+    @if (NUM != 0)
+    {
+        foreach (var R in _DB.Query(RCD_sql))
+        {
+            dynamic B = _DB.GetDbData_M(AppState["table_bbslist"].ToString(), "uid=" + R["bbs"]);
+            string _link = _System.getPostLink(s, R, g["r"], _HS);
+
+	        <div class="sbjbox">
+		        <a href="@_link" class="subject">@R["subject"]</a>
+		        <a href="@_link" target="_blank"><img src="@g["img_core"]/_public/ico_blank.gif" alt="" title="새창으로보기" /></a>
+                @if (R["content"].Contains(".jpg"))
+                {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+                }
+                @if (R["upload"] != "")
+                {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+                }
+                @if (R["comment"] != 0)
+                {
+                    <span class="comment">[@R["comment"]
+                    @if (R["oneline"] != 0)
+                    {
+                        @Html.Raw("+" + R["oneline"])
+                    }
+                    ]</span>
+                }
+
+		        <span class="info">
+			        @R["d_regis"].ToString("yyyy.MM.dd HH:mm") | 
+			        @R[_HS["nametype"]] |
+			        <a href="@_System.RW("m=bbs&bid=" + R["bbsid"], g["r"], _HS)" target="_blank">@B["name"]</a>
+		        </span>
+	        </div>
+	        <div class="shotcont">@_System.getStrCut(_System.Strip_tags(R["content"]), 150, "...")</div>            
+        }
+
+        <div class="pagebox01">
+        <script type="text/javascript">getPageLink(10,@p,@TPG,'@g["img_core"]/page/default');</script>
+        </div>        
+    }
+    else
+    {
+        <div id="s_result">
+        <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+        검색결과가 없습니다.
+        </div>        
+    }
+	</div>
+</div>
+
+

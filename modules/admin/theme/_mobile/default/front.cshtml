@@ -1,0 +1,173 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var _m = PageData[1];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+    var date = PageData[15];
+    var referer = PageData[16];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var front = Request["front"];
+    var account = Request["account"];
+    var module = g["module"];
+
+    dynamic d_admin = _DB.Get_code("admin");
+
+    if (r == null || r == "")
+    {
+        r = Request["r"];
+    }
+
+    string frame_name = "_action_frame_" + m;
+
+    bool _isDragScript = true;
+}
+
+
+<div id="wrap">
+	<div id="header">
+		<div class="logo">
+			<a href="@g["s"]/?r=@r&m=@m"><img src="@g["img_core"]/_public/ico_rx.gif" alt="rx" /></a>
+		</div>
+		<div class="logout">
+			<a href="@g["s"]/?r=@r&a=logout"><img src="@g["img_core"]/_public/btn_logout.gif" alt="logout" /></a>
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div id="container">
+
+
+		<div class="mtitle">
+			<div class="xl">
+				<a href="@g["s"]/?r=@r&m=@m"><span class="b">@my[_HS["nametype"]]님</span> Mobile Administration</a>
+			</div>
+			<div class="xr">
+				<a href="@g["s"]/?r=@r" class="b">HOME</a>
+			</div>
+			<div class="clear"></div>
+		</div>
+
+
+        @if (module == "admin")
+        {
+            int MODULES_cnt = _DB.GetDbData_Count(AppState["table_s_module"], "hidden=0 AND mobile=1");
+            string MODULES_sql = "SELECT * FROM " + AppState["table_s_module"] + " WHERE hidden=0 AND mobile=1 ORDER BY gid ASC";
+            
+		    <div class="allmodule">
+                
+            @foreach (var R in _DB.Query(MODULES_sql))
+            {
+                if (("_" + my["adm_view"]).Contains("[" + R["id"] + "]"))
+                {
+                    continue;
+                }           
+ 			    <div class="module@(R["id"] == module ? " selected" : "")" title="@R["id"]">
+				    <div class="name@(R["id"] == module ? " nselected" : "")"><span>@R["name"]</span></div>
+				    <div class="icon" style="background:url('@g["url_root"]/@g["path_module_url"]@R["id"]/icon.gif')') center center no-repeat;" onselectstart="return false;"><a href="@g["s"]/?r=@r&m=@m&module=@R["id"]"><img src="@g["img_core"]/blank.gif" alt="@Html.Raw(R["name"] + "(" + R["id"] + ")")" /></a></div>
+			    </div>    
+            }
+
+            @if (MODULES_cnt == 0)
+            {
+			    <div class="none">
+			    모바일 관리패널에 등록된 모듈이 없습니다.<br />
+			    관리패널 등록은 PC모드에서만 지원됩니다.
+			    </div>
+            }
+            
+		    </div>
+
+		    <div class="clear"></div>            
+        }
+        else
+        {
+		    <div class="tab01">
+			    <ul>                
+				@{
+                    var d_amenu = new Dictionary<string, string>();
+
+                    d_amenu = _DB.Get_amenu(module);
+
+                    if (d_amenu.Count != 0)
+                    {
+                        foreach (string key in d_amenu.Keys)
+                        {
+                            <li @Html.Raw(g["front"] == key ? "class=\"on\"" : "") onclick="goHref('@g["s"]/?r=@r&m=@m&module=@module&front=@key@(account != null && account != "" ? "&account=" + account : "")');"><span>@d_amenu[key]</span></li>                        
+                        }   
+			            <li class="wall">&nbsp;</li>                       
+                    }
+                    else
+                    {
+			            <li onclick="goHref('@g["s"]/?r=@r&a=pcmode');"><span>PC화면 전환</span></li>
+			            <li class="on"><span>모듈안내</span></li>
+			            <li onclick="goHref('@g["s"]/?r=@r&m=@m');"><span>모듈 프론트로 돌아가기</span></li>
+			            <li class="wall">&nbsp;</li>
+                    }
+                }
+			    </ul>
+			    <div class="more">
+
+			    </div>
+		    </div>
+		    <div class="loc1">
+                현재위치 : @g["MD_name"]@(d_amenu[front] != "" ? ">" + d_amenu[front] : "")
+		    </div>
+
+
+		    <div class="cwrap">
+            @if (File.Exists(g["adm_module_varmenu"]))
+            {
+                @RenderPage("/" + g["adm_module"], g, m, _HS, my, _isDragScript, p, r, s, module, date)
+            }
+            else
+            {
+		        <div class="notice">
+			        <div class="icon" style="background:url('@g["url_root"]/@g["path_module_url"]@g["MD_id"]/icon.gif')') center center no-repeat;"></div>
+			        <div class="ment">
+			        <div>@g["MD_name"]<span>(@g["MD_id"])</span></div>
+			        이 모듈은 모바일 관리자모드를 지원하지 않습니다. <a href="@g["s"]/?r=@r&m=@m&a=module_mobile_eject&module_id=@g["MD_id"]" class="del" onclick="return confirm('정말로 제외하시겠습니까?   ');">모바일 프론트에서 제외하기</a><br />
+			        </div>
+		        </div>                
+            }
+		    </div>
+            
+        }
+
+	</div>
+
+	<div id="footer">
+
+		<p>
+		Copyrights &copy; Redblock Allrights Reserved. Powered by kimsQ-Rx<br />
+		Server Software : IIS + Microsoft Razor + SqlServer-CE<br />
+		<a href="http://validator.w3.org/check?url=referer" target="_blank" title="W3C XHTML 1.0 VALIDATION">W3C XHTML 1.0 VALIDATION</a>
+		</p>
+
+	</div>
+</div>

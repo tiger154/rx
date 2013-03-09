@@ -1,0 +1,1 @@
+﻿CREATE TABLE rx_s_mbrgroup ( uid  int  identity(1,1)  NOT NULL , name  nvarchar(30)   NOT NULL , gid  int   NOT NULL , num  int   NOT NULL ,PRIMARY KEY (uid));

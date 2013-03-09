@@ -1,0 +1,191 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    var id = Request["id"];
+    var uid = Request["uid"];
+    var backgo = Request["backgo"];
+    var mainheight = Request["mainheight"];
+    var escapevar = Request["escapevar"];    
+    var iframe = Request["iframe"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    //string vfile = g["path_root_ps"] + g["path_page"] + id + ".widget.cshtml";
+
+    string widget_id = id;
+    
+    if (type == "menu")
+    {
+        widget_id = "menu\\" + String.Format("{0:00000}", Convert.ToInt32(uid));        
+    }
+
+    string vfile = g["path_root_ps"] + g["path_page"] + widget_id + ".widget.cshtml";
+
+    string DELETE_WIDGET_SQL = "DELETE FROM " + AppState["table_code_d_page"] + " WHERE memberuid='" + widget_id + "'";
+    @_DB.Execute(DELETE_WIDGET_SQL)
+                                   
+    //DB에 변수 저장    
+    if (escapevar != null && escapevar.Trim() != "")
+    {  
+        int step = 0;
+        string[] pageInfo = escapevar.Split('*');
+
+        string INSERT_HEIGHT_SQL = "INSERT INTO " + AppState["table_code_d_page"].ToString() + " (module,memberuid,id,id_value,step) VALUES ('widget','" + widget_id + "','mainheight','" + mainheight + "',0)";
+        @_DB.Execute(INSERT_HEIGHT_SQL)                                       
+
+        foreach (string p in pageInfo)
+        {
+            if (p.Trim() == "")
+            {
+                continue;
+            }
+
+            string name = p.Split('%')[0].Trim();
+            string size = p.Split('%')[1].Trim();
+            string prop = p.Split('%')[2].Trim();
+
+            if (prop.Contains("/"))
+            {
+                prop.Replace("/", "\\");
+            }
+
+            string INSERT_ID_SQL = "INSERT INTO " + AppState["table_code_d_page"].ToString() + " (module,memberuid,id,id_value,step) VALUES ('widget','" + widget_id + "','name','" + name + "','" + step + "')";
+            string INSERT_SIZE_SQL = "INSERT INTO " + AppState["table_code_d_page"].ToString() + " (module,memberuid,id,id_value,step) VALUES ('widget','" + widget_id + "','size','" + size + "','" + step + "')";
+            string INSERT_PROP_SQL = "INSERT INTO " + AppState["table_code_d_page"].ToString() + " (module,memberuid,id,id_value,step) VALUES ('widget','" + widget_id + "','prop','" + prop + "','" + step + "')";
+            @_DB.Execute(INSERT_ID_SQL)
+            @_DB.Execute(INSERT_SIZE_SQL)
+            @_DB.Execute(INSERT_PROP_SQL)
+
+            step++;
+        }
+
+    }
+
+    //파일저장
+
+    FileStream fs = new FileStream(vfile, FileMode.Create);
+    StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8);
+
+    if (escapevar == null || escapevar.Trim() == "")
+    {
+        sw.WriteLine("");
+    }
+    else
+    {
+        sw.WriteLine("d_page_mainheight = " + mainheight);
+
+        string[] widgetArr = escapevar.Split('*');
+
+        foreach (string w in widgetArr)
+        {
+            if (w == "")
+            {
+                continue;
+            }
+            sw.WriteLine("");
+            sw.WriteLine(w.Split('%')[0]);
+            sw.WriteLine(w.Split('%')[1]);
+            sw.WriteLine(w.Split('%')[2]);
+        }
+    }
+
+    sw.Flush();
+    sw.Close();
+    fs.Close();
+
+
+    string cachefile = vfile.Replace(".cshtml", ".cache");
+    if (File.Exists(cachefile))
+    {
+        File.Delete(cachefile);
+    }
+
+
+    string r_str = "";
+
+    if (r != null && r != "")
+    {
+        r_str = "r=" + r + "&";
+    }
+
+    if (backgo != null && backgo != "")
+    {
+        if (type == "menu")
+        {
+            string catst = "";
+
+            Session["arr_uid"] = null;
+            @_Menu.getMenuCodeToPath(AppState["table_s_menu"].ToString(), uid, 0)
+ 
+            foreach (string val in Session["arr_uid"].ToString().Split('|'))
+            {
+                if (val == "")
+                {
+                    continue;
+                }
+
+                catst += val.Split(',')[2] + "/";       //id값 저장 string
+            }
+
+            catst = catst.Substring(0, catst.Length - 1);
+
+            if (iframe == "Y")
+            {
+                @_System.getLink(_System.RW("c=" + catst, g["r"], _HS), "parent.parent.", "", "")
+                return;
+            }
+            else
+            {
+                @_System.getLink(_System.RW("c=" + catst, g["r"], _HS), "parent.", "", "")
+                return;
+            }
+
+        }
+        else
+        {
+            if (iframe == "Y")
+            {
+                @_System.getLink(_System.RW("mod=" + id, g["r"], _HS), "parent.parent.", "", "")
+                return;
+            }
+            else
+            {
+                            
+                @_System.getLink(_System.RW("mod=" + id, g["r"], _HS), "parent.", "", "")
+                return;
+            }
+        }
+    }
+    else
+    {
+        @_System.getLink("reload", "parent.", "", "")                                                             
+        return;
+    }                
+}

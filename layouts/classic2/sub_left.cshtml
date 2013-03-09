@@ -1,0 +1,118 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var _HS = PageData[0];
+    var my = PageData[1];
+    var _CA = PageData[2];
+    var s = PageData[3];
+    var d_layout = PageData[4];
+    var g = PageData[5];
+    var keyword = PageData[6];
+    var p = PageData[7];
+    var system = PageData[8];
+    var _m = PageData[9];
+    var c = PageData[10];
+    var m = PageData[11];
+    var _mod = PageData[12];
+    var _keyword = PageData[13];
+    var _HM = PageData[14];
+    var r = PageData[15];
+    var bid = PageData[16];
+    var _HP = PageData[17];
+    var date = PageData[18];
+    var referer = PageData[19];
+    
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);
+    
+    //////////////////////////////////////////////////////////
+    ///// Top File Rendering
+    //////////////////////////////////////////////////////////
+    @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/top.cshtml", g, my, r, s, _HP, _CA, d_layout, LAYOUT_ARR, _HS)   
+}
+
+<div class="subbox">
+	<div class="wrap">
+		<div class="subtitle">
+		<h2>@_HM["name"]</h2>
+		</div>
+		<div class="searchbox">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>
+
+
+<div class="wrap">
+    @{
+        //////////////////////////////////////////////////////////
+        ///// Header Engine Start
+        //////////////////////////////////////////////////////////
+        @RenderPage("../../" + g["path_core"] + "engine/container_head.engine.cshtml", g, _HM, system)  
+    }
+    
+	<div class="snb">
+		<ul class="submenu">
+        @{
+            string _MENUS2_sql2 = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND parent=" + g["nowFMemnu"] + " AND hidden=0 AND depth=2 ORDER BY gid ASC";
+            foreach (var _M2 in _DB.Query(_MENUS2_sql2))
+            {
+                string li_class2_1 = "";
+                
+                if(_M2["id"] == _CA[1])
+                {
+                    g["nowSMemnu"] = _M2["uid"];
+                    li_class2_1 = "class='open'";
+                }
+                <li @Html.Raw(li_class2_1)><a href="@_System.RW("c=" + _CA[0] + "/" + _M2["id"], g["r"], _HS)" target="@_M2["target"]" @Html.Raw(li_class2_1)>@_M2["name"]</a>
+                    
+                @if((_HM["uid"] == _M2["uid"] || _HM["parent"] == _M2["uid"]) && _M2["isson"] == "1")
+                {
+                    string _MENUS2_sql3 = "SELECT * FROM " + AppState["table_s_menu"] + " WHERE site=" + s + " AND parent=" + _M2["uid"] + " AND hidden=0 AND depth=3 ORDER BY gid ASC";
+                    
+                    <ul>
+                        
+                    @foreach (var _M3 in _DB.Query(_MENUS2_sql3))
+                    {
+                        string li_class2_2 = "";
+
+                        if(_M3["uid"] == _HM["uid"])
+                        {
+                            li_class2_2 = "class='open'";
+                            
+                        }
+                        <li><a href="@_System.RW("c=" + _CA[0] + "/" + _CA[1] + "/" + _M3["id"], g["r"], _HS)" target="@_M3["target"]" @Html.Raw(li_class2_2)>@_M3["name"]</a></li>
+                    }
+                    
+                    </ul>                    
+                }
+                </li>
+            }
+        }
+            
+		</ul>
+	</div>
+	<div id="content">
+    @{
+        //////////////////////////////////////////////////////////
+        ///// Main engine Start
+        //////////////////////////////////////////////////////////
+        @RenderPage("../../" + g["path_core"] + "engine/content.engine.cshtml", g, system, _m, c, m, p, _HS, my, d_layout, s, _keyword, _mod, r, bid, _HP, _HM, date, referer)
+    }
+	</div>
+	<div class="clear"></div>
+    @{
+            //////////////////////////////////////////////////////////
+        ///// Footer engine Start
+        //////////////////////////////////////////////////////////
+        @RenderPage("../../" + g["path_core"] + "engine/container_foot.engine.cshtml", g, _HM, system)
+    }
+</div>
+
+@RenderPage("../../layouts/" + d_layout["dir"] + "/_cross/bottom.cshtml", g, r, _HS)

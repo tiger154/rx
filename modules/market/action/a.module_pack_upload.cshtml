@@ -1,0 +1,163 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var remote = Request["remote"];
+    var folder = Request["folder"];
+    var insfolder = Request["insfolder"];
+
+    @_System.checkAdmin(my["admin"], 0);
+
+    string isModule = "";
+    bool isUpload = false;
+    string extPath = g["path_root_ps"] + g["path_tmp"] + "app";
+    string extPath1 = extPath + "\\";
+    string saveFile = "";
+    
+    if (remote == "Y")
+    {
+        saveFile = extPath + "\\rx_module_app.zip";
+
+        if (File.Exists(saveFile))
+        {
+            if (File.Exists(folder + insfolder + "\\main.cshtml"))
+            {
+                @_System.getLink("", "", "이미 동일한 아이디(" + insfolder.Split('\\')[insfolder.Split('\\').Length] + ")의 모듈이 존재합니다.", "-2");
+                                                                                                                                     return;
+            }
+
+
+            _System.Unzip(saveFile, saveFile.Substring(0, saveFile.Length - 4)); //압축해제
+
+            string opendir = Directory.GetDirectories(extPath1)[0] + "\\";
+            foreach (string file in Directory.GetDirectories(opendir))
+            {
+                string file_name = file.Substring(opendir.Length, file.Length - opendir.Length);
+
+                if (file_name != "." && file_name != "..")
+                {
+                    if (File.Exists(file + "\\main.cshtml"))
+                    {
+                        if (File.Exists(g["path_root_ps"] + "modules\\" + file_name + "\\main.cshtml"))
+                        {
+                            isModule = file_name;
+                            break;
+                        }
+                    }
+                    _System.DirCopy(file, g["path_root_ps"] + "modules\\" + file_name); //디렉토리 복사
+
+                    isUpload = true;
+                    break;
+                }
+            }
+
+            _System.delAllDir(extPath); //디렉토리 삭제
+
+            if (File.Exists(saveFile))
+            {
+                @_System.getLink("", "", "이미 동일한 아이디(" + isModule + ")의 모듈이 존재합니다.", "-2")
+                return;
+            }
+            if (!isUpload)
+            {
+                @_System.getLink("", "", "패키지규격에 맞지 않는 파일입니다.", "-2")
+                return;
+            }
+            @_System.getLink("./?m=admin&module=" + m + "&front=pack&type=module", "parent.", "모듈설치 대기리스트에 등록되었습니다.", "")
+            return;
+        }        
+        @_System.getLink("", "", "", "-2")
+        return;
+    }
+    else
+    {
+        var uploadedFile = Request.Files[0];
+        string tmpname = Path.GetTempFileName();
+        string realname = Path.GetFileName(uploadedFile.FileName);     //파일명 가져오기           
+        string fileExt = (_System.getExt(realname)).ToLower();              //확장자명
+        saveFile = extPath1 + date["totime"].ToString("yyMMdd_HHmmss") + ".zip";   // 저장경로 + 저장이름    
+
+        if (uploadedFile.ContentLength > 0)
+        {
+            if (realname.Substring(0, 10) != "rx_module_")
+            {
+                @_System.getLink("", "", "모듈 패키지가 아닙니다.", "")
+                return;
+            }
+            if (fileExt != "zip")
+            {
+                @_System.getLink("", "", "패키지는 반드시 zip압축 포맷이어야 합니다.", "")
+                return;
+            }
+            uploadedFile.SaveAs(saveFile);  //저장
+
+            _System.Unzip(saveFile, saveFile.Substring(0, saveFile.Length - fileExt.Length));   //압축해제
+
+            string opendir = Directory.GetDirectories(extPath1)[0] + "\\";
+            foreach (string file in Directory.GetDirectories(opendir))
+            {
+                string file_name = file.Substring(opendir.Length, file.Length - opendir.Length);
+
+                if (file_name != "." && file_name != "..")
+                {
+                    if (File.Exists(file + "\\main.cshtml"))
+                    {
+                        if (File.Exists(g["path_root_ps"] + "modules\\" + file_name + "\\main.cshtml"))
+                        {
+                            isModule = file_name;
+                            break;
+                        }
+                    }
+                    _System.DirCopy(file, g["path_root_ps"] + "modules\\" + file_name); //디렉토리 복사
+
+                    isUpload = true;
+                    break;
+                }
+            }
+
+            _System.delAllDir(extPath); //디렉토리 삭제
+            
+            if (File.Exists(saveFile))
+            {
+                @_System.getLink("", "", "이미 동일한 아이디(" + isModule + ")의 모듈이 존재합니다.", "-2")
+                return;
+            }
+            if (!isUpload)
+            {
+                @_System.getLink("", "", "패키지규격에 맞지 않는 파일입니다.", "-2")
+                return;
+            }
+        }
+        
+        @_System.getLink("reload", "parent.", "", "")
+        return;
+    }
+}
+
+
+

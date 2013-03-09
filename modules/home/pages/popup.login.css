@@ -1,0 +1,7 @@
+#loginbox {width:300px;margin:0;padding:30px 1px 50px 60px;border:#dfdfdf solid 5px;}
+#loginbox .xdiv {margin:5px 0 5px 0;}
+#loginbox .xinput {width:230px;height:25px;font:bold 18px arial;color:#888888;}
+#loginbox .xfont {font:normal 11px dotum;color:#999999;}
+#loginbox .xfont input {position:relative;top:2px;}
+#loginbox .submitbtn{position:absolute;}
+#loginbox .xsubmit {position:relative;top:5px;left:145px;width:90px;height:35px;font:bold 16px arial;}

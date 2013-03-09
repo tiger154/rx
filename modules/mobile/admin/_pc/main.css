@@ -1,0 +1,14 @@
+﻿#mobilebox {}
+#mobilebox .title {font-weight:bold;padding:10px 0 15px 0;margin:0 0 20px 0;border-bottom:#dfdfdf solid 1px;}
+
+#mobilebox .td1 {padding:7px 0 7px 15px;width:130px;}
+#mobilebox .td2 {padding:7px 0 7px 0;line-height:150%;font-family:dotum;color:#888;}
+#mobilebox .td2 .sname {width:174px;}
+#mobilebox .td2 .sname1 {width:307px;}
+#mobilebox .td2 .select1 {width:180px;letter-spacing:-1px;}
+#mobilebox .td2 .dn {position:relative;top:4px;}
+#mobilebox .td2 .notice1 {padding:10px 0 10px 0;line-height:150%;}
+#mobilebox .td2 .notice2 {padding:10px 0 10px 0;font-weight:bold;color:#ff0000;line-height:150%;}
+#mobilebox .td2 textarea {overflow:auto;border:#EFEFEF solid 1px;padding:6px 0 6px 10px;line-height:150%;font-family:arial;font-size:12px;color:#888;width:190px;height:175px;}
+
+#mobilebox .submitbox {margin:20px 0 20px 0;padding:15px 0 0 15px;border-top:#dfdfdf solid 1px;}

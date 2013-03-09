@@ -1,0 +1,25 @@
+
+
+#widgetbox {width:100%;}
+
+#widgetbox .header {height:50px;border-bottom:#000000 solid 1px;background:#343B48;}
+#widgetbox .header h1 {float:left;padding:3px 20px 0 20px;margin:0;font-family:"malgun gothic";font-size:26px;color:#ffffff;}
+#widgetbox .header .guide {float:left;border-left:#999 dotted 1px;color:#888;font-family:dotum;font-size:11px;line-height:150%;margin:10px 0 0 0;padding:0 0 0 20px;}
+
+#widgetbox .line1 {height:1px;background:#1ACAD4;}
+#widgetbox .line2 {height:2px;background:#0BA2B4;}
+#widgetbox .line3 {height:1px;background:#037F93;}
+
+#widgetbox .category {float:left;width:200px;height:430px;margin-right:-200px;border-right:#dfdfdf solid 1px;overflow-y:auto;overflow-x:hidden;}
+#widgetbox .category .tree {padding:20px 0 0 10px;margin:0;}
+
+#widgetbox .category  .tree .dir01 {padding:1px 0 1px 0;}
+#widgetbox .category  .tree .dir01 .alldir {color:#000000;}
+#widgetbox .category  .tree .dir01 .nowdir {font-weight:bold;color:#33C9FD;}
+#widgetbox .category  .tree .dir01 img {position:relative;top:1px;}
+
+#widgetbox .content {margin-left:200px;height:390px;padding:25px 15px 15px 15px;overflow-y:auto;overflow-x:hidden;}
+#widgetbox .content .none {font-size:15px;font-family:dotum;color:#c0c0c0;text-align:center;padding:50px 0 0 0;}
+#widgetbox .content .none img {position:relative;top:1px;}
+
+#widgetbox .footer {height:50px;border-top:#dfdfdf solid 1px;text-align:center;padding:10px 0 0 0;}

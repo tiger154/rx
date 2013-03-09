@@ -1,0 +1,179 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    dynamic g = Session["g"];
+
+    var m = Request["m"];
+    var front = Request["front"];
+    var compo = Request["compo"];
+    var iconFolder = Request["iconFolder"];
+    var PreviewWidth = Request["PreviewWidth"];
+    var prop = Request["prop"];
+
+    string odir = g["path_root_ps"] + g["dir_module"] + "lib\\icon\\";
+    string[] files = null;
+    
+    int p = 0;
+    int RECNUM = 0;    
+    int PAGENUM = 0;
+    int START_NUM = 0;
+    int Table_Num = 0;
+    int TOTAL_PAGE = 0;
+    
+    int cnt = 0;
+}
+
+<style type="text/css">
+body {padding:15px;}
+</style>
+
+<table width="100%" cellspacing="0" cellpadding="0">
+	<tr height="30">
+		<td>
+			<img src="@g["img_module"]/dot_01.gif" align="absmiddle" /> <b>아이콘 삽입하기</b> 
+		</td>
+		<td align="right">
+
+
+        @{
+            if (iconFolder == null || iconFolder == "")
+            {
+                iconFolder = "set1";
+            }
+
+            //odir = g["path_root_ps"] + g["dir_module"] + "lib\\icon\\";            
+
+            foreach (string file in Directory.GetDirectories(odir))
+            {
+                if (File.Exists(file + "\\name.txt"))
+                {
+                    string file_name = file.Substring(odir.Length, file.Length - odir.Length);                        
+                    
+                    @:&nbsp;&nbsp;
+                    <a href="./?m=@m&front=@front&compo=@compo&iconFolder=@file_name" @Html.Raw(_System.isEqual(iconFolder, file_name, "style='font-weight:bold;'", ""))> 
+                    
+                    @{
+                    using (StreamReader reader = new StreamReader(file + "\\name.txt"))
+                    {
+                            @Html.Raw(reader.ReadToEnd());
+                    }
+                    }
+
+                    </a>
+                }
+            }
+        }
+            
+		</td>
+	</tr>
+	<tr><td colspan="2" height="1" background="@g["img_module"]/line_01.gif"></td></tr>
+	<tr><td colspan="2" height="25"></td></tr>
+</table>
+
+
+
+
+<div style="width:@(PreviewWidth)px;height:380px;overflow:auto;">
+
+@{
+    RECNUM = 1000;
+
+    if (p == 0)
+    {
+        p = 1;
+        PAGENUM = 1;
+    }
+    else
+    {
+        PAGENUM = prop.AsInt();
+    }
+
+    START_NUM = (PAGENUM - 1) * RECNUM;
+
+    odir += iconFolder + "\\";
+
+    cnt = 0;
+    
+    foreach (string file in Directory.GetDirectories(odir))
+    {
+        string file_name = file.Substring(odir.Length, file.Length - odir.Length);
+
+        if (File.Exists(file) && file_name != "Thumbs.db" && file != "name.txt")
+        {
+            files[cnt++] = file_name;
+        }
+    }
+
+    //rsort($tables);
+    //reset($tables);
+
+    Table_Num = cnt;
+    TOTAL_PAGE = ((Table_Num - 1) / RECNUM) + 1;
+    
+}
+
+<table width="100%" cellspacing="0" cellpadding="3">
+@{
+	@:<tr align="center" valign="top">
+
+    int j = 0;
+    for (int i = Table_Num - 1 - ((p - 1) * RECNUM);  i > Table_Num - 1 - (p * RECNUM); i--)
+    {
+        if (i > 1)
+        {
+            j++;
+            
+	        <td width="20%">
+		        <img src="@odir@files[i]" title="이 이미지를 본문에 삽입합니다." style="cursor:pointer;" onclick="ResultCode('@iconFolder/@files[i]')" />
+	        </td>
+            
+            if (j % 5 == 0)
+            {
+ 	            @:</tr>
+	            @:<tr align="center" valign="top">           
+            }            
+        }
+    }
+    
+    if (j % 4 != 0)
+    {
+        int term = 5 - (j % 4);
+        for (int x = 0; x < term; x++)
+        {
+            @:echo "<td width='20%' align=center></td>";    
+        }
+    }
+    
+    @:</tr>
+}
+	
+</table>
+
+
+</div>
+
+
+<table width="100%" cellspacing="0" cellpadding="0">
+	<tr><td height="15"></td></tr>
+	<tr><td height="1" bgcolor="#efefef"></td></tr>
+	<tr><td height="15"></td></tr>
+</table>
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function ResultCode(src) {
+        opener.EditDrop('<img src="' + rooturl + '/modules/editor/lib/icon/' + src + '" alt="" />');
+        window.focus();
+    }
+    self.resizeTo(550, 570);
+//]]>
+</script>
+

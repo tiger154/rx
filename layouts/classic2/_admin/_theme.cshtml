@@ -1,0 +1,173 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var r = PageData[1];
+    var d_layout = PageData[2];
+    var my = PageData[3];
+    var _HS = PageData[4];
+    
+    string _themeConfig = Request["_themeConfig"];
+    string prelayout = Request["prelayout"];
+    string newtheme = Request["newtheme"];
+    string _edittheme = Request["_edittheme"];
+    
+    string dirs = g["path_root_ps"] + g["path_layout"] + d_layout["dir"] + "\\_theme\\";
+    int theme_cnt = Directory.GetDirectories(dirs).Length;
+    string[] _themes = new string[theme_cnt];
+    
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);   
+    
+    int i = 0;
+    
+    foreach (string tpl in Directory.GetDirectories(dirs))
+    {
+        string tpl_name = tpl.Substring(dirs.Length, tpl.Length - dirs.Length);
+
+        if (tpl_name == "." || tpl_name == "..")
+        {
+            continue;
+        }
+
+        _themes[i] = tpl_name;
+
+        i++;
+    }
+}
+
+<div class="guide">
+<span class="b">@my[_HS["nametype"]]님은 어떤 테마가 마음에 드시나요?</span><br /><br />
+이 레이아웃은 현재  <span class="b">@Html.Raw(theme_cnt + "개")</span>의 테마가 등록되어 있습니다.<br />
+원하시는 테마를 선택한 후 변경하기 버튼을 클릭해 주세요.<br />
+테마에 따라 메인메뉴바의 색상이 변경됩니다.<br /> 
+변경한 테마가 적용되지 않을 경우 새로고침해 주세요.<br /> 
+</div>
+
+<form name="themeForm" method="post" action="@g["s"]/" onsubmit="return configCheck(this);">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="_layoutAction" value="config" />
+<input type="hidden" name="nowLayout" value="@d_layout["dir"]" />
+<input type="hidden" name="changeType" value="@_themeConfig" />
+
+<table>
+@foreach (string _theme in _themes)
+{
+    string theme_chk = "";
+    
+    if(LAYOUT_ARR["theme"] == _theme)
+    {
+        theme_chk = "checked='checked'";
+    }
+    
+    <tr>
+    <td>
+    <label class="b"><input type="radio" name="theme" value="@_theme" @Html.Raw(theme_chk) />@_theme</label><br />
+    </td>
+    <td class="t4">
+    @{
+        if(_theme != "blue_gray" && _theme != "blue_white" && _theme != "dark_blue" && _theme != "dark_gray" && _theme != "dark_white" && _theme != "gray_white" && _theme != "white_gray")
+        {
+            if(LAYOUT_ARR["theme"] == _theme)
+            {
+                <img src="@g["img_core"]/_public/btn_del.gif" alt="" title="삭제" class="filter" />        
+            }
+            else
+            {
+                <a href="@g["s"]/?r=@r&amp;_layoutAction=deletetheme&amp;nowLayout=@d_layout["dir"]&amp;theme=@_theme" onclick="return hrefCheck(this,true,'정말로 삭제하시겠습니까?');"><img src="@g["img_core"]/_public/btn_del.gif" alt="" title="삭제" /></a>        
+            }                    
+            
+            <a href="@g["s"]/?r=@r&amp;_themeConfig=@_themeConfig&amp;prelayout=@prelayout&amp;_edittheme=@_theme"><img src="@g["img_core"]/_public/btn_edit.gif" alt="" title="수정" /></a>
+        }
+    }
+    </td>
+    </tr>    
+}
+</table>
+
+<br />
+<br />
+
+<input type="submit" value=" 테마 변경하기 " class="btnblue" />
+</form>
+
+<div class="more">
+원하시는 테마가 없나요? <a href="@g["s"]/?r=@r&amp;_themeConfig=@_themeConfig&amp;prelayout=@prelayout&amp;newtheme=Y" class="u">새 테마만들기</a><br />
+테마를 직접 만들어서 사용하고 싶다면 새 테마만들기 링크를 클릭하세요.<br />
+기본테마는 편집할 수 없으나 새로 추가한 테마는 수정/삭제가 가능합니다.<br />
+이 작업은 적어도 HTML / CSS 에 대한 기본지식이 필요합니다.<br />
+</div>
+<br />
+
+@{
+    string theme_class = "";
+
+    if((newtheme == "" || newtheme == null) && (_edittheme == "" || _edittheme == null))
+    {
+        theme_class = "class='hide'";
+    }
+}
+
+<div @theme_class>
+<form name="makeForm" method="post" action="@g["s"]/" onsubmit="return makeCheck(this);">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="_layoutAction" value="make" />
+<input type="hidden" name="nowLayout" value="@d_layout["dir"]" />
+
+<textarea name="css" rows="30" cols="90" class="textarea">
+@{
+    string theme_link_add = "readme.txt";
+    
+    if(_edittheme != "" && _edittheme != null)
+    {
+        theme_link_add = _edittheme + "\\theme.css";
+    }
+
+    string source_path_m = g["path_root_ps"] + g["path_layout"] + d_layout["dir"] + "\\_theme\\" + theme_link_add;
+    
+    if (File.Exists(source_path_m))
+    {
+        using (StreamReader writer = new StreamReader(source_path_m))
+        {
+            @Html.Raw(writer.ReadToEnd());
+        }
+    }    
+}    
+</textarea>
+
+@if(_edittheme != "" && _edittheme != null)
+{
+    <div class="more">
+    @_edittheme 테마의 수정모드입니다.<br />
+    테마용 CSS 가 완성되었을 경우 가급접 주석을 제거한 후 저장해 주세요<br />
+    테마명칭은 영문대소문자/숫자/_ 만 사용가능합니다.<br />
+    </div>
+    <input type="hidden" name="_edittheme" value="@_edittheme" />
+    <input type="submit" value=" 수정하기 " class="btnblue" /><br /><br />
+    <a href="@g["s"]/?r=@r&amp;_themeConfig=@_themeConfig&amp;prelayout=@prelayout" class="u">수정취소</a>    
+}
+else
+{
+    <div class="more">
+    위의 CSS는 dark_gray 테마의 샘플 소스코드입니다.<br />
+    이 CSS를 원하시는 형태로 수정하신 후에 새로운 명칭을 입력하고 만들기 버튼을 클릭하시면 새 테마로 등록됩니다.<br />
+    테마용 CSS 가 완성되었을 경우 가급접 주석을 제거한 후 저장해 주세요<br />
+    테마명칭은 영문대소문자/숫자/_ 만 사용가능합니다.<br />
+    </div>
+    테마명칭 : 
+    <input type="text" name="theme" class="input" value="" /> 
+    <input type="submit" value=" 새로 만들기 " class="btnblue" />
+    <a href="@g["s"]/?r=@r&amp;_themeConfig=@_themeConfig&amp;prelayout=@prelayout" class="u">취소</a>    
+}
+
+</form>
+</div>
+<br />
+<br />
+<br />
+

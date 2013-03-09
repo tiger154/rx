@@ -1,0 +1,228 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+
+    string frame_name = "_action_frame_" + m;    
+    string usemobile = "";
+    string startdomain = "";
+    string startsite = "";
+    
+    //string DOMAIN_sql = "SELECT * FROM " + AppState["table_s_domain"].ToString() + " ORDER BY gid asc";
+    //int DOMAIN_num = _DB.GetDbData_Count(AppState["table_s_domain"].ToString(), "");
+    
+    string SITE_sql = "SELECT * FROM " + AppState["table_s_site"].ToString() + " ORDER BY gid asc";    
+    int SITE_num = _DB.GetDbData_Count(AppState["table_s_site"].ToString(), "");
+
+    dynamic R = _DB.GetDbData_M(AppState["table_s_mobile"].ToString(), "");
+    
+    if (R != null) 
+    {
+        usemobile = R["usemobile"].ToString();
+        startdomain = R["startdomain"].ToString();
+        startsite = R["startsite"].ToString();
+    }
+}
+
+<div id="mobilebox">
+	
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="mobile" />
+	<input type="hidden" name="checkm" value="@usemobile" />
+
+	<div class="title">
+		모바일(스마트폰) 접속설정
+	</div>
+
+	<table>
+		<tr>
+			<td class="td1">모바일접속 처리</td>
+			<td class="td2 shift">
+                @{
+                    string mobileChk = "";
+
+                    if (usemobile == null || usemobile == "" || usemobile == "0")
+                    {
+                        mobileChk = "checked='checked'";
+                    }
+                }
+				<input type="radio" name="usemobile" value="0" @mobileChk onclick="this.form.checkm.value=this.value;" />모바일 접속시
+
+				<select name="startdomain" class="select1">
+				<option value="">ㆍ사이트별 모바일모드 적용</option>
+				</select><br />
+                                
+				<input type="radio" name="usemobile" value="2" @_System.getChkStr(usemobile, 2) onclick="this.form.checkm.value=this.value;" />모바일 접속시 
+				<select name="startdomain" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">--------------------------------</option>
+                <option value="">등록된 도메인이 없습니다.</option>
+                @*{
+                    if(DOMAIN_num == 0) {
+                        <option value="">등록된 도메인이 없습니다.</option>
+                    }
+                    else {
+                        foreach(var S in _DB.Query(DOMAIN_sql)) {
+                            string sltDomain ="";
+                            
+                            if(startdomain == "http://"+S["name"]) {
+                                sltDomain = "selected='selected'";
+                            }
+                            
+                            <option value="http://@S["name"]" @sltDomain>ㆍ@S["name"]</option>
+                        }
+                    }                        
+                }*@
+				</select>
+
+				<a href="?r=@r&m=@m&module=domain&type=makedomain" class="dn"><img src="@g["img_core"]/_public/btn_add.gif" alt="도메인추가" title="도메인추가" /></a>
+				(으)로 이동<br />
+
+				<input type="radio" name="usemobile" value="1" @_System.getChkStr(usemobile, 1) onclick="this.form.checkm.value=this.value;" />모바일 접속시
+				<select name="startsite" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">--------------------------------</option>
+                @{
+                    if (SITE_num == 0)
+                    {
+                        <option value="">등록된 사이트가 없습니다.</option>
+                    }
+                    else
+                    {
+                        foreach (var S in _DB.Query(SITE_sql))
+                        {
+                            string sltSite = "";
+
+                            if (startsite == S["uid"].ToString())
+                            {
+                                sltSite = "selected='selected'";
+                            }
+                            
+            				<option value="@S["uid"]" @sltSite>ㆍ @S["name"]</option>
+                        }
+                    }                        
+                }
+				</select>
+				<a href="?r=@r&m=@m&module=home&type=makesite" class="dn"><img src="@g["img_core"]/_public/btn_add.gif" alt="사이트추가" title="사이트추가" /></a>
+				(으)로 연결(도메인유지)<br />
+			</td>
+		</tr>
+
+
+		<tr>
+			<td class="td1">모바일AGENT 목록</td>
+			<td class="td2">
+				<textarea name="agentlist" class="scrollbar01">
+                @{
+                    string line = "";
+                    string readFile = Request.PhysicalApplicationPath + "\\_var\\mobile.agent.txt";
+
+                    StreamReader sr = new StreamReader(readFile);
+
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        @Html.Raw(line + "\n");
+                    }
+
+                    sr.Close();                    
+                }                    
+                </textarea>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="td1">모바일웹 미리보기</td>
+			<td class="td2">
+				<a href="#." onclick="getSizeWin('@_System.RW("", g["r"], _HS)',800,480);">(800*480)</a>
+				<a href="#." onclick="getSizeWin('@_System.RW("", g["r"], _HS)',480,800);">(480*800)</a><br />
+				<a href="#." onclick="getSizeWin('@_System.RW("", g["r"], _HS)',960,640);">(960*640)</a>
+				<a href="#." onclick="getSizeWin('@_System.RW("", g["r"], _HS)',640,960);">(640*960)</a><br />
+				<a href="#." onclick="getSizeWin('@_System.RW("", g["r"], _HS)',480,320);">(480*320)</a>
+				<a href="#." onclick="getSizeWin('@_System.RW("", g["r"], _HS)',320,480);">(320*480)</a>
+
+				<div class="notice1">
+					모바일웹 미리보기는 에뮬레이터 방식이므로 실제 모바일 디바이스 환경과 일치하지 않습니다.<br />
+					특히 모바일 디바이스의 화면사이즈(3~4인치)가 아닌 해상도 기준이므로 참고용으로만 사용하세요.
+				</div>
+				<div class="notice2">
+					모바일웹 미리보기를 이용하신 후에는 반드시 PC모드로 전환하여 주세요.<br /><br />
+					<input type="button" id="btnpcmodechange" class="btngray" value=" PC모드전환 " onclick="pcmodeChange();" />
+				</div>
+			</td>
+		</tr>
+
+	</table>
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function pcmodeChange() {
+    frames._action_frame_@(m).location.href = '@g["s"]/?r=@r&m=@module&a=mobilemode&value=X';
+	getId('btnpcmodechange').className = 'btngray';
+}
+
+function getSizeWin(url,x,y) {
+	frames._action_frame_@(m).location.href = '@g["s"]/?r=@r&m=@module&a=mobilemode&value=E';    
+	window.open(url,'','left=0,top=0,width='+x+'px,height='+y+'px,resizable=no,scrollbars=yes,status=yes');
+	getId('btnpcmodechange').className = 'btnblue';
+}
+
+function saveCheck(f) {
+	if (f.checkm.value == '1') {
+		if (f.startsite.value == '') {
+			alert('시작사이트를 지정해 주세요.   ');
+			f.startsite.focus();
+			return false;
+		}
+	}
+    
+	if (f.checkm.value == '2') {
+		if (f.startdomain.value == '') {
+			alert('시작도메인을 지정해 주세요.   ');
+			f.startdomain.focus();
+			return false;
+		}
+	}
+    
+	return confirm('정말로 실행하시겠습니까?         ');
+}
+//]]>
+</script>
+
+
+
+

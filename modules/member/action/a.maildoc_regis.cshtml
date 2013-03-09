@@ -1,0 +1,63 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var newdoc = Request["newdoc"];
+    var type = Request["type"];
+    var content = Request.Unvalidated("content");    
+    
+    @_System.checkAdmin(my["admin"], 0)
+        
+    if (newdoc != null && newdoc != "") 
+    {
+        if (File.Exists(g["path_root_ps"] + g["dir_module"] + "doc\\" + newdoc + ".txt"))
+        {
+            @_System.getLink("", "", "이미 존재하는 양식명칭입니다.    ","")
+            return;
+        }
+        else 
+        {
+            type = newdoc;
+        }
+    }
+
+    string vfile = g["path_root_ps"] + g["dir_module"] + "doc\\" + type + ".txt";
+
+    File.WriteAllText(vfile, _System.stripslashes(content).Trim(), System.Text.Encoding.UTF8);
+
+    if (newdoc != null && newdoc != "") 
+    {
+        @_System.getLink(g["s"] + "/?r=" + r +"&m=admin&module=" + m + "&front=maildoc&type=" + newdoc, "parent.","등록되었습니다. ","")
+        return;
+    }
+    else
+    {
+        @_System.getLink("reload","parent.","수정되었습니다. ","")
+        return;                                                 
+    }   
+}

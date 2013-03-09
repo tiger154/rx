@@ -1,0 +1,27 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    dynamic data_set = new Dictionary<string, string>();
+    
+    AppState["isAzure"] = "N";
+    AppState["isInno"] = "Y";
+    AppState["DB_Name"] = "rxRazor";
+    
+    if (AppState["isAzure"] == "Y")
+    {
+        AppState["DB_Name"] = "rxRazorAzure";
+    }
+    
+    data_set = _SetDB.setApp();
+
+    foreach (string key in data_set.Keys)
+    {
+        AppState[key] = data_set[key];
+    }
+}

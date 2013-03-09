@@ -1,0 +1,119 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var friend = Request["friend"];
+
+    dynamic M = null;
+    
+    string M1_uid = "";    
+    string R_uid = "";
+    string R2_uid = "";
+
+    if (my["uid"] == 0)
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+
+    dynamic d_member = _DB.Get_code("member");
+    
+    string id = friend.Trim();
+    string[] idexp = id.Split(',');    
+    int idlen = idexp.Length;
+    
+    for(int i=0; i<idlen; i++)
+    {
+        string xid = idexp[i];
+        
+        if(xid == null || xid == "") 
+        {
+            continue;
+        }
+        
+        if(d_member["login_emailid"]!=null && d_member["login_emailid"]!="")
+        {
+            M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "email='" + xid + "'");        
+        
+            if(M == null) 
+            {
+                continue;
+            }
+        
+            M1_uid = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "uid='" + M["memberuid"], "uid").ToString();        
+        
+            if(M1_uid == "") 
+            {
+                continue;
+            }
+        }
+        else 
+        {
+            M1_uid = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "id='" + xid + "'", "uid").ToString();
+            
+            if(M1_uid == "") 
+            {
+                continue;
+            }
+            
+            M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + M1_uid);
+            
+            if(M == null) 
+            {
+                continue;
+            }            
+        }
+
+        R_uid = _DB.GetDbData_S(AppState["table_s_friend"].ToString(), "by_mbruid=" + M["memberuid"], "uid").ToString();        
+  
+        if(R_uid == "") 
+        {
+            R2_uid = _DB.GetDbData_S(AppState["table_s_friend"].ToString(), "my_mbruid=" + M["memberuid"] + " and by_mbruid=" + my["uid"], "uid").ToString();
+            
+            if (R2_uid != "")
+            {
+                string INSERT_FRIEND_SQL = "INSERT INTO " + AppState["table_s_friend"].ToString() + " (rel,my_mbruid,by_mbruid,category,d_regis) VALUES ('1','"
+                    + my["uid"] + "','" + M["memberuid"] + "','',getdate())";
+                string UPDATE_FRIEND_SQL = "UPDATE " + AppState["table_s_friend"].ToString() + " SET rel=1 WHERE uid=" + R_uid;
+                
+                @_DB.Execute(INSERT_FRIEND_SQL);
+                @_DB.Execute(UPDATE_FRIEND_SQL);
+            }
+            else
+            {
+                string INSERT_FRIEND_SQL = "INSERT INTO " + AppState["table_s_friend"].ToString() + " (rel,my_mbruid,by_mbruid,category,d_regis) VALUES ('0','"
+                    + my["uid"] + "','" + M["memberuid"] + "','',getdate())";
+                
+                @_DB.Execute(INSERT_FRIEND_SQL);
+            }
+        }
+    }
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

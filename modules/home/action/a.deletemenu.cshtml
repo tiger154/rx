@@ -1,0 +1,112 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var cat = Request["cat"];
+    var parent = Request["parent"];
+    var account = Request["account"];
+    var backc = Request["backc"];
+    
+    @_System.checkAdmin(my["admin"], 0)        // 관리자 체크
+    
+    if(cat == "" || cat == null) 
+    {
+        @_System.getLink("./?m=admin&module="+m+"&front=menu", "parent.", "", "")
+        return;
+    }
+
+    string uid = _DB.GetDbData_S(AppState["table_s_menu"].ToString(), "uid=" + cat, "uid").ToString();
+
+    string sub_uid_sql = "SELECT uid FROM " + AppState["table_s_menu"] + " WHERE parent=" + uid;    
+       
+    foreach (var sub in _DB.Query(sub_uid_sql))
+    {
+        string DELETE_SUB_SQL = "DELETE FROM " + AppState["table_s_menu"] + " WHERE uid=" + sub["uid"];
+        @_DB.Execute(DELETE_SUB_SQL);
+
+        string _xfile = g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", sub["uid"]);
+        File.Delete(_xfile + ".cshtml");
+        File.Delete(_xfile + ".widget.cshtml");
+        File.Delete(_xfile + ".mobile.cshtml");
+        File.Delete(_xfile + ".css");
+        File.Delete(_xfile + ".js");
+        File.Delete(_xfile + ".header.cshtml");
+        File.Delete(_xfile + ".footer.cshtml");
+
+        File.Delete(_xfile + ".txt");
+        File.Delete(_xfile + ".cache");
+        File.Delete(_xfile + ".widget.cache");
+        File.Delete(_xfile + ".mobile.cache");
+
+        /*
+           File.Delete(g["path_root_ps"] + g["path_page"] + "menu\\" + Request["imghead"]);
+           File.Delete(g["path_root_ps"] + g["path_page"] + "menu\\" + Request["imgfoot"]);
+           */
+    }
+
+    string DELETE_MENU_SQL = "DELETE FROM " + AppState["table_s_menu"] + " WHERE uid=" + cat;
+    @_DB.Execute(DELETE_MENU_SQL);
+
+    string _xfile1 = g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", cat.AsInt());
+    File.Delete(_xfile1 + ".cshtml");
+    File.Delete(_xfile1 + ".widget.cshtml");
+    File.Delete(_xfile1 + ".mobile.cshtml");
+    File.Delete(_xfile1 + ".css");
+    File.Delete(_xfile1 + ".js");
+    File.Delete(_xfile1 + ".header.cshtml");
+    File.Delete(_xfile1 + ".footer.cshtml");
+
+    File.Delete(_xfile1 + ".txt");
+    File.Delete(_xfile1 + ".cache");
+    File.Delete(_xfile1 + ".widget.cache");
+    File.Delete(_xfile1 + ".mobile.cache");
+
+    /*
+    File.Delete(g["path_root_ps"] + g["path_page"] + "menu\\" + Request["imghead"]);
+    File.Delete(g["path_root_ps"] + g["path_page"] + "menu\\" + Request["imgfoot"]);
+    */
+    if (parent != null && parent != "") 
+    {
+        if(_DB.GetDbData_Count(AppState["table_s_menu"].ToString(), "parent=" + parent) == 0) 
+        {
+            string UPDATE_MENU_SQL = "UPDATE " + AppState["table_s_menu"].ToString() + " SET isson=0 WHERE uid=" + parent;
+            @_DB.Execute(UPDATE_MENU_SQL);
+        }
+    }    
+    
+    if(backc == "user") 
+    {
+    	@_System.getLink(g["s"] + "/?r=" + r + "&system=edit.all&type=menu", "parent.", "", "")
+        return;
+    }
+    else
+    {
+	    @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=" + m + "&front=menu&account=" + account, "parent.", "", "")
+        return;
+    }    
+}

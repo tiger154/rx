@@ -1,0 +1,68 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];  
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var _addmodule = Request["_addmodule"];
+    var _addfront = Request["_addfront"];
+    
+    string url = g["s"] + "/?r=" + r + "&m=" + m + "&module=" + _addmodule + "&front=" + _addfront;
+    string name = "";
+    //string amenu = _DB.GetDbData_S(AppState["table_code_d_amenu"].ToString(), "module='"+m+"' and id='"+_addfront+"'", "id_value").ToString();
+
+    int gid;
+    int memberuid = my["uid"];
+    
+    dynamic d_amenu = _DB.Get_amenu("admin");
+    
+
+    @_System.checkAdmin(my["admin"], 0)     // 관리자 체크
+                                            
+    if (_DB.GetDbData_Count(AppState["table_s_admpage"].ToString(), "memberuid=" + memberuid + " and url='" + url + "'") > 0)
+    {
+        @_System.getLink("", "", "이미 등록된 페이지입니다.", "")
+        return;
+    }
+
+    string maxgid = _DB.GetDbData_S(AppState["table_s_admpage"].ToString(), "memberuid=" + memberuid, "max(gid)").ToString();
+    dynamic MD = _DB.Get_module_data(AppState["table_s_module"].ToString(), "id", _addmodule);
+    
+    if (maxgid == "") 
+    {
+        maxgid = "0";
+    }
+    
+    gid = Convert.ToInt32(maxgid) + 1;
+    name = MD["name"] + " > " + d_amenu[_addfront];
+    
+    string INSERT_ADMPAGE_SQL = "insert into " + AppState["table_s_admpage"] + " (memberuid, gid, name, url) values ("+memberuid+", '"+gid+"', '"+name+"', '"+url+"')";
+    
+    @_DB.Execute(INSERT_ADMPAGE_SQL);
+
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

@@ -1,0 +1,129 @@
+﻿@using System.Collections;
+@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    
+
+    dynamic g = PageData[0];
+    var _HS = PageData[1];
+    var p = PageData[2];
+    
+    
+    //string p = Request["p"];
+
+    string r = Request["r"];
+    string cat = Request["cat"];
+    string _keyw = Request["_keyw"];
+    string where = Request["where"];
+    string system = Request["system"];
+    string iframe = Request["iframe"];
+    string dropfield = Request["dropfield"];
+    string smodule = Request["smodule"];
+    string cmodule = Request["cmodule"];
+    
+    string recnum = "15";
+    string catque = "pagetype>1";
+    
+    if(cat!=null && cat!="") {
+        catque += " and category='" + cat + "'";        
+    }
+    if(_keyw!=null && _keyw!="") {
+        catque += " and " + where + " like '" + _keyw + "%'";
+    }
+
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);
+
+    string PAGES_sql = _System.GetQuery(AppState["table_s_page"].ToString(), "", catque, "uid", "asc", list_start, recnum.ToString());
+
+    
+    int NUM = _DB.GetDbData_Count(AppState["table_s_page"].ToString(), catque);
+    Decimal TPG = @_System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));
+
+}
+
+
+<div id="mjointbox">
+
+	<div class="title">
+		<form action="@g["s"]/" method="get">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="system" value="@system" />
+		<input type="hidden" name="iframe" value="@iframe" />
+		<input type="hidden" name="dropfield" value="@dropfield" />
+		<input type="hidden" name="smodule" value="@smodule" />
+		<input type="hidden" name="cmodule" value="@cmodule" />
+		<input type="hidden" name="p" value="@p" />
+
+		<select name="cat" class="cat" onchange="this.form.submit();">
+		<option value="">&nbsp;+ 페이지분류</option>
+		<option value="">------------------</option>
+        @{
+            
+            ArrayList _cats = new ArrayList();
+            string CATS_sql = "SELECT category,count(*) as cnt FROM " + AppState["table_s_page"].ToString() + " GROUP BY category";
+            
+            foreach(var C in _DB.Query(CATS_sql)) {
+                string sltCat = "";
+                _cats.Add(C["category"]);
+                if(C["category"]==cat) {
+                    sltCat = " selected='selected'";
+                }
+                <option value="@C["category"]"@sltCat>ㆍ @C["category"] (@C["cnt"])</option>
+            }
+        }
+		</select>
+ 
+		<select name="where">
+        @{
+            string sltName = "";
+            string sltId = "";
+            if(where == "name") {
+                sltName = " selected='selected'";
+            }
+            if (where == "id")
+            {
+                sltId = " selected='selected'";
+            }
+        }
+		<option value="name"@sltName>페이지명</option>
+		<option value="id"@sltId>페이지코드</option>
+		</select>
+		
+		<input type="text" name="_keyw" size="10" value="@_keyw" class="input" />
+		<input type="submit" value=" 검색 " class="btngray" />
+		<input type="button" value=" 리셋 " class="btngray" onclick="this.form.p.value=1;this.form.cat.value='';this.form._keyw.value='';this.form.submit();" />
+		
+		</form>
+
+	</div>
+
+    @if(NUM != 0) {
+ 	    <table>
+        @foreach(var PR in _DB.Query(PAGES_sql)) {
+ 		    <tr>
+		    <td class="name"><a href="@_System.RW("mod=" + PR["id"], g["r"], _HS)" target="_blank" title="페이지보기">@PR["name"]</a><span>(@PR["id"])</span></td>
+		    <td class="aply"><input type="button" value="연결" class="btnblue" onclick="dropJoint('?r=@r&m=@smodule&mod=@PR["id"]');" /></td>
+		    </tr>           
+        }
+	    </table>
+
+	    <div class="pagebox01">
+		    <script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	    </div>	       
+    }
+
+</div>
+
+<style type="text/css">
+#mjointbox {}
+#mjointbox .title {border-bottom:#dfdfdf dashed 1px;padding:0 0 10px 0;margin:0 0 20px 0;}
+#mjointbox .title .cat {width:120px;}
+#mjointbox table {width:100%;}
+#mjointbox table .name {}
+#mjointbox table .name span {font-size:11px;font-family:arial;color:#c0c0c0;padding:0 0 0 3px;}
+#mjointbox table .aply {text-align:right;}
+#mjointbox .pagebox01 {text-align:center;padding:15px 0 15px 0;margin:15px 0 0 0;border-top:#efefef solid 1px;}
+</style>

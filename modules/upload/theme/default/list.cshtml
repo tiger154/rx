@@ -1,0 +1,332 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];
+    var m = PageData[3];
+    var my = PageData[6];
+
+    string code = Request["code"];
+    string r = Request["r"];
+    string gparam = Request["gparam"];
+    string frame_name = "_action_frame_" + m;
+    string upSession = "";
+    string[] gparamExp = gparam.Split('|');
+   
+    dynamic U = null;
+    dynamic d_upload = _DB.Get_code("upload");
+    
+    string up_sql = "SELECT uid FROM " + AppState["table_s_upload"].ToString() + " WHERE tmpcode='" + Session["upsescode"] + "'";   
+        
+    if(code == null || code =="")
+    {
+        foreach (var up in _DB.Query(up_sql))
+        {
+            upSession = upSession + "[" + up["uid"].ToString() + "]";
+        }                
+        
+        code = upSession;      
+    }
+}
+
+<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/core.js"></script>
+<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/events.js"></script>
+<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/css.js"></script>
+<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/coordinates.js"></script>
+<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/drag.js"></script>
+<script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/dragsort.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+    var dragsort = ToolMan.dragsort();
+//]]>
+</script>
+
+<div id="uplist">
+	<div id="captionDiv" class="caption">
+		<form name="captionForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return captionRegis(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@m" />
+		<input type="hidden" name="a" value="caption_regis" />
+		<input type="hidden" name="tmpcode" value="" />
+		<input type="hidden" name="uid" value="" />
+		<table>
+		<tr>
+		<td class="x1">파일명 <input type="text" name="name" value="" class="input" /> 캡션</td>
+		<td class="x2"><input type="text" name="caption" value="" class="input" /></td>
+		<td class="x3"><input type="submit" value="등록" class="btnblue" /> <input type="button" value="취소" class="btngray" onclick="captionClose();" /></td>
+		</tr>
+		</table>
+		</form>
+	</div>
+    @{
+        string disStr = "none";             
+    
+        if(code!=null && code!="")
+        {
+            disStr = "block";
+        }
+    }
+	<div id="upfilebox" class="upfilebox" style="display:@disStr;">
+	<div class="thumbbox"><div id="thumbbox" class="thumbimg"></div></div>
+	<div class="upfilelist">
+	<ul id="upfilelist" class="scrollbar01">
+    @{
+        string[] UFILES = _System.getArrayString(code);
+        
+        foreach (string _val in UFILES)
+        {
+            U = _DB.GetDbData_M(AppState["table_s_upload"].ToString(), "uid=" + _val);
+            
+            if (U == null)
+            {
+                continue;
+            }
+
+            string file_ext = _System.getExt(U["name"]);
+            
+ 	        <li id="@Html.Raw("uLi" + U["uid"])">
+		        <input type="checkbox" name="filemembers" value="@U["uid"]" checked="checked" />
+		        <span id="@Html.Raw("finfo_name_" + U["uid"])" class="hide">@U["name"].Replace("." + file_ext, "")</span>
+		        <span id="@Html.Raw("finfo_caption_" + U["uid"])" class="hide">@U["caption"]</span>
+		        <span id="@Html.Raw("finfo_tmpcode_" + U["uid"])" class="hide">@U["tmpcode"]</span>
+		        <span class="delicon">
+			        <img src="@g["img_core"]/_public/ico_drag.gif" class="drag" alt="순서변경" title="순서변경" />
+			        <a class="hand" title="삭제" onclick="upfile_delete('@U["uid"]','@U["type"]','@U["tmpname"]');"><img src="@g["img_core"]/_public/btn_del_s01.gif" class="xdel" alt="삭제" /></a>
+                    @{
+                        string hideStr = "show";
+            
+                        if(U["hidden"] < 1)
+                        {
+                            hideStr = "hide";
+                        }
+                    }
+			        <a class="hand" title="다운로드목록 출력여부" onclick="upfile_hidden('@U["uid"]');"><img src="@Html.Raw(g["img_core"]+"/_public/ico_"+hideStr+".gif")" class="eye" alt="다운로드목록 출력여부" /></a>
+		        </span>
+		        <span class="name">
+                @{
+                    string extStr = "unknown";
+                    string caption_prn = "";
+                        
+                    if(File.Exists(g["path_root_ps"]+g["path_core"]+"image\\file\\samll\\"+file_ext+".gif"))
+                    {
+                        extStr = file_ext;    
+                    }
+                    
+                    if(U["type"] == "2")
+                    {
+                        caption_prn = "ondblclick=\"dropEditArea('" + U["url"] + U["folder"].Replace("\\", "/") + "/" + U["tmpname"] + "','" + U["width"] + "');\" title=\"*한번클릭 : 파일명/캡션수정 *더블클릭 : 본문삽입\"";
+                    }
+                }
+		        <img src="@Html.Raw(g["img_core"]+"/file/small/"+file_ext+".gif")" class="ext" alt="" />
+		        <a class="hand" onmousemove="upfile_thumb('@_System.getExt(U["name"])','@U["url"]@U["folder"].Replace("\\", "/")/@U["thumbname"]');" onclick="captionCheck('@U["uid"]');" @Html.Raw(caption_prn)>@U["name"]</a>
+		        <span class="size">(@_System.getSizeFormat(U["size"]))</span>
+		        </span>
+	        </li>           
+            
+        }
+    }
+	</ul>
+	</div>
+	<div class="clear"></div>
+	</div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function captionClose()
+{
+	getId('captionDiv').style.display = 'none';
+	setFrameSize();
+}
+function captionRegis(f)
+{
+	if (f.uid.value == '')
+	{
+		return false;
+	}
+	if (f.name.value == '')
+	{
+		alert('파일명을 입력해 주세요. ');
+		f.name.focus();
+		return false;
+	}
+	return confirm('정말로 실행하시겠습니까?  ');
+}
+function captionCheck(xuid)
+{
+	var f = document.captionForm;
+	var xname = getId('finfo_name_'+xuid).innerHTML;
+	var xcaption = getId('finfo_caption_'+xuid).innerHTML;
+	var xtmpcode = getId('finfo_tmpcode_'+xuid).innerHTML;
+	getId('captionDiv').style.display = 'block';
+	f.uid.value = xuid;
+	f.name.value = xname;
+	f.caption.value = xcaption;
+	f.tmpcode.value = xtmpcode;
+	f.caption.focus();
+	setFrameSize();
+}
+function dragFile()
+{
+    var l = document.getElementsByName('filemembers');
+    var n = l.length;
+    var i;
+	var j = 0;
+	var upfiles = '';
+
+	for	(i = 0; i < n; i++)
+	{
+		if (l[i].checked == true)
+		{
+			j++;
+			upfiles += '['+l[i].value+']';
+		}
+	}
+
+    @if(gparamExp[0].Trim()!="") {
+	    @Html.Raw("if(parent.getId('" + gparamExp[0] + "')) \n")
+	    @Html.Raw("{ \n")
+	    @Html.Raw("parent.getId('" + gparamExp[0] + "').value = upfiles; \n")
+    @Html.Raw("} \n")
+    }	
+}
+function dropEditArea(pic,w)
+{
+
+    @if(gparamExp[1]!="") {
+	@Html.Raw("if (parent.getId('" + gparamExp[1] + "')) \n")
+	@Html.Raw("{ \n")
+	@Html.Raw("	if (confirm('이미 본문에 삽입된 이미지일 수 있습니다.\\n정말로 본문에 삽입하시겠습니까?    ')) \n")
+	@Html.Raw("	{ \n")
+	@Html.Raw("		var x_width = parseInt('" + d_upload["width_img"] + "'); \n")
+	@Html.Raw("			x_width = parseInt(w) < x_width ? parseInt(w) : x_width; \n")
+
+	@Html.Raw("		var photos = '<br /><img src=\"'+pic+'\" class=\"photo\" width=\"'+x_width+'\" alt=\"\" /><br />'; \n")
+	@Html.Raw("		parent.frames." + gparamExp[1] + ".EditDrop(photos); \n")
+	@Html.Raw("	} \n")
+	@Html.Raw("} \n")
+    }
+}
+function upfile_delete(uid,type,tmpname)
+{
+	if (type == '2')
+	{
+		var tmsg = '서버에서 파일을 삭제합니다.\n\n정말로 삭제하시겠습니까?\n본문에 삽입된 이미지는 제거됩니다.          ';
+	}
+	else {
+		var tmsg = '서버에서 파일을 삭제합니다.\n정말로 삭제하시겠습니까?          ';
+	}
+
+	if (confirm(tmsg))
+	{
+		if (parent.getId('@gparamExp[1]'))
+		{
+			@Html.Raw("var content = parent.frames." + gparamExp[1] + ".editStartMode == 'HTML' && parent.frames." + gparamExp[1] + ".editSrcMode == false ? parent.frames." + gparamExp[1] + ".frames.editAreaIframe.document.body.innerHTML : parent.frames." + gparamExp[1] + ".getId('editAreaTextarea').value;\n");
+
+            if (type == '2' && content.indexOf(tmpname) != -1)
+			{
+
+				var contarr = content.split(tmpname);
+
+				var contar1 = contarr[0].split('<');
+				var contar2 = contarr[1].split('>');
+
+				var resultc = '';
+				var i;
+				for (i = 1; i < contar1.length-1; i++)
+				{
+					if (!contar1[i])
+					{
+						continue;
+					}
+					resultc += '<'+contar1[i];
+				}
+				for (i = 1; i < contar2.length-1; i++)
+				{
+					if (!contar2[i])
+					{
+						continue;
+					}
+					resultc += contar2[i] + '>';
+				}
+
+			}
+			else {
+				var resultc = content;
+			}
+		}
+
+		getId('uLi'+uid).style.display = 'none';
+		getId('thumbbox').style.background = '';
+		@Html.Raw("frames." + frame_name + ".location.href = '@g["s"]/?r=" + r + "&m=upload&a=files_delete&file_uid=' + uid;\n")
+
+		if (parent.getId('@gparamExp[0]'))
+		{
+			parent.getId('@gparamExp[0]').value = parent.getId('@gparamExp[0]').value.replace('['+uid+']','');
+		}
+		if (parent.getId('@gparamExp[1]Content'))
+		{
+			parent.getId('@gparamExp[1]Content').value = resultc;
+			@Html.Raw("parent.frames." + gparamExp[1] + ".getAreaSet(parent.frames." + gparamExp[1] + ".editStartMode,'start');\n")
+		}
+
+		if (parent.getId('@gparamExp[0]').value == '')
+		{
+			getId('upfilebox').style.display = 'none';
+		}
+		setFrameSize();
+	}
+}
+function upfile_hidden(uid)
+{
+	@Html.Raw("frames." + frame_name + ".location.href") = '@g["s"]/?r=@r&m=upload&a=files_hidden&gparam=@gparam&code=@code&file_uid=' + uid;
+}
+function upfile_thumb(ext,img)
+{
+	if (ext == 'gif' || ext == 'jpg' || ext == 'png')
+	{
+		getId('thumbbox').style.background = "url("+img+") center center no-repeat";
+	}
+	else {
+		getId('thumbbox').style.background = "url("+rooturl+"/_core/image/file/big/"+ext+".gif) center center no-repeat";
+	}
+}
+function setFrameSize()
+{
+	var frameName = frames.name;
+
+	if (!frameName)
+	{
+		location.href = '@g["r"]/';
+	}
+	else {
+
+		dragsort.makeListSortable(getId("upfilelist"));
+		parent.getId(frameName).style.height = (parseInt(document.body.clientHeight) + (navigator.appVersion.indexOf('MSIE 8')!=-1?-4:0)) + 'px';
+
+		if (parent.parent.getId(parent.frames.name))
+		{
+			parent.frameSetting();
+		}
+	}
+}
+function JserrorCheck(msg,file_loc,line_no)
+{
+	e_msg = msg;
+	e_file = file_loc;
+	e_line = line_no;
+	return true;
+}
+window.onerror = JserrorCheck;
+window.onload = setFrameSize;
+//]]>
+</script>
+

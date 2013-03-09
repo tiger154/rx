@@ -1,0 +1,91 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var m = PageData[1];
+
+    dynamic g = PageData[0];    
+    dynamic d_member = _DB.Get_code("member");
+
+    var page = Request["page"];
+}
+
+
+<div id="pages_top">
+
+	<div class="title">
+		<div class="xl"><h2><a href="@g["url_reset"]">마이페이지</a></h2></div>
+		<div class="xr">
+		
+			<ul>
+			<li class="leftside"></li>
+            @if (d_member["mytab_post"] == "1")
+            {
+                <li @Html.Raw(_System.isEqual(page, "post", "class='selected'", ""))><a href="@g["url_reset"]&page=post">게시물</a></li>    
+            }
+            @if (d_member["mytab_comment"] == "1")
+            {
+                <li @Html.Raw(_System.isEqual(page, "comment", "class='selected'", ""))><a href="@g["url_reset"]&page=comment">댓글</a></li>
+            }
+            @if (d_member["mytab_oneline"] == "1")
+            {
+                <li @Html.Raw(_System.isEqual(page, "oneline", "class='selected'", ""))><a href="@g["url_reset"]&page=oneline">의견</a></li> 
+            }
+            @if (d_member["mytab_paper"] == "1")
+            {
+                <li @Html.Raw(_System.isEqual(page, "paper", "class='selected'", ""))><a href="@g["url_reset"]&page=paper">쪽지</a></li>
+            }
+            @if (d_member["mytab_friend"] == "1")
+            {
+                <li @Html.Raw(_System.isEqual(page, "friend", "class='selected'", ""))><a href="@g["url_reset"]&page=friend">친구</a></li>
+            }
+
+			<li>
+				<div id="morebox2" class="morebox">
+					<ul>
+
+                    @if (d_member["mytab_point"] == "1")
+                    {
+                        <li><a href="@g["url_reset"]&page=point">포인트</a></li>
+                    }
+                    @if (d_member["mytab_scrap"] == "1")
+                    {
+                        <li><a href="@g["url_reset"]&page=scrap">스크랩</a></li>
+                    }
+                    @if (d_member["mytab_simbol"] == "1")
+                    {
+                        <li><a href="@g["url_reset"]&page=simbol">캐릭터</a></li>
+                    }
+                    @if (d_member["mytab_log"] == "1")
+                    {
+                        <li><a href="@g["url_reset"]&page=log">접속기록</a></li>
+                    }
+                    @if (d_member["mytab_info"] == "1")
+                    {
+                        <li><a href="@g["url_reset"]&page=info">정보수정</a></li>
+                    }
+                    @if (d_member["mytab_pw"] == "1")
+                    {
+                        <li><a href="@g["url_reset"]&page=pw">비번변경</a></li>
+                    }
+                    @if (d_member["mytab_out"] == "1")
+                    {
+                        <li><a href="@g["url_reset"]&page=out">회원탈퇴</a></li>
+                    }
+					</ul>
+				</div>
+				<a onclick="morebox('morebox2');">부가정보 <img src="@g["img_core"]/_public/ico_arr_01.gif" alt="" /></a>
+			</li>
+			</ul>
+
+		</div>
+		<div class="clear"></div>
+	</div>
+	
+</div>
+

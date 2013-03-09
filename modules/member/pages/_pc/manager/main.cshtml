@@ -1,0 +1,278 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/    
+    
+
+    var my = PageData[6];
+
+    string mbruid = Request["mbruid"];
+    string levelnum = ""; 
+    string levelname = ""; 
+    string sosokname = ""; 
+    string joinsite = ""; 
+    string M1 = "";
+
+    dynamic g = PageData[0];
+    dynamic m = PageData[3];
+    dynamic _HS = PageData[5];
+    dynamic M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + mbruid);
+    
+    levelnum = _DB.GetDbData_S(AppState["table_s_mbrlevel"].ToString(), "gid=1", "uid").ToString();
+    levelname = _DB.GetDbData_S(AppState["table_s_mbrlevel"].ToString(), "uid=" + M["level"], "name").ToString();
+    sosokname = _DB.GetDbData_S(AppState["table_s_mbrgroup"].ToString(), "uid=" + M["sosok"], "name").ToString();
+    joinsite = _DB.GetDbData_S(AppState["table_s_site"].ToString(), "uid=" + M["site"], "name").ToString();
+    M1 = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "uid=" + M["memberuid"], "id").ToString();
+    
+    // 개별 페이지 상단 메뉴부
+    @RenderPage("_menu.cshtml", g, mbruid, m, _HS)
+}
+
+
+<div id="mypage_main">
+	<div class="photo">
+    @{
+        if(M["photo"] != "" && M["photo"] != null) {
+            <img src="@g["url_root"]/_var/simbol/@M["photo"]" alt="@M["photo"]" />
+		}
+	}
+    </div>
+	<table summary="@M[_HS["nametype"]] 님의 회원 요약정보입니다.">
+	<caption>회원요약정보</caption> 
+	<colgroup> 
+	<col width="120"> 
+	<col> 
+	<col width="120"> 
+	<col>
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col"></th>
+	<th scope="col"></th>
+	<th scope="col"></th>
+	<th scope="col"></th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+	<td class="key">이름</td>
+	<td>@M["name"]</td>
+	<td class="key">닉네임</td>
+	<td>@M["nic"]</td>
+	</tr>
+	<tr>
+	<td class="key">아이디</td>
+	<td>@M1</td>
+	<td class="key">가입일</td>
+	<td>@M["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	</tr>
+	<tr>
+	<td class="key">최근접속</td>
+	<td>@M["last_log"] (@_System.getRemainDate(M["last_log"].ToString()) 일전)</td>
+	<td class="key">연락처</td>
+	<td>
+        @{
+            if(M["tel2"] != "") {
+                @M["tel2"]
+			}
+            else {
+                @M["tel1"]                
+			}
+		}
+	</td>
+	</tr>
+	<tr>
+	<td class="key">이메일</td>
+	<td>@M["email"]</td>
+	<td class="key">지역</td>
+	<td>
+        @{
+            if(M["addr0"] != "") {
+                @M["addr1"]
+			}
+            else {
+                @:해외            
+			}            
+ 		}
+	</td>
+	</tr>
+	<tr>
+	<td class="key">나이/성별</td>
+	<td>@Html.Raw(_System.getAge(M["birth1"])+"세") / @Html.Raw(_System.getSex(M["sex"])+"성")</td>
+	<td class="key">생년월일</td>
+	<td>
+        @{
+           if(@M["birth2"] != "") {
+                @Html.Raw(M["birth1"]+"/"+M["birth2"].Substring(0, 2)+"/"+M["birth2"].Substring(2, 2));             
+            }               
+        }
+    </td>
+	</tr>
+	<tr>
+	<td class="key">회원그룹</td>
+	<td>@sosokname</td>
+	<td class="key">회원등급</td>
+	<td>@levelname (@M["level"] / @levelnum)</td>
+	</tr>
+	<tr>
+    <td class="key">가입사이트</td>
+	<td>@joinsite</td>
+	<td class="key">포인트</td>
+    <td>
+    	@string.Format("{0:#,0}", Convert.ToInt32(M["point"])) (사용 : @string.Format("{0:#,0}", Convert.ToInt32(M["usepoint"])))
+		(적립 : @string.Format("{0:#,0}", Convert.ToInt32(M["cash"])))
+		(예치 : @string.Format("{0:#,0}", Convert.ToInt32(M["money"])))
+    </td>
+	</tr>
+    <tr>
+    <td class="key">SNS정보</td>
+    <td colspan="3">
+    @{
+        string[] SNS = M["sns"].Split('|');
+        string[] SNSSET = { "트위터", "페이스북", "미투데이", "요즘"};
+        string[] SNSURL = { "twitter.com", "facebook.com", "me2day.net", "yozm.daum.net" };        
+        
+        if (SNS.Length > 3)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                string[] _snsuse = SNS[i].Split(',');
+            
+                if (_snsuse[1] == "")
+                {
+                    continue;
+                }
+                        
+                <a href="@_snsuse[1]" target="_blank">[@SNSSET[i]]</a> @:&nbsp;
+            }
+        }
+    }
+
+	</td>
+    </tr>
+
+	</table>
+
+	<div class="post">
+	<h5>최근 게시물</h5>
+	<ul>
+	@{
+        string _POST_sql = "SELECT TOP 10* FROM " + AppState["table_bbsdata"] + " WHERE mbruid=" + M["memberuid"] + " ORDER BY gid ASC";
+        int _POST_num = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "mbruid=" + M["memberuid"]);
+
+        if (_POST_num == 0)
+        {
+    	    <li class="none">등록된 게시물이 없습니다.</li>            
+        }
+        else
+        {
+            foreach (var _R in _DB.Query(_POST_sql))
+            {
+                string mobile_chk = _System.isMobileConnect(_R["agent"]);     // 모바일 체크
+                
+                <li>
+	            ㆍ<a href="@_System.getPostLink(s, _R, g["r"], _HS)" target="_blank">@_R["subject"]</a>
+                @if (mobile_chk != "")
+                {
+                    <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos1" alt="모바일" title="모바일(@mobile_chk)로 등록되었습니다." />
+                }	        
+                @if (_R["content"].IndexOf(".jpg") > -1)
+                {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+                }
+                @if (_R["upload"] != "")
+                {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+                }
+                @if (_R["hidden"] == "1")
+                {
+                    <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+                }
+	            @if (_R["comment"] > 0)
+             {
+                    <span class="comment">[@_R["comment"]
+                
+                    @if (_R["oneline"] > 0)
+                    {
+                        @Html.Raw("+" + _R["oneline"]);
+                    }
+                    ]
+                    </span>
+             }
+                @if (_R["trackback"] > 0)
+                {
+                    <span class="trackback">[@_R["trackback"]]</span>
+                }
+                @if (_System.getNew(_R["d_regis"].ToString(), 24) == true)
+                {
+                    <span class="new">new</span>
+                }
+	            </li>            
+            }
+        }
+	}
+	</ul>
+
+	<h5>최근 댓글</h5>
+	<ul>
+	@{
+        string _Comment_sql = "SELECT TOP 10* FROM " + AppState["table_s_comment"] + " WHERE mbruid=" + M["memberuid"] + " ORDER BY uid ASC";
+        int _Comment_num = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "mbruid=" + M["memberuid"]);
+
+        if (_Comment_num == 0)
+        {
+    	    <li class="none">등록된 댓글이 없습니다.</li>            
+        }
+        else
+        {
+            foreach (var _R in _DB.Query(_Comment_sql))
+            {
+                string mobile_chk = _System.isMobileConnect(_R["agent"]);     // 모바일 체크
+                
+                <li>
+            	ㆍ<a href="@Html.Raw(_System.getCyncURL(_R["cync"], 6, '[', ',', ':') + "&s=" + _R["site"] + "&CMT=" + _R["uid"] + "#CMT")" target="_blank">@_R["subject"]</a>
+                @if (mobile_chk != "")
+                {
+                    <img src="@g["img_core"]/_public/ico_mobile.gif" class="imgpos1" alt="모바일" title="모바일(@_R["mobile"])로 등록되었습니다." />
+                }	        
+                @if (_R["content"].IndexOf(".jpg") > -1)
+                {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+                }
+                @if (_R["upload"] != "")
+                {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+                }
+                @if (_R["hidden"] == "1")
+                {
+                    <img src="@g["img_core"]/_public/ico_hidden.gif" class="imgpos" alt="비밀글" title="비밀글" />
+                }
+	            @if (_R["oneline"] > 0)
+             {
+                    <span class="comment">[@_R["oneline"]]</span>
+             }
+                @if (_System.getNew(_R["d_regis"].ToString(), 24) == true)
+                {
+                    <span class="new">new</span>
+                }
+	            </li>
+            }
+        }
+    }
+	</ul>
+	</div>
+</div>
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+document.title = "@M[_HS["nametype"]]님의 회원정보";
+self.resizeTo(800,750);
+
+//]]>
+</script>
+

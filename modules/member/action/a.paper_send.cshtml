@@ -1,0 +1,112 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    string id = Request["id"].Trim();
+    string msg = Request["msg"].Trim();
+    string html = Request["html"];
+    string parent = Request["parent"];
+    string upload = Request["upload"];
+    
+    dynamic M = null;
+    dynamic M1 = null;    
+    dynamic d_member = _DB.Get_code("member");
+    
+   
+    if (parent == null || parent == "")
+    {
+        parent = "0";
+    }
+    
+    if(html=="" || html==null)
+    {
+        html = "text";
+    }
+    
+    if (my["uid"] == 0)
+    {
+        @_System.getLink("", "", "권한이 없습니다.", "close")
+        return;
+    }
+    
+    if (id == "" || id == null || msg == null || msg == "")
+    {
+        @_System.getLink("", "", "", "close")     
+        return;
+    }    
+
+    string[] idexp = id.Split(',');
+
+    foreach(string val in idexp) {
+        if (d_member["login_emailid"] == "1")
+        {
+            M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "email='" + val.Trim() + "'");
+            if (M == null)
+            {
+                continue;
+            }
+            else
+            {
+                M1 = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "uid='" + M["memberuid"] + "'");
+            }
+            if (M1 == null)
+            {
+                continue;
+            }
+        }
+        else
+        {
+            M1 = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "id='" + val.Trim() + "'");
+            if (M1 == null)
+            {
+                continue;
+            }
+            else
+            {
+                M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid='" + M1["uid"] + "'");
+            }
+            if (M == null)
+            {
+                continue;
+            }
+        }
+        
+        string QKEY = "parent,my_mbruid,by_mbruid,inbox,content,html,upload,d_regis,d_read";
+        string QVAL = "'" + parent + "','" + M["memberuid"] + "','" + my["uid"] + "','1','" + msg + "','" + html + "','" + upload + "','" + date["insert"] + "',''";
+
+        string INSERT_PP_SQL = "INSERT INTO " + AppState["table_s_paper"] + "(" + QKEY + ") VALUES(" + QVAL + ")";
+        string UPDATE_MB_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET is_paper=1 WHERE memberuid = " + M["memberuid"];
+
+        @_DB.Execute(INSERT_PP_SQL);
+        @_DB.Execute(UPDATE_MB_SQL);
+    }
+    
+    @_System.getLink("", "", "", "close")
+    return;
+
+}

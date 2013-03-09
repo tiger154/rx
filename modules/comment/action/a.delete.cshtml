@@ -1,0 +1,192 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var skin = Request["skin"];
+    var iframe = Request["iframe"];
+    var p = Request["p"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    string recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var pw = Request["pw"];
+
+    dynamic d_comment = _DB.Get_code(m);
+    
+    string backUrl = "./?";
+    string filterUrl = _System.getLinkFilter("iframe|p|sort|orderby|recnum|where|keyword", iframe+"|"+p+"|"+sort+"|"+orderby+"|"+recnum+"|"+where+"|"+keyword);
+    
+    int R_count = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "uid="+uid);
+    
+    if(R_count == 0) {
+        @_System.getLink("", "", "존재하지 않는 댓글입니다.", "")
+        return;
+    }
+
+    dynamic R = _DB.Get_module_data(AppState["table_s_comment"], "uid", uid);
+    
+    // backUrl variable setting
+    if(_HS["usescode"].ToString() == "1") {
+        backUrl += "r=" + r + "&";
+    }
+    
+	if(c != "" && c != null) 
+    {
+        backUrl += "c=" + c;
+    }
+    else 
+    {
+        backUrl += "m=" + m;
+    }
+    
+    string nLocation1 = backUrl + filterUrl;
+    string nLocation2 = nLocation1 + "&uid=" + R["uid"];
+    
+    if(pw != null && pw != "") 
+    {
+        pw = FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1");       // SHA encoding
+    }
+
+    if(my["admin"] != "1" && my["uid"] != R["mbruid"]) 
+    {
+        if(pw == "") 
+        {
+            @_System.getLink(nLocation2, "parent.", "비밀번호를 입력해 주세요.", "")
+            return;
+        }
+        else {
+            if(pw != R["pw"]) 
+            {
+                @_System.getLink(nLocation2, "parent.", "비밀번호가 일치하지 않습니다.", "")
+                return;
+            }
+        }
+    }    
+
+    if (d_comment["onelinedel"] == "1") 
+    {
+        if(R["oneline"] > 0) 
+        {
+            @_System.getLink("", "", "한줄의견이 있는 댓글은 삭제할 수 없습니다.", "")
+            return;            
+        }
+    }
+    
+    // Synchronization
+    string[] cyncArr = _System.getArrayString(R["cync"]);
+    string[] fdexp = cyncArr[2].Split(',');
+    
+    if(fdexp[0] != "" && fdexp[1] != "" && cyncArr[3] != "") {
+        if(fdexp[1] != "") {
+            string Cync_UP = "UPDATE " + cyncArr[3] + " SET " + fdexp[1] + "=" + fdexp[1] + "-1 WHERE " + fdexp[0] + "=" + cyncArr[1];
+            @_DB.Execute(Cync_UP);
+        }
+        if(fdexp[2] != "") {
+            string Cync_UP_O = "UPDATE " + cyncArr[3] + " SET " + fdexp[2] + "=" + fdexp[2] + "-" + R["oneline"] + " WHERE " + fdexp[0] + "=" + cyncArr[1];
+            @_DB.Execute(Cync_UP_O);
+        }
+    }
+
+    // deleting files
+    if (R["upload"] != "")
+    {
+        string[] UPFILES = _System.getArrayString(R["upload"]);
+
+        foreach (var _val in UPFILES)
+        {
+            dynamic U = null;
+            U = _DB.GetDbData_M(AppState["table_s_upload"].ToString(), "uid=" + _val);
+
+            if (U != null)
+            {
+                string NUMINFO_UP = "UPDATE " + AppState["table_s_numinfo"] + " SET upload=upload-1 WHERE date='" + U["d_regis"].ToString("yyyyMMdd") + "' AND site=" + U["site"];
+                string UPLOAD_DEL = "DELETE FROM " + AppState["table_s_upload"] + " WHERE uid=" + U["uid"];
+
+                @_DB.Execute(NUMINFO_UP);
+                @_DB.Execute(UPLOAD_DEL);
+
+                File.Delete(g["path_root_ps"] + g["path_file"] + U["folder"] + "\\" + U["tmpname"]);
+
+                if (U["type"] == "2")
+                {
+                    File.Delete(g["path_root_ps"] + g["path_file"] + U["folder"] + "\\" + U["thumbname"]);
+                }
+            }
+        }
+    }
+
+    // deleting oneline
+    if (R["oneline"] > 0)
+    {
+        string OL_SQL = "SELECT * FROM " + AppState["table_s_oneline"] + " WHERE parent=" + R["uid"];
+
+        foreach (var _O in _DB.Query(OL_SQL))
+        {
+            string UPDATE_OL_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET oneline=oneline-1 WHERE date='" + _O["d_regis"].ToString("YYYYMMDD") + "' AND site=" + _O["site"];
+
+            @_DB.Execute(UPDATE_OL_SQL);
+
+            // deleting oneline point
+            if (_O["point"] > 0 && _O["mbruid"] > 0)
+            {
+                string POINT_INSERT = "INSERT INTO " + AppState["table_s_point"] + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES (";
+                POINT_INSERT += _O["mbruid"] + ",0,-" + _O["point"] + ",'한줄의견삭제(" + _System.getStrCut(_O["content"], 15, "..") + ")환원',getdate())";
+                string POINT_UP = "UPDATE " + AppState["table_s_mbrdata"] + " SET point=point-" + _O["point"] + " WHERE memberuid=" + _O["mbruid"];
+    
+                @_DB.Execute(POINT_INSERT);
+                @_DB.Execute(POINT_UP);
+            }
+        }
+
+        string DELETE_OL_SQL = "DELETE FROM " + AppState["table_s_oneline"] + " WHERE parent=" + R["uid"];
+
+        @_DB.Execute(DELETE_OL_SQL);
+    }
+
+    string DELETE_CM_SQL = "DELETE FROM " + AppState["table_s_comment"] + " WHERE uid=" + R["uid"];
+    string UPDATE_NUMINFO_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET comment=comment-1 WHERE date='" + R["d_regis"].ToString("YYYYMMDD") + "' AND site=" + R["site"];
+
+    @_DB.Execute(DELETE_CM_SQL);
+    @_DB.Execute(UPDATE_NUMINFO_SQL);
+
+    // deleting comment point
+    if (R["point"] > 0 && R["mbruid"] > 0)
+    {   
+        string POINT_INSERT2 = "INSERT INTO " + AppState["table_s_point"] + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES (";
+        POINT_INSERT2 += R["mbruid"] + ",0,-" + R["point"] + ",'댓글삭제(" + _System.getStrCut(R["content"], 15, "..") + ")환원',getdate())";
+        string POINT_UP2 = "UPDATE " + AppState["table_s_mbrdata"] + " SET point=point-" + R["point"] + " WHERE memberuid=" + R["mbruid"];
+     
+        @_DB.Execute(POINT_INSERT2);
+        @_DB.Execute(POINT_UP2);
+    }    
+    
+    @_System.getLink(nLocation1, "parent.", "", "")
+    return;    
+}

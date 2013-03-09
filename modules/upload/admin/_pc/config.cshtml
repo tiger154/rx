@@ -1,0 +1,187 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    
+    dynamic d_upload = _DB.Get_code(module);
+    
+    string frame_name = "_action_frame_" + m;    
+
+}
+
+<div id="configbox">
+    <form name="procForm" action="@g["s"]/" method="post" target="@Html.Raw("_action_frame_" + m)" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="config" />
+
+	<input type="hidden" name="use_fileservera" value="@d_upload["use_fileserver"]" />
+	<input type="hidden" name="ftp_host" value="@d_upload["ftp_host"]" />
+	<input type="hidden" name="ftp_port" value="@d_upload["ftp_port"]" />
+	<input type="hidden" name="ftp_user" value="@d_upload["ftp_user"]" />
+	<input type="hidden" name="ftp_pass" value="@d_upload["ftp_pass"]" />
+	<input type="hidden" name="ftp_folder" value="@d_upload["ftp_folder"]" />
+	<input type="hidden" name="ftp_urlpath" value="@d_upload["ftp_urlpath"]" />
+
+	<div class="title">
+		첨부파일 설정
+	</div>
+
+
+	<div class="notice">
+		첨부파일 설정은 이 모듈을 사용하는 모든 곳에 일괄 적용됩니다.<br />
+		첨부권한은 이 모듈을 사용하는 부모모듈의 설정을 따릅니다.<br />
+		첨부파일은 ./files/ 폴더이하에 YYYY/MM/DD 형태의 폴더구성으로 저장되며 파일명은 암호화처리됩니다.
+	</div>
+
+
+	<table>
+		<tr>
+			<td class="td1">첨부파일 테마</td>
+			<td class="td2">
+				
+				<select name="theme" class="select1">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">------------------------------------</option>
+                @{
+                    
+                    string dirs = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\";
+
+                    foreach (string tpl in Directory.GetDirectories(dirs))
+                    {
+                        string theme_name = tpl.Substring(dirs.Length, tpl.Length - dirs.Length);         // 디렉토리 명 구하기
+                        string theme_sel = "";
+                        string F_Path = "";
+
+                        if (d_upload["theme"].Contains(theme_name))
+                        {
+                            theme_sel = "selected='selected'";
+                        }
+
+                        if (theme_name != "_blank")
+                        {
+                            F_Path = g["path_root_ps"] + "\\modules\\" + module + "\\theme\\" + theme_name;  
+                            
+                            <option value="@Html.Raw("_pc" + theme_name)" @Html.Raw(theme_sel)>ㆍ @_System.getFolderName(F_Path, "name.txt")</option>
+                        }
+                    }
+                }
+
+				</select>
+
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">일반파일 첨부</td>
+			<td class="td2">
+				<input type="text" name="maxnum_file" value="@d_upload["maxnum_file"]" size="5" class="input" />개
+				(<input type="text" name="maxsize_file" value="@d_upload["maxsize_file"]" size="5" class="input" />MB이내)
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">사진파일 첨부</td>
+			<td class="td2">
+				<input type="text" name="maxnum_img" value="@d_upload["maxnum_img"]" size="5" class="input" />개
+				(<input type="text" name="maxsize_img" value="@d_upload["maxsize_img"]" size="5" class="input" />MB이내)
+				<div class="guide">
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">일반파일 명칭</td>
+			<td class="td2">
+				<input type="text" name="name_file" value="@d_upload["name_file"]" size="10" class="input" />
+				허용확장자 : 
+				<input type="text" name="ext_file" value="@d_upload["ext_file"]" size="30" class="input" />
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">사진파일 명칭</td>
+			<td class="td2">
+				<input type="text" name="name_img" value="@d_upload["name_img"]" size="10" class="input" />
+				허용확장자 : 
+				<input type="text" name="ext_img" value="@d_upload["ext_img"]" size="30" class="input" />
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">사진삽입 사이즈</td>
+			<td class="td2">
+				<select name="width_img">                
+				<option value="240" @_System.getSltStr(d_upload["width_img"], 240)>240px</option>
+				<option value="320" @_System.getSltStr(d_upload["width_img"], 320)>320px</option>
+				<option value="400" @_System.getSltStr(d_upload["width_img"], 400)>400px</option>
+				<option value="480" @_System.getSltStr(d_upload["width_img"], 480)>480px</option>
+				<option value="640" @_System.getSltStr(d_upload["width_img"], 640)>640px</option>
+				<option value="720" @_System.getSltStr(d_upload["width_img"], 720)>720px</option>
+				<option value="1024" @_System.getSltStr(d_upload["width_img"], 1024)>1024px</option>
+				</select>
+				(사진이 본문에 삽입될때 사진의 가로사이즈)
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">첨부제한 파일</td>
+			<td class="td2">
+				<input type="text" name="ext_cut" value="@d_upload["ext_cut"]" size="55" class="input" />
+				<div class="guide">
+				파일첨부시 모든파일에 대해서 파일명 필터링이 이루어지므로 cshtml 관련파일을 첨부해도 안전합니다.<br />
+				그래도 제한하려면 *.cshtml *.html *.inc *.cgi *.pl *.js 를 등록해 주세요.
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">일반첨부 지원</td>
+			<td class="td2 shift">
+				<input type="checkbox" name="use_classicup" value="1" @_System.getChkStr(d_upload["use_classicup"], 1) />플래쉬 업로더가 작동안되는 환경에서 일반 파일첨부를 가능하게 합니다.
+			</td>
+		</tr>
+	</table>
+
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+
+	</form>
+
+</div>
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+    function saveCheck(f) {
+        if (f.theme.value == '') {
+            alert('테마를 선택해 주세요.       ');
+            f.theme.focus();
+            return false;
+        }
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+//]]>
+</script>

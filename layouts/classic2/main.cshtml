@@ -1,0 +1,69 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var _HS = PageData[0];
+    var my = PageData[1];
+    var _CA = PageData[2];
+    var s = PageData[3];
+    var d_layout = PageData[4];
+    var g = PageData[5];
+    var keyword = PageData[6];
+    var p = PageData[7];
+    var system = PageData[8];
+    var _m = PageData[9];
+    var c = PageData[10];
+    var m = PageData[11];
+    var _mod = PageData[12];
+    var _keyword = PageData[13];
+    var _HM = PageData[14];
+    var r = PageData[15];
+    var bid = PageData[16];
+    var _HP = PageData[17];
+    var date = PageData[18];
+    var referer = PageData[19];
+
+    var LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);
+
+    //////////////////////////////////////////////////////////
+    ///// Top File Rendering
+    //////////////////////////////////////////////////////////
+    @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/top.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR)    
+}
+
+<div id="content">
+@if(d_layout["_is_ownmain"] == "1")
+{
+    @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/_main.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR)    
+    
+    if(LAYOUT_ARR["begin"] == "0" || LAYOUT_ARR["begin"] == "") {
+        @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/_begin.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR)            
+    }
+}
+
+@{    
+    if(d_layout["_is_content"] == "1")
+    {
+        <div class="wrap">
+        @RenderPage("../../" + g["path_core"] + "engine/container_head.engine.cshtml", g, _HM, system)
+        @RenderPage("../../" + g["path_core"] + "engine/content.engine.cshtml", g, system, _m, c, m, p, _HS, my, d_layout, s, _keyword, _mod, r, bid, _HP, _HM, date, referer)
+        @RenderPage("../../" + g["path_core"] + "engine/container_foot.engine.cshtml", g, _HM, system)
+        </div>
+    }
+}
+</div>
+
+@if((d_layout["_is_ownmain"] == "" && d_layout["_is_content"] != "") || d_layout["_is_mainbox"] != "")
+{
+    <style type="text/css">
+    #header .menutabs .on {position:relative;bottom:0;background:#ffffff;}
+    #content .wrap {padding-top:40px;}
+    </style>    
+}
+
+@RenderPage("../../layouts/" + d_layout["dir"] + "/_cross/bottom.cshtml", g, r, _HS)

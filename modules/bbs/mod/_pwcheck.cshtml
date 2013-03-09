@@ -1,0 +1,136 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var r = PageData[12];
+
+    dynamic _HM = PageData[14];
+    
+    dynamic g = PageData[0];
+    dynamic R = Session["bbsdata"];
+    
+    string uid = Request["uid"];
+    string cat = Request["cat"];
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string recnum = Request["recnum"];
+    string type = Request["type"];
+    string iframe = Request["iframe"];
+    string skin = Request["skin"];
+    string where = Request["where"];
+    string keyword = Request["keyword"];
+    string mod = Request["mod"];
+    string frame_name = "_action_frame_" + m;    
+    
+    //R = _DB.Get_module_data(AppState["table_bbsdata"].ToString(), "uid", uid);    
+    //RenderPage("~/" + Session["g_main"].ToString(), g, _m, c, m, p, _HS, my, system, d_layout, s, _keyword, _mod, r, _HP, _HM);
+}
+
+<div id="chkbox">
+
+	<div class="msg">
+		<h3><img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> 비밀번호 확인</h3>
+		<div>게시물 등록시에 입력했던 비밀번호를 입력해 주세요.</div>
+	</div>
+
+    @{
+        string bid_set = g["bid"];
+        string action_set = "pwcheck";
+
+        if (R["bbsid"] != "")
+        {
+            bid_set = R["bbsid"];
+        }
+
+        if (mod == "delete")
+        {
+            action_set = mod;
+        }
+	}
+
+	<form name="checkForm" method="post" action="@g["s"]/" target="@frame_name" onsubmit="return permCheck(this);">
+    <input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="a" value="@action_set" />
+	<input type="hidden" name="c" value="@c" />
+    <input type="hidden" name="cuid" value="@_HM["uid"]" />
+	<input type="hidden" name="m" value="@m" />
+	<input type="hidden" name="bid" value="@bid_set" />
+	<input type="hidden" name="uid" value="@R["uid"]" />
+
+	<input type="hidden" name="p" value="@p" />
+	<input type="hidden" name="cat" value="@cat" />
+	<input type="hidden" name="sort" value="@sort" />
+	<input type="hidden" name="orderby" value="@orderby" />
+	<input type="hidden" name="recnum" value="@recnum" />
+	<input type="hidden" name="type" value="@type" />
+	<input type="hidden" name="iframe" value="@iframe" />
+	<input type="hidden" name="skin" value="@skin" />
+	<input type="hidden" name="where" value="@where" />
+	<input type="hidden" name="keyword" value="@keyword" />
+
+	<div class="ibox">
+		<input type="password" name="pw" class="input" />
+		<input type="submit" value=" 확인 " class="btnblue" />
+		<input type="button" value=" 취소 " class="btngray" onclick="history.go(-1);" />
+	</div>
+
+	</form>
+</div>
+
+@{
+    string width_set = "";
+    string input_set = "";
+
+    if (g["mobile"] != "")
+    {
+        width_set = "90%";
+        input_set = "100px";
+    }
+    else
+    {
+        width_set = "350px";
+        input_set = "150px";
+    }
+}
+
+<style type="text/css">
+#chkbox {border:#dfdfdf solid 1px;width:@width_set;padding:20px 10px 20px 10px;margin:40px auto 40px auto;}
+#chkbox .msg {}
+#chkbox .msg h3 {margin:0;padding:0 0 9px 0;font-size:14px;font-weight:bold;font-family:"malgun gothic","dotum";border-bottom:#dfdfdf dashed 1px;}
+#chkbox .msg h3 img {position:relative;top:3px;}
+#chkbox .msg div {padding:10px 0 0 22px;color:#999;}
+#chkbox .ibox {padding:30px 0 10px 22px;}
+#chkbox .input {width:@input_set;}
+#chkbox .btnblue {width:80px;}
+</style>
+
+<script type="text/javascript">
+//<![CDATA[
+var checkFlag = false;
+function permCheck(f)
+{
+	if (checkFlag == true)
+	{
+		alert('확인중입니다. 잠시만 기다려 주세요.   ');
+		return false;
+	}
+	
+	if (f.pw.value == '')
+	{
+		alert('비밀번호를 입력해 주세요.   ');
+		f.pw.focus();
+		return false;
+	}
+	checkFlag = true;
+}
+window.onload = function(){document.checkForm.pw.focus();}
+//]]>
+</script>

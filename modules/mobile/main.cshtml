@@ -1,0 +1,65 @@
+﻿@*{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    var my = PageData[1];
+    var m = PageData[6];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var _HS = PageData[11];
+    var r = PageData[15];
+    var get_front2 = PageData[16];      // front 변수를 따로 받는경우 (for url-rewrite)
+
+    dynamic g = PageData[0];
+    
+    string front = PageData[7];
+    string get_front = Request["front"];
+    string page = Request["page"];
+    string _front;
+    string _front_url;
+    string g_main = "";
+    
+
+
+    if (front == null || front == "")
+    {
+        front = "main";
+
+        if (get_front != null && get_front != "")
+        {
+            front = get_front;
+        }
+        else
+        {
+            front = get_front2;
+        }
+    }   
+        
+    if(g["mobile"]!="" && Session["pcmode"]!="Y") {
+        _front = "_mobile\\" + front;
+        _front_url = "_mobile/" + front;
+    }
+    else {
+        _front = "_pc\\" + front;
+        _front_url = "_pc/" + front;
+    }
+    
+
+    g["dir_module_skin"] = g["dir_module"]+"pages\\"+_front+"\\"; 
+    g["url_module_skin"] = g["url_module"]+"/pages/"+_front_url;    
+    g["img_module_skin"] = g["url_module_skin"]+"/image";    
+
+    g["dir_module_mode"] = g["dir_module_skin"]+page;    
+    g["url_module_mode"] = g["url_module_skin"]+"/"+page;
+   
+    // 모듈 메인화면
+    g_main = g["dir_module_mode"]+".cshtml";
+
+    // 세션 생성.
+    Session["g"] = g;
+    Session["g_main"] = g_main;
+
+}*@

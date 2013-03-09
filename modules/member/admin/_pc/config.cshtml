@@ -1,0 +1,801 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+
+    dynamic d_member = _DB.Get_code("member");
+    
+    string frame_name = "_action_frame_" + m;
+    string _SOSOK_sql = "SELECT * FROM " + AppState["table_s_mbrgroup"].ToString() + " ORDER BY gid asc";
+    string _LEVEL_sql = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid asc";
+    string dirs = g["path_root_ps"] + g["path_layout"];
+    string _add = g["path_root_ps"] + g["path_module"] + module + "\\var\\add_field.txt";
+}
+
+<div id="configbox">
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="member_config" />
+
+    @if (Session["_join_menu"] != null && Session["_join_menu"].ToString() != "")
+    {
+        <input type="hidden" name="_join_menu" value="@Session["_join_menu"].ToString()" />
+    }
+    else
+    {
+        <input type="hidden" name="_join_menu" value="1" />
+    }
+
+	<div class="tab">
+		<ul>
+		<li id="tbox1" class="leftside selected" onclick="confShow(1);">회원가입 설정</li>
+		<li id="tbox2" onclick="confShow(2);">가입양식 관리</li>
+		<li id="tbox3" onclick="confShow(3);">가입항목 추가</li>
+		<li id="tbox4" onclick="confShow(4);">로그인/MYPAGE</li>
+		<li id="tbox5" onclick="confShow(5);">약관/안내메세지</li>
+		</ul>
+	</div>
+	<div class="agreebox">
+		<div id="tarea1">
+
+			<table>
+				<tr>
+					<td class="td1"><span>회원가입 작동상태</span></td>
+					<td class="td2">
+						<select name="join_enable" class="select1">                        
+						<option value="0" @_System.getSltStr(d_member["join_enable"], 0)>ㆍ회원가입 중단</option>
+						<option value="1" @_System.getSltStr(d_member["join_enable"], 1)>ㆍ회원가입 작동</option>
+						</select>
+					</td>
+					<td class="td1"><span>모바일 회원가입</span></td>
+					<td class="td2">
+						<select name="join_mobile" class="select1">
+						<option value="1" @_System.getSltStr(d_member["join_mobile"], 1)>ㆍ지원</option>
+						<option value="0" @_System.getSltStr(d_member["join_mobile"], 0)>ㆍ지원하지 않음</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>가입시 소속그룹</span></td>
+					<td class="td2">
+						<select name="join_group" class="select1">
+                        @{
+                            foreach (var _S in _DB.Query(_SOSOK_sql))
+                            {           
+                                <option value="@_S["uid"]" @_System.getSltStr(_S["uid"], d_member["join_group"])>ㆍ @_S["name"] (@string.Format("{0:#,0}", _S["num"]))</option>        
+                            }
+                        }
+						</select>
+					</td>
+
+					<td class="td1"><span>가입시 회원등급</span></td>
+					<td class="td2">
+						<select name="join_level" class="select1">
+                        @{
+                            foreach (var _L in _DB.Query(_LEVEL_sql))
+                            {
+                                    <option value="@_L["uid"]" @_System.getSltStr(_L["uid"], d_member["join_level"])>ㆍ @_L["name"] (@string.Format("{0:#,0}", _L["num"]))</option>
+                                
+                                if (_L["gid"] != 0)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+						</select>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="td1"><span>탈퇴데이터 처리</span></td>
+					<td class="td2">
+						<select name="join_out" class="select1">                        
+						<option value="1" @_System.getSltStr(d_member["join_out"], 1)>ㆍ즉시삭제</option>
+						<option value="2" @_System.getSltStr(d_member["join_out"], 2)>ㆍ관리자확인 후 삭제</option>
+						</select>
+					</td>
+
+					<td class="td1"><span>탈퇴후 재가입</span></td>
+					<td class="td2">
+						<select name="join_rejoin" class="select1">
+						<option value="0" @_System.getSltStr(d_member["join_rejoin"], 0)>ㆍ허용안함</option>
+						<option value="1" @_System.getSltStr(d_member["join_rejoin"], 1)>ㆍ허용</option>
+						</select>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="td1"><span>가입시 승인처리</span></td>
+					<td class="td2">
+						<select name="join_auth" class="select1">
+					<option value="1" @_System.getSltStr(d_member["join_auth"], 1)>ㆍ즉시승인</option>
+						<option value="2" @_System.getSltStr(d_member["join_auth"], 2)>ㆍ관리자확인 후 승인</option>
+						<option value="3" @_System.getSltStr(d_member["join_auth"], 3)>ㆍ이메일인증 후 승인</option>
+						</select>
+					</td>
+					<td class="td1"><span>가입시 지급포인트</span></td>
+					<td class="td2">
+						<input type="text" name="join_point" value="@d_member["join_point"]" class="input sname" />
+					</td>
+				</tr>
+
+				<tr>
+					<td class="td1"><span>포인트지급 메세지</span></td>
+					<td class="td2" colspan="3">
+						<input type="text" name="join_pointmsg" value="@d_member["join_pointmsg"]" class="input sname1" />
+					</td>
+				</tr>
+
+				<tr>
+					<td class="td1"><span>사용제한 아이디</span></td>
+					<td class="td2" colspan="3">
+						<input type="text" name="join_cutid" value="@d_member["join_cutid"]" class="input sname1" />
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>사용제한 닉네임</span></td>
+					<td class="td2" colspan="3">
+						<input type="text" name="join_cutnic" value="@d_member["join_cutnic"]" class="input sname1" />
+						<div class="guide">사용을 제한하려는 아이디와 닉네임을 콤마(,)로 구분해서 입력해 주세요.</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>대표 이메일</span></td>
+					<td class="td2">
+						<input type="text" name="join_email" value="@d_member["join_email"]" class="input sname" />
+					</td>
+					<td class="td1"><span>가입 이메일</span></td>
+					<td class="td2">
+						<input type="checkbox" name="join_email_send" value="1" @_System.getChkStr(d_member["join_email_send"], 1) />가입안내 이메일 발송
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>회원가입 레이아웃</span></td>
+					<td class="td2">
+						<select name="layout_join" class="select1">
+						<option value="">&nbsp;+ 사이트 대표레이아웃</option>
+                        @{                            
+                            foreach (string tpl in Directory.GetDirectories(dirs))
+                            {
+                                string tpl_name = tpl.Substring(dirs.Length, tpl.Length - dirs.Length);
+                                if (tpl_name == "." || tpl_name == ".." || tpl_name == "_blank" || File.Exists(tpl))
+                                {
+                                    continue;
+                                }
+                                
+                                <option value="">--------------------------------</option>
+                            
+                                foreach (string tpl1 in Directory.GetFiles(tpl))
+                                {
+                                    string tpl1_name = tpl1.Substring(tpl.Length, tpl1.Length - tpl.Length);
+
+                                    if (!tpl1_name.Contains(".cshtml") || tpl1_name.Contains("_main.cshtml"))
+                                    {
+                                        continue;
+                                    }
+                                    @d_member["layout_join"]
+                                    <option value="@tpl_name/@tpl1_name"@_System.getSltStr(d_member["layout_join"], tpl_name + "\\" + tpl1_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@tpl_name.Replace(".cshtml", ""))</option>                                    
+                                }
+                            }
+                        }
+						</select>
+					</td>
+					<td class="td1"><span>로그인 레이아웃</span></td>
+					<td class="td2">
+						<select name="layout_login" class="select1">
+						<option value="">&nbsp;+ 사이트 대표레이아웃</option>
+                        @{                            
+                            foreach (string tpl in Directory.GetDirectories(dirs))
+                            {
+                                string tpl_name = tpl.Substring(dirs.Length, tpl.Length - dirs.Length);
+                                if (tpl_name == "." || tpl_name == ".." || tpl_name == "_blank" || File.Exists(tpl))
+                                {
+                                    continue;
+                                }
+                                
+                                <option value="">--------------------------------</option>
+                            
+                                foreach (string tpl1 in Directory.GetFiles(tpl))
+                                {
+                                    string tpl1_name = tpl1.Substring(tpl.Length, tpl1.Length - tpl.Length);
+                                    if (!tpl1_name.Contains(".cshtml") || tpl1_name.Contains("_main.cshtml"))
+                                    {
+                                        continue;
+                                    }
+   
+                                    <option value="@tpl_name/@tpl1_name"@_System.getSltStr(d_member["layout_login"], tpl_name + "\\" + tpl1_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@tpl_name.Replace(".cshtml", ""))</option>                                    
+                                }
+                            }
+                        }
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>마이페이지 레이아웃</span></td>
+					<td class="td2">
+						<select name="layout_mypage" class="select1">
+						<option value="">&nbsp;+ 사이트 대표레이아웃</option>
+
+
+                        @{                            
+                            foreach (string tpl in Directory.GetDirectories(dirs))
+                            {
+                                string tpl_name = tpl.Substring(dirs.Length, tpl.Length - dirs.Length);
+                                if (tpl_name == "." || tpl_name == ".." || tpl_name == "_blank" || File.Exists(tpl))
+                                {
+                                    continue;
+                                }
+                                
+                                <option value="">--------------------------------</option>
+                            
+                                foreach (string tpl1 in Directory.GetFiles(tpl))
+                                {
+                                    string tpl1_name = tpl1.Substring(tpl.Length, tpl1.Length - tpl.Length);
+                                    if (!tpl1_name.Contains(".cshtml") || tpl1_name.Contains("_main.cshtml"))
+                                    {
+                                        continue;
+                                    }
+                                    <option value="@tpl_name/@tpl1_name"@_System.getSltStr(d_member["layout_mypage"], tpl_name + "\\" + tpl1_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@tpl_name.Replace(".cshtml", ""))</option>                                    
+                                }
+                            }
+                        }
+						</select>
+					</td>
+					<td class="td1"><span>소속메뉴</span></td>
+					<td class="td2">
+
+						<select name="sosokmenu" class="select1">
+						<option value="">&nbsp;+ 사용안함</option>
+						<option value="">--------------------------------</option>
+                        @{
+                            string cat = d_member["sosokmenu"];
+                            @_Menu.getMenuShowSelect("", AppState["table_s_menu"].ToString(), 0, 0, 0, 0, "", "", g, cat)
+                        }
+						</select>
+					
+					</td>
+				</tr>
+			</table>
+
+
+		</div>
+		<div id="tarea2" class="hide">
+		
+
+
+			<table>
+				<tr>
+					<td class="td1"><span>이용약관/개인정보</span></td>
+					<td class="td2">
+						<select name="form_agree" class="select1">                        
+						<option value="0"@_System.getSltStr(d_member["form_agree"], 0)>ㆍ생략</option>
+						<option value="1"@_System.getSltStr(d_member["form_agree"], 1)>ㆍ동의얻음</option>
+						</select>
+					</td>
+
+					<td class="td1"></td>
+					<td class="td2">
+
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>주민등록번호 확인</span></td>
+					<td class="td2">
+						<select name="form_jumin" class="select1">                        
+						<option value="0"@_System.getSltStr(d_member["form_jumin"], 0)>ㆍ확인안함</option>
+						<option value="1"@_System.getSltStr(d_member["form_jumin"], 1)>ㆍ확인함</option>
+						</select>
+					</td>
+
+					<td class="td1"><span>회원가입 연령제한</span></td>
+					<td class="td2">
+						<select name="form_age" class="select1">                        
+						<option value="0"@_System.getSltStr(d_member["form_age"], 0)>ㆍ연령제한없음</option>
+						<option value="1"@_System.getSltStr(d_member["form_age"], 1)>ㆍ14세이하제한</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>외국인가입</span></td>
+					<td class="td2">
+						<select name="form_foreign" class="select1"> 
+						<option value="0"@_System.getSltStr(d_member["form_foreign"], 0)>ㆍ허용안함</option>
+						<option value="1"@_System.getSltStr(d_member["form_foreign"], 1)>ㆍ허용</option>
+						</select>
+					</td>
+
+					<td class="td1"><span>기업회원가입</span></td>
+					<td class="td2">
+						<select name="form_comp" class="select1">
+						<option value="0"@_System.getSltStr(d_member["form_comp"], 0)>ㆍ사용안함</option>
+						<option value="1"@_System.getSltStr(d_member["form_comp"], 1)>ㆍ사용</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>노출항목 및 옵션</span></td>
+					<td class="td2 shift">
+						
+						<table>
+
+                        @{
+                            string[] pilsuset = { "아이디", "이메일", "패스워드", "이름" };
+                            foreach (string _val in pilsuset)
+                            {
+ 						        <tr>
+							    <td><input type="checkbox" checked="checked" disabled="disabled" />@_val</td>
+							    <td>-</td>
+							    <td><input type="checkbox" checked="checked" disabled="disabled" />필수입력</td>
+							    </tr>
+                            }
+
+                            var opset = new Dictionary<string, string>();
+                            opset.Add("nic", "닉네임");
+                            opset.Add("birth", "생년월일");
+                            opset.Add("sex", "성별");
+
+                            foreach (string _key in opset.Keys)
+                            {   
+ 							    <tr>
+							    <td><input type="checkbox" name="@Html.Raw("form_" + _key)" value="1"@_System.getChkStr(d_member["form_" + _key], 1) />@opset[_key]</td>
+							    <td>-</td>
+							    <td><input type="checkbox" name="@Html.Raw("form_" + _key + "_p")" value="1"@_System.getChkStr(d_member["form_" + _key + "_p"], 1) />필수입력</td>
+							    </tr>    
+                                //<tr>
+                            }
+                            
+                        }
+
+						</table>
+					
+					</td>
+					<td class="td2" colspan="2">
+						<table>
+                        @{
+                            var opset2 = new Dictionary<string, string>();
+                            opset2.Add("qa", "비밀찾기질답");
+                            opset2.Add("home", "홈페이지");
+                            opset2.Add("tel1", "집전화");
+                            opset2.Add("tel2", "휴대폰");
+                            opset2.Add("job", "직업");
+                            opset2.Add("marr", "결혼기념일");
+                            opset2.Add("addr", "주소");
+
+                            foreach (string _key in opset2.Keys)
+                            {
+                                
+                                <tr>
+							    <td><input type="checkbox" name="form_@(_key)" value="1" @_System.getChkStr(d_member["form_" + _key], 1) />@opset2[_key]</td>
+							    <td>-</td>
+							    <td><input type="checkbox" name="form_@(_key)_p" value="1" @_System.getChkStr(d_member["form_" + _key + "_p"], 1) />필수입력</td>
+							    </tr>
+                                //<tr>
+                            }
+                        }
+
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>SNS아이디 입력항목</span></td>
+					<td class="td2 shift" colspan="3">
+						<input type="checkbox" name="form_sns_1" value="1"@_System.getChkStr(d_member["form_sns_1"], 1) />트위터
+						<input type="checkbox" name="form_sns_2" value="1"@_System.getChkStr(d_member["form_sns_2"], 1) />페이스북
+						<input type="checkbox" name="form_sns_3" value="1"@_System.getChkStr(d_member["form_sns_3"], 1) />미투데이
+						<input type="checkbox" name="form_sns_4" value="1"@_System.getChkStr(d_member["form_sns_4"], 1) />요즘
+					</td>
+				</tr>
+			</table>
+			<table class="table">
+				<tr>
+					<td class="td1"><span>비번찾기 질문/직업군</span></td>
+					<td class="td2">
+						<textarea name="pw_question" class="question">
+                        @{
+                            StreamReader pw_sr = new StreamReader(g["path_root_ps"] + g["path_module"] + module + "\\var\\pw_question.txt");
+                            @pw_sr.ReadToEnd();
+                        }
+                        </textarea>
+					</td>
+					<td class="td2">
+						<textarea name="job" class="job">
+                        @{
+                            StreamReader job_sr = new StreamReader(g["path_root_ps"] + g["path_module"] + module + "\\var\\job.txt");
+                            @job_sr.ReadToEnd();
+                        }  
+                        </textarea>
+					</td>
+				</tr>
+			</table>
+
+
+		</div>
+		<div id="tarea3" class="hide">
+			
+			<div class="addf">
+
+
+			<ul>
+			<li>회원가입 폼에 기본양식외의 필요한 입력양식이 있을 경우 추가해 주세요.</li>
+			<li>입력양식 추가는 반드시 회원가입 서비스를 정식으로 오픈하기 전에 셋팅해 주세요.</li>
+			<li>서비스도중 양식을 추가하면 이미 가입한 회원에 대해서는 반영되지 않습니다.</li>
+			<li>회원검색용도로 양식을 추가하는 것은 권장하지 않습니다.</li>
+			</ul>
+
+			<table summary="회원리스트 입니다.">
+			<caption>회원리스트</caption> 
+			<colgroup> 
+			<col width="60"> 
+			<col width="100"> 
+			<col width="100"> 
+			<col> 
+			<col width="50"> 
+			<col width="50"> 
+			<col width="50"> 
+			</colgroup> 
+			<thead>
+			<tr>
+			<th scope="col" class="side1"></th>
+			<th scope="col">명칭</th>
+			<th scope="col">형식</th>
+			<th scope="col">속성</th>
+			<th scope="col">가로(px)</th>
+			<th scope="col">필수</th>
+			<th scope="col" class="side2">숨김</th>
+			</tr>
+			</thead>
+			<tbody>
+
+            @{             
+                string line = "";
+                StreamReader sr = new StreamReader(_add);
+                while ((line = sr.ReadLine()) != null)
+                {
+                    string[] _val = (line.Trim()).Split('|');
+                    
+ 			        <tr>
+			        <td><input type="button" value="삭제" class="btngray" onclick="delField(this.form,'@_val[0]');" /></td>
+			        <td><input type="text" name="@Html.Raw("add_name_" + _val[0])" size="13" value="@_val[1]" class="input" /></td>
+			        <td>
+				        <input type="checkbox" name="addFieldMembers" value="@_val[0]" checked="checked" class="hide" />
+				        <select name="@Html.Raw("add_type_" + _val[0])">
+				        <option value="text"@_System.getSltStr(_val[2], "text")>TEXT</option>
+				        <option value="password"@_System.getSltStr(_val[2], "password")>PASSWORD</option>
+				        <option value="select"@_System.getSltStr(_val[2], "select")>SELECT</option>
+				        <option value="radio"@_System.getSltStr(_val[2], "radio")>RADIO</option>
+				        <option value="checkbox"@_System.getSltStr(_val[2], "checkbox")>CHECKBOX</option>
+				        <option value="textarea"@_System.getSltStr(_val[2], "textarea")>TEXTAREA</option>
+				        </select>
+			        </td>
+			        <td><input type="text" name="@Html.Raw("add_value_" + _val[0])" size="30" value="@_val[3]" class="input" /></td>
+			        <td><input type="text" name="@Html.Raw("add_size_" + _val[0])" size="4" value="@_val[4]" class="input" /></td>
+			        <td><input type="checkbox" name="@Html.Raw("add_pilsu_" + _val[0])" value="1"@_System.getChkStr(_val[5], 1) /></td>
+			        <td><input type="checkbox" name="@Html.Raw("add_hidden_" + _val[0])" value="1"@_System.getChkStr(_val[6], 1) /></td>
+			        </tr>                   
+                }
+            }
+
+			<tr class="addline">
+			<td><input type="button" value="추가" class="btnblue" onclick="addField(this.form);" /></td>
+			<td><input type="text" name="add_name" size="13" class="input" /></td>
+			<td>
+				<select name="add_type">
+				<option value="text">TEXT</option>
+				<option value="password">PASSWORD</option>
+				<option value="select">SELECT</option>
+				<option value="radio">RADIO</option>
+				<option value="checkbox">CHECKBOX</option>
+				<option value="textarea">TEXTAREA</option>
+				</select>
+			</td>
+			<td><input type="text" name="add_value" size="30" class="input" /></td>
+			<td><input type="text" name="add_size" size="4" class="input" /></td>
+			<td><input type="checkbox" name="add_pilsu" /></td>
+			<td><input type="checkbox" name="add_hidden" /></td>
+			</tr>
+			
+			</tbody>
+			</table>
+
+
+			<div class="preview">
+				<table>
+
+                @{
+                    int i = 0;
+                    string _line = "";
+                    while ((_line = sr.ReadLine()) != null)
+                    {
+                        i++;
+                        string[] _val = (_line.Trim()).Split('|');
+
+                        if (_val[6] != null && _val[6] != "")
+                        {
+                            continue;
+                        }
+                        <tr>
+				        <td class="td1">@_val[1]</td>
+				        <td>:</td>
+
+                        @if (_val[2] == "text")
+                        {
+                            <td class="td2"><input type="text" name="@Html.Raw("add_" + _val[0])" class="input" style="width:@_val[4]px;" value="@_val[3]" /></td>
+                        } 
+                        @if (_val[2] == "password")
+                        {
+                            <td class="td2"><input type="password" name="@Html.Raw("add_" + _val[0])" class="input" style="width:@_val[4]px;" value="@_val[3]" /></td>
+                        }
+                        @if (_val[2] == "select")
+                        {
+                            string[] _skey = _val[3].Split(',');
+                            <td class="td2">
+                            <select name="@Html.Raw("add_" + _val[0])" style="width:@_val[4]px;">
+				            <option value="">&nbsp;+ 선택하세요</option>
+                            @foreach (string _sval in _skey)
+                            {
+                                <option value="@_sval.Trim()">ㆍ @_sval.Trim()</option>
+                            }
+                            </select>
+				            </td>
+                        }
+                        @if (_val[2] == "radio")
+                        {
+                            string[] _skey = _val[3].Split(',');
+                            <td class="td2 shift">
+                            @foreach (string _sval in _skey)
+                            {
+                                <input type="radio" name="@Html.Raw("add_" + _val[0])" value="@_sval.Trim()" />@_sval.Trim()
+                            }
+                            </td>
+                        }
+                        @if (_val[2] == "checkbox")
+                        {
+                            string[] _skey = _val[3].Split(',');
+                            <td class="td2 shift">
+                            @foreach (string _sval in _skey)
+                            {
+                                <input type="checkbox" name="@Html.Raw("add_" + _val[0])" value="@_sval.Trim()" />@_sval.Trim()
+                            }      
+                            </td>                    
+                        }
+                        @if (_val[2] == "textarea")
+                        {
+                            <td class="td2"><textarea name="@Html.Raw("add_" + _val[0])" rows="5" style="width:@_val[4]px;">@_val[3]</textarea></td>
+                        }
+                        </tr>  
+                    }                           
+                }
+				</table>
+			</div>
+
+			</div>
+
+		</div>
+		<div id="tarea4" class="hide">
+			
+
+
+			<table>
+				<tr>
+					<td class="td1"><span>로그인 포인트지급</span></td>
+					<td class="td2">
+						<input type="text" name="login_point" value="@d_member["login_point"]" size="5" class="input" />포인트(1일 1회에 한함)
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>로그인페이지 옵션</span></td>
+					<td class="td2">
+						<input type="checkbox" name="login_ssl" value="1" @_System.getChkStr(d_member["login_ssl"], 1) />보안접속(SSL) 사용<br />
+						<input type="checkbox" name="login_emailid" value="1" @_System.getChkStr(d_member["login_emailid"], 1) />이메일아이디 사용<br />
+						<input type="checkbox" name="login_openid" value="1" @_System.getChkStr(d_member["login_openid"], 1) />오픈아이디(OpenID) 사용<br />
+					</td>
+				</tr>
+				<tr>
+					<td class="td1"><span>마이페이지 메뉴노출</span></td>
+					<td class="td2">
+						<input type="checkbox" name="mytab_post" value="1" @_System.getChkStr(d_member["mytab_post"], 1) />게시물<br />
+						<input type="checkbox" name="mytab_comment" value="1" @_System.getChkStr(d_member["mytab_comment"], 1) />댓글<br />
+						<input type="checkbox" name="mytab_oneline" value="1" @_System.getChkStr(d_member["mytab_oneline"], 1) />한줄의견<br />
+						<input type="checkbox" name="mytab_simbol" value="1" @_System.getChkStr(d_member["mytab_simbol"], 1) />캐릭터<br />
+						<input type="checkbox" name="mytab_scrap" value="1" @_System.getChkStr(d_member["mytab_scrap"], 1) />스크랩<br />
+						<input type="checkbox" name="mytab_paper" value="1" @_System.getChkStr(d_member["mytab_paper"], 1) />쪽지<br />
+						<input type="checkbox" name="mytab_friend" value="1" @_System.getChkStr(d_member["mytab_friend"], 1) />친구<br />
+						<input type="checkbox" name="mytab_point" value="1" @_System.getChkStr(d_member["mytab_point"], 1) />포인트<br />
+						<input type="checkbox" name="mytab_log" value="1" @_System.getChkStr(d_member["mytab_log"], 1) />접속기록<br />
+						<input type="checkbox" name="mytab_info" value="1" @_System.getChkStr(d_member["mytab_info"], 1) />정보수정<br />
+						<input type="checkbox" name="mytab_pw" value="1" @_System.getChkStr(d_member["mytab_pw"], 1) />비번변경<br />
+						<input type="checkbox" name="mytab_out" value="1" @_System.getChkStr(d_member["mytab_out"], 1) />회원탈퇴<br />
+					</td>
+				</tr>
+			</table>
+		
+		</div>
+		<div id="tarea5" class="hide">
+		
+		</div>
+	</div>
+
+
+	<div class="submitbox">
+		<input type="submit" class="btnblue" value=" 확인 " />
+	</div>
+	</form>
+
+</div>
+                            
+
+
+
+
+<div id="agreebox">
+    <form name="nprocForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="agreesave" />
+
+    @if (Session["_join_tab"] != null && Session["_join_tab"].ToString() != "")
+    {
+	    <input type="hidden" name="_join_tab" value="@Session["_join_tab"].ToString()" />
+    }
+    else
+    {
+        <input type="hidden" name="_join_tab" value="1" />
+    }
+
+	<div class="tab">
+		<ul>
+		<li id="tagree1" class="leftside selected" onclick="tabShow(1);">홈페이지 이용약관</li>
+		<li id="tagree2" onclick="tabShow(2);">정보수집/이용목적</li>
+		<li id="tagree3" onclick="tabShow(3);">개인정보수집항목</li>
+		<li id="tagree4" onclick="tabShow(4);">정보보유/이용기간</li>
+		<li id="tagree5" onclick="tabShow(5);">개인정보위탁처리</li>
+		</ul>
+	</div>
+	<div class="agreebox">
+		<div id="bagree1"><textarea name="agree1">
+        @{
+            StreamReader agree1_sr = new StreamReader(g["path_root_ps"] + g["path_module"] + module + "\\var\\agree1.cshtml");
+            @agree1_sr.ReadToEnd();
+        }
+        </textarea></div>
+		<div id="bagree2" class="hide"><textarea name="agree2">
+        @{
+            StreamReader agree2_sr = new StreamReader(g["path_root_ps"] + g["path_module"] + module + "\\var\\agree2.cshtml");
+            @agree2_sr.ReadToEnd();
+        }
+        </textarea></div>
+		<div id="bagree3" class="hide"><textarea name="agree3">
+        @{
+            StreamReader agree3_sr = new StreamReader(g["path_root_ps"] + g["path_module"] + module + "\\var\\agree3.cshtml");
+            @agree3_sr.ReadToEnd();
+        }
+        </textarea></div>
+		<div id="bagree4" class="hide"><textarea name="agree4">
+        @{
+            StreamReader agree4_sr = new StreamReader(g["path_root_ps"] + g["path_module"] + module + "\\var\\agree4.cshtml");
+            @agree4_sr.ReadToEnd();
+        }
+        </textarea></div>
+		<div id="bagree5" class="hide"><textarea name="agree5">
+        @{
+            StreamReader agree5_sr = new StreamReader(g["path_root_ps"] + g["path_module"] + module + "\\var\\agree5.cshtml");
+            @agree4_sr.ReadToEnd();
+        }
+        </textarea></div>
+	</div>
+
+	<div class="submitbox">
+		<input type="submit" value=" 확인 " class="btnblue" />
+	</div>
+
+	</form>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function addField(f) {
+        if (f.add_name.value == '') {
+            alert('명칭을 입력해 주세요.  ');
+            f.add_name.focus();
+            return false;
+        }
+        f.submit();
+    }
+    function delField(f, dval) {
+        if (confirm('정말로 삭제하시겠습니까?   ')) {
+            var l = document.getElementsByName('addFieldMembers');
+            var n = l.length;
+            var i;
+
+            for (i = 0; i < n; i++) {
+                if (dval == l[i].value) {
+                    l[i].checked = false;
+                }
+            }
+            f.submit();
+        }
+    }
+    function confShow(n) {
+        var i;
+        for (i = 1; i < 6; i++) {            
+            getId('tbox' + i).style.borderBottom = '#dfdfdf solid 1px';
+            getId('tbox' + i).style.background = '#f9f9f9';
+            getId('tbox' + i).style.color = '#000000';
+            getId('tarea' + i).style.display = 'none';
+        }
+        getId('tbox' + n).style.borderBottom = '#ffffff solid 1px';
+        getId('tbox' + n).style.background = '#ffffff';
+        getId('tbox' + n).style.color = '#FF5B01';
+        getId('tarea' + n).style.display = 'block';
+        
+        if (n == 5) {
+            getId('agreebox').style.display = 'block';
+        }
+        else {
+            getId('agreebox').style.display = 'none';
+        }
+        document.procForm._join_menu.value = n;
+    }
+    function tabShow(n) {
+        var i;
+
+        for (i = 1; i < 6; i++) {
+            getId('tagree' + i).style.borderBottom = '#dfdfdf solid 1px';
+            getId('tagree' + i).style.background = '#f9f9f9';
+            getId('tagree' + i).style.color = '#000000';
+            getId('bagree' + i).style.display = 'none';
+        }
+        getId('tagree' + n).style.borderBottom = '#ffffff solid 1px';
+        getId('tagree' + n).style.background = '#ffffff';
+        getId('tagree' + n).style.color = '#078DFF';
+        getId('bagree' + n).style.display = 'block';
+        document.nprocForm._join_tab.value = n;
+    }
+    function saveCheck(f) {
+        if (f.join_auth.value == '3') {
+            if (f.join_email.value == '') {
+                alert('이메일인증을 설정하시려면 대표이메일을 반드시 등록해야 합니다.   ');
+                f.join_email.focus();
+                return false;
+            }
+        }
+        if (f.join_email_send.checked == true) {
+            if (f.join_email.value == '') {
+                alert('가입이메일을 발송하시려면 대표이메일을 반드시 등록해야 합니다.   ');
+                f.join_email.focus();
+                return false;
+            }
+        }
+        return confirm('정말로 실행하시겠습니까?      ');
+    }
+
+    tabShow(parseInt(document.nprocForm._join_tab.value));
+    confShow(parseInt(document.procForm._join_menu.value));
+//]]>
+</script>

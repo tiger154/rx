@@ -1,0 +1,93 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var uid = Request["uid"];
+
+    dynamic R = null;
+    dynamic d_upload = _DB.Get_code("upload");
+
+    R = _DB.GetDbData_M(AppState["table_s_upload"].ToString(), "uid='" + uid + "'");
+
+    if (R == null) {
+        _System.getLink("", "", "정상적인 요청이 아닙니다.", "");
+        return;
+    }
+    
+    string filepath = "";
+    string filesize = "";
+    string filename = R["name"];
+    string filetmpname = R["tmpname"];
+    
+    if (R["url"] == d_upload["ftp_urlpath"]) {
+        filepath = d_upload["ftp_urlpath"] + R["forder"] + "/" + filetmpname;
+        filesize = R["size"];
+    }
+    else {
+        filepath = g["path_root_ps"] + g["path_file"] + R["folder"] + "\\" + filetmpname;
+        FileInfo fInfo = new FileInfo(filepath);
+        filesize = fInfo.Length.ToString();
+    }
+
+    if(Request["HTTP_REFERER"].IndexOf("module=upload") < 0 && my["admin"] != "") {
+    //if(Request["HTTP_REFERER"].IndexOf("module=upload") < 0 && my["admin"] == "") {
+    	string cyncArr = _System.getSyncValue(R["cync"], 3);
+        string[] fdexp = cyncArr.Split(',');
+        
+        if(fdexp[0] != "" && fdexp[1] != "" && _System.getSyncValue(R["cync"], 4) != "") {
+       		if(_System.getSyncValue(R["cync"], 1) == "bbs" && _System.getSyncValue(R["cync"], 2) != "") {       // bbs upload
+                // 구현중
+            }
+            
+    		string cyncQue = fdexp[1] + "=" + fdexp[1] + "+1";
+            string cyncQue_qr = "UPDATE "+_System.getSyncValue(R["cync"], 4)+" SET "+cyncQue+" WHERE "+fdexp[0]+"="+_System.getSyncValue(R["cync"], 2);
+            
+            @_DB.Execute(cyncQue_qr);
+        }
+        
+        string today_cut = date["year"]+date["month"]+date["day"];
+        string upload_sql = "UPDATE "+AppState["table_s_upload"]+" SET down=down+1 WHERE uid="+R["uid"];
+        string numinfo_sql = "UPDATE "+AppState["table_s_numinfo"]+" SET download=download+1 WHERE date='"+today_cut+"' AND site="+s;
+
+        @_DB.Execute(upload_sql);
+        @_DB.Execute(numinfo_sql);
+    }
+
+    // file download    
+    Response.Clear();
+    Response.ContentType = "APPLICATION/OCTET-STREAM";
+    Response.AddHeader ("Content-Disposition", "attachment;filename=\"" + Server.UrlEncode(filename) + "\"");
+    Response.AddHeader ("Content-Transfer-Encoding", "binary");
+    Response.AddHeader ("Pragma", "no-cache");
+    Response.AddHeader ("Expires", "0");
+    Response.WriteFile (g["path_root_ps"] + g["path_file"] + R["folder"] + "\\" + R["tmpname"], true);
+}
+
+
+
+

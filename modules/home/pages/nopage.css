@@ -1,0 +1,4 @@
+﻿
+#pagebox {}
+#pagebox .title {font-size:18px;font-weight:bold;font-family:"malgun gothic","dotum";padding:0 0 10px 0;}
+#pagebox .message {padding:20px 0 20px 0;line-height:150%;color:#666666;border-top:#efefef solid 1px;border-bottom:#efefef solid 1px;}

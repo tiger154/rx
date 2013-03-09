@@ -1,0 +1,31 @@
+
+
+#catebody {margin:0 0 30px 0;padding:0 0 30px 0;}
+#category {float:left;width:220px;padding:0 0 0 0;}
+#category .title {height:19px;background:url('../../../../../_core/image/tree/default/top.gif') left no-repeat #dfdfdf;background-position:4px 3px;padding:6px 0 0 23px;font-weight:bold;}
+#category .title .add {position:absolute;}
+#category .title .add a {position:relative;top:-2px;left:58px;}
+
+#category  .tree {margin:0;padding:12px 0 0 0;}
+#category  .tree .dir01 {padding:1px 0 1px 0;}
+#category  .tree .dir01 .alldir {color:#000000;}
+#category  .tree .dir01 .nowdir {font-weight:bold;color:#33C9FD;}
+#category  .tree .dir01 img {position:relative;top:1px;}
+
+
+#catinfo {margin-left:220px;padding:0 0 0 20px;}
+#catinfo .title {background:#dfdfdf;height:25px;}
+#catinfo .title .xleft {float:left;padding:6px 0 0 23px;}
+#catinfo .title .xright {float:right;padding:7px 7px 0 0;}
+#catinfo .title .xright a {font:normal 11px dotum;color:#888;}
+
+#catinfo .td1 {padding:13px 0 7px 15px;width:90px;vertical-align:top;}
+#catinfo .td2 {padding:7px 0 7px 0;}
+#catinfo .td2 .sname {width:174px;}
+#catinfo .notice {padding:15px 0 10px 15px;margin:0 0 20px 0;font-size:11px;font-family:dotum;color:#02B6D6;border-bottom:#dfdfdf dashed 1px;line-height:150%;}
+
+#catinfo .guide {padding:10px 0 0 0;}
+#catinfo .guide textarea {width:98%;height:550px;padding:5px 0 5px 5px;line-height:150%;color:#000000;font-family:Courier new, arial, dotum;font-size:9pt;text-align:left;}
+#catinfo .none {padding:50px 0 0 0;font-size:12px;font-family:dotum;color:#c0c0c0;}
+#catinfo .none img {position:relative;top:2px;}
+#catinfo .submitbox {margin:20px 0 20px 0;padding:15px 0 0 108px;border-top:#dfdfdf dashed 1px;}

@@ -1,0 +1,54 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var type = Request["type"];
+    var value = Request["value"];
+    var uid = Request["uid"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    string[] typeset = { "", "module", "widget", "source" };
+    
+    if (type == "menu") 
+    {
+        string UPDATE_MENU_SQL = "UPDATE " + AppState["table_s_menu"].ToString() + " SET menutype=" + value + " WHERE uid=" + uid;
+        @_DB.Execute(UPDATE_MENU_SQL);
+        
+        @_System.getLink(g["s"] + "/?r=" + r + "&system=edit.menu&_menu=" +  uid + "&type=" + typeset[Convert.ToInt32(value)],"parent.","","")
+        return;
+    }
+    else 
+    {
+        string UPDATE_PAGE_SQL = "UPDATE " + AppState["table_s_page"].ToString() + " SET pagetype=" + value + " WHERE uid=" + uid;
+        @_DB.Execute(UPDATE_PAGE_SQL);
+        
+        @_System.getLink(g["s"] + "/?r=" + r + "&system=edit.page&_page=" + uid + "&type=" + typeset[Convert.ToInt32(value)], "parent.", "", "")
+        return;
+    }
+}

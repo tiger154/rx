@@ -1,0 +1,258 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var switchdir = Request["switchdir"];
+    var edit = Request["edit"];
+    
+    string frame_name = "_action_frame_" + m;
+
+    var _switchset = new Dictionary<string, string>();
+    _switchset.Add("start", "스타트 스위치");
+    _switchset.Add("top", "탑 스위치");
+    _switchset.Add("head", "헤더 스위치");
+    _switchset.Add("foot", "풋터 스위치");
+    _switchset.Add("end", "엔드 스위치");
+}           
+
+
+<div id="catebody">
+	<div id="category">
+
+		<div class="title">
+			스위치 목록
+			<span class="add">
+			</span>
+		</div>
+		
+		<div class="tree">
+
+        @foreach (string _key in _switchset.Keys)
+        {
+			<div class="tbox">
+			<table>
+			<tr class="tt">
+			<td colspan="2">
+			<img src="@g["img_core"]/_public/ico_folder_01.gif" alt="" />
+            @_switchset[_key]
+			</td>
+			<td class="t2">
+
+			</td>
+			</tr>            
+
+            @foreach (string _switch in _System.getSwitchList(_key))
+            {
+                string base_switch = _switch;
+ 			    <tr>
+			    <td class="t0"><img src="@g["img_core"]/_public/ico_f3.png" alt="" /></td>
+			    <td class="t1">
+			    <a href="@g["adm_href"]&switchdir=@_key/@base_switch" @Html.Raw(_key + "/" + base_switch == switchdir ? "class=\"on\"" : "")>@_System.getFolderName(_switch, "name.txt")</a> <span>(@base_switch.Replace("@", ""))</span>
+			    </td>
+			    <td class="t2">
+			    <a href="@g["adm_href"]&switchdir=@_key/@base_switch&edit=Y" title="스위치 편집"><img src="@g["img_core"]/_public/btn_edit.gif" alt="" /></a>
+			    <a href="@g["s"]/?r=@r&m=@module&a=switch_change&switch_folder=@_key&switch=@base_switch" onclick="return confirm('정말로 스위치를 @(_switch.Contains("@") ? "켜" : "끄")시겠습니까?  ');" target="@frame_name" title="스위치 ON/FF"><img src="@g["img_core"]/_public/ico_@(_System.isEqual(_switch.Contains("@"), true, "hide", "show")).gif" alt="" /></a>
+			    </td>
+			    </tr>
+            }
+			</table>
+			</div>            
+        }
+		
+		</div>
+
+	</div>
+
+
+	<div id="catinfo">
+
+		<div class="title">
+			<div class="xleft">
+				<span class="b">등록정보</span>
+			</div>
+			<div class="xright">
+                @if (switchdir != "")
+                {
+                    <a href="@g["s"]/?r=@r&m=@module&a=switch_delete&switch=@switchdir" target="@frame_name" onclick="return confirm('정말로 이 스위치를 삭제하시겠습니까?       ');">스위치삭제</a>
+                }
+			</div>
+			<div class="clear"></div>
+		</div>
+		
+        @if (switchdir == "")
+        {
+
+		    <div class="guidebox">
+			    <div class="gtt">스위치 사용 가이드</div>
+			    <p>
+				    스위치는 프로그램의 실행단계를 5개의 구역으로 분리하여 각각의 구역에 실행여부를 온/오프 할 수 있는 응용 프로그램입니다.<br />
+				    스위치의 실행여부는 ON/OFF 아이콘을 클릭해서 전환할 수 있습니다.<br />
+				    너무 많은 스위치를 동작시킬 경우 실행속도에 영향을 줄 수 있으니 꼭 필요한 스위치만 사용하세요.<br />
+				    스위치는 마켓모듈의 패키지설치 페이지에서 추가할 수 있습니다.<br />
+			    </p>
+			    <div class="gtt1">스위치 요소별 실행위치</div>
+
+			    <ol>
+			    <li><i>스타트 스위치</i> - 프로그램 시작과 함께 DB연결,주요파일 로드 후 실행됩니다.</li>
+			    <li><i>탑 스위치</i> - 모듈 및 레이아웃에 대한 정의후 화면출력 직전에 실행됩니다.</li>
+			    <li><i>헤더 스위치</i> - head 태그를 닫기 직전에 실행됩니다.</li>
+			    <li><i>풋터 스위치</i> - body 태그를 닫기 직전에 실행됩니다.</li>
+			    <li><i>엔드 스위치</i> - 화면출력을 끝내고 실행됩니다.</li>
+			    </ol>
+
+			    <div class="hbox">
+				    <div class="more"><a href="#." onclick="layerShowHide('guide_structure','block','none');">스위치 실행 스트럭처 자세히보기</a></div>
+
+                    <fieldset id="guide_structure" class="structure hide">
+                    <legend>[ 킴스큐 실행 프로세스 ]</legend>
+                    <pre>
+	                    <i>- 프로그램 시작 -</i>
+	                    <i>- DB연결 -</i>
+	                    <i>- 주요파일 로드 -</i>
+
+	                    <span>[스타트 스위치]</span>
+
+	                    <i>- 모듈 정의 -</i>
+	                    <i>- 레이아웃 정의 -</i> 
+
+	                    <span>[탑 스위치]</span>
+	                    <fieldset>
+	                    <legend>[ 화면에 출력되는 부분 ]</legend>
+	                    &lt;html&gt;
+	                    &lt;head&gt;
+
+		                    <i>- 기초 헤더 -</i>
+		                    <span>[헤더 스위치]</span>
+
+	                    &lt;/head&gt;
+	                    &lt;body&gt;
+		
+		                    <i>- 콘텐츠 영역 -</i>
+		                    <span>[풋터 스위치]</span>
+
+	                    &lt;/body&gt;
+	                    &lt;/html&gt;
+	                    </fieldset>
+
+	                    <span>[엔드 스위치]</span>
+                    </pre>
+                    </fieldset>
+
+			    </div>
+		    </div>            
+        }
+        else
+        {
+            if (edit == "Y")
+            {
+			    <form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+			    <input type="hidden" name="r" value="@r" />
+			    <input type="hidden" name="m" value="@module" />
+			    <input type="hidden" name="a" value="switch_edit" />
+			    <input type="hidden" name="switch" value="@switchdir" />
+			
+			    <br />
+			    <table>
+				    <tr>
+					    <td class="td1">
+						    스위치명칭
+					    </td>
+					    <td class="td2">
+						    <input type="text" name="name" value="@_System.getFolderName(g["path_root_ps"] + g["path_switch"] + switchdir, "name.txt")" class="input sname" />
+					    </td>
+				    </tr>
+			    </table>
+
+			    <textarea name="switch_code">                
+                @{
+                    try
+                    {
+                        using (StreamReader sr = new StreamReader(g["path_root_ps"] + g["path_switch"] + switchdir + "\\main.cshtml", System.Text.Encoding.UTF8, true)) { 
+                            @Html.Raw(sr.ReadToEnd())
+                        }
+                    }
+                    catch
+                    {
+                        @:@g["path_root_ps"]@g["path_switch"]@switchdir\\main.cshtml파일이 없습니다.
+                    }
+                }             
+
+			    <div class="submitbox">
+				    <input type="submit" class="btnblue" value="스위치 편집" />
+			    </div>
+
+			    </form>                
+            }
+            else
+            {
+                if (File.Exists(g["path_root_ps"] + g["path_switch"] + switchdir + "\readme.txt"))
+                {
+				    <div class="guide">
+				    <div class="help">  
+
+                    @using (StreamReader sr = new StreamReader(g["path_root_ps"] + g["path_switch"] + switchdir + "\\readme.txt", System.Text.Encoding.UTF8, true))
+                    { 
+                        @_System.getContents(sr.ReadToEnd())
+                    }
+
+                    </div>
+				    </div>                    
+                }
+                else
+                {
+				    <div class="none">
+					    <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+					    이 스위치는 안내문서를 제공하지 않습니다.
+				    </div>                    
+                }
+                
+            }
+        }
+
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function saveCheck(f) {
+        if (f.name.value == '') {
+            alert('스위치명을 입력해 주세요.   ');
+            f.name.focus();
+            return false;
+        }
+
+        return confirm('정말로 실행하시겠습니까?    ');
+    }
+//]]>
+</script>
+
+

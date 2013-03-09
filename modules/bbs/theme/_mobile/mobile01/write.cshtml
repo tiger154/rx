@@ -1,0 +1,291 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/      
+    var _m = PageData[1];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+
+    var bid = Request["bid"];
+    var reply = Request["reply"];
+    var cat = Request["cat"];
+
+    dynamic g = Session["g"];
+    dynamic R = Session["bbsdata"];
+    dynamic B = Session["bbslist"];
+    dynamic d_theme = Session["bbstheme"];
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+
+    string frame_name = "_action_frame_" + m;
+    string strBid = bid;
+        
+    if (R["bbsid"] != "") 
+    {
+        strBid = R["bbsid"];
+    }
+    
+    if (reply != null && reply == "Y")
+    {
+        R["content"] = "";
+        R["upload"] = "";
+    }
+}
+@*    <form name="writeForm" method="post" action="@g["s"]/" target="@Html.Raw("_action_frame_"+m)" enctype="multipart/form-data" onsubmit="return writeCheck(this);">*@
+    @*<input type="hidden" name="upfiles" id="upfilesValue" value="@strUp" />*@
+<div id="bbswrite">
+    
+    <form name="writeForm" method="post" action="@g["s"]/" target="@frame_name" enctype="multipart/form-data" onsubmit="return writeCheck(this);">
+
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="a" value="write" />
+	<input type="hidden" name="c" value="@c" />
+	<input type="hidden" name="cuid" value="@_HM["uid"]" />
+	<input type="hidden" name="m" value="@m" />
+    <input type="hidden" name="bid" value="@strBid" />
+	<input type="hidden" name="uid" value="@R["uid"]" />
+	<input type="hidden" name="reply" value="@reply" />
+	<input type="hidden" name="nlist" value="@g["bbs_list"]" />
+	<input type="hidden" name="pcode" value="@date["totime"].ToString()" />
+    <input type="hidden" name="upfiles" id="upfilesValue" value="@R["upload"]" />
+
+	<table>
+
+    @if (my["id"] == "")
+    {
+ 		<tr>
+		<td class="td1">작성자명</td>
+		<td class="td2">
+			<input size="20" type="text" name="name" value="@R["name"]" class="input subject" />
+		</td>
+		</tr>
+        
+        if (R["uid"] == 0 || reply == "Y")
+        {
+		    <tr>
+		    <td class="td1">비밀번호</td>
+		    <td class="td2">
+			    <input size="20" type="password" name="pw" value="@R["pw"]" class="input subject" />
+
+                @if (R["hidden"] == "1" && reply == "Y")
+                {
+ 			        <div class="guide">
+			        비밀답변은 비번을 수정하지 않아야 원게시자가 열람할 수 있습니다.
+			        </div>                       
+                }
+		    </td>
+		    </tr>            
+        }
+    }
+    
+    @if (B["category"] != "")
+    {
+        string[] _catexp = B["category"].Split(',');
+        int _catnum = _catexp.Length;
+ 		<tr>
+		<td class="td1">카테고리</td>
+		<td class="td2">
+			<select name="category">
+			<option value="">&nbsp;+ @_catexp[0]선택</option>
+
+            @for (int i = 1; i < _catnum; i++)
+            {
+                if (_catexp[i] == null || _catexp[i] == "")
+                {
+                    continue;
+                }
+                
+                if (_catexp[i] == R["category"] || _catexp[i] == cat)
+                {
+                    <option value="@_catexp[i]" selected="selected">ㆍ @_catexp[i]</option> @Html.Raw("(" + _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "site='" + s + "' AND notice=0 AND bbs=" + B["uid"] + " AND category='" + _catexp[i] + "'") + ")")
+                }
+                else
+                {
+                    <option value="@_catexp[i]">ㆍ @_catexp[i]</option> 
+                }
+            }
+			</select>	
+		</td>
+		</tr>    
+    }
+
+		<tr>
+		<td class="td1">제목</td>
+		<td class="td2">
+
+            <input type="text" name="subject" value="@g["subject"]" class="input subject" />
+        
+			<span class="check">
+
+        @if (my["admin"] == "1")
+        {
+            <input type="checkbox" name="notice" value="1" @_System.getChkStr(R["notice"], 1) />@:공지글
+        }
+        
+        @if (d_theme["use_hidden"] == "1")
+        {
+            <input type="checkbox" name="hidden" value="1" @_System.getChkStr(R["hidden"], 1) />@:비밀글   
+        }
+        else if (d_theme["use_hidden"] == "2")
+        {
+            <input type="hidden" name="hidden" value="1" />             
+        }
+			</span>
+		</td>
+		</tr>
+
+		<tr>
+		<td class="td1">내용</td>
+		<td class="td2">
+			<input type="hidden" name="html" value="TEXT" />            
+            <textarea name="content">@R["content"]</textarea>
+		</td>
+		</tr>
+
+	@if (d_theme["show_wtag"] == "1")
+ {
+ 		<tr>
+		<td class="td1">검색태그</td>
+		<td class="td2">
+			<input size="80" type="text" name="tag" value="@R["tag"]" class="input subject" />
+			<div class="guide">
+			이 게시물을 가장 잘 표현할 수 있는 단어를 콤마(,)로 구분해서 입력해 주세요.
+			</div>			
+		</td>
+		</tr>        
+ }
+
+    @if (d_theme["perm_upload"] != "" && Convert.ToInt32(d_theme["perm_upload"]) <= Convert.ToInt32(my["level"]))
+    {
+		<tr>
+		<td class="td1">파일첨부</td>
+		<td class="td2">
+
+        @for (int i = 0; i < Convert.ToInt32(d_theme["num_upload"]); i++)
+        {
+            <input size="80" type="file" name="upfile" value="" class="input subject" id="Upfile"/><br />
+        }
+			<input type="hidden" name="num_upfile" value="@d_theme["num_upload"]" />
+            
+		</td>
+		</tr>      
+    }
+    
+
+
+    @if (d_theme["perm_photo"] != "" && Convert.ToInt32(d_theme["perm_photo"]) <= Convert.ToInt32(my["level"]))
+    {
+		<tr>
+		<td class="td1">사진첨부</td>
+		<td class="td2">
+			<input type="hidden" name="num_photo" value="@d_theme["num_photo"]" />
+        @for (int i = 0; i < Convert.ToInt32(d_theme["num_photo"]); i++)
+        {
+            <input size="80" type="file" name="upfile" value="" class="input subject" id="Upfile"/><br />
+        }
+			<div class="guide">
+			<select name="insert_photo">
+			<option value="bottom">사진을 내용하단에 삽입</option>
+			<option value="top">사진을 내용상단에 삽입</option>
+			<option value="">내용에 삽입하지 않음</option>
+			</select>
+			</div>
+			<div class="guide">
+			사진첨부는 Windows7폰,안드로이드 2.2버젼 이상 일부 모바일기기에서만 지원됩니다.<br />
+			(jpg/png/gif 첨부가능)
+			</div>	
+		</td>
+		</tr>        
+    }
+
+    
+        @if (R["upload"] != "") 
+        {
+            string[] upArr = R["upload"].Split(']');
+        
+ 	        <tr>
+	        <td class="td1">파일삭제</td>
+	        <td class="td2">
+		        <ul>        
+        
+                @foreach (string val in upArr) 
+                {
+                    if (val.Trim() == "") 
+                    {
+                        continue;
+                    }
+                    
+                    dynamic _u = _DB.Get_module_data(AppState["table_s_upload"].ToString(), "uid", val.Substring(1, val.Length - 1));
+            
+   			        <li>
+				        <a href="@g["s"]/?r=@r&m=upload&a=files_delete&file_uid=@_u["uid"]&isreload=Y" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?   ');">@_u["name"]</a>
+				        <span class="size">(@_System.getSizeFormat(_u["size"]))</span>
+				        <span class="down">(@string.Format("{0:#,0}", Convert.ToInt32(_u["down"])))</span>
+			        </li>                           
+                }
+
+		        </ul>
+	        </td>
+	        </tr>       
+        }
+
+        
+    @*if (R["uid"] == 0) || reply == "Y") 
+    {
+        if(File.Exists(g["paht_root_ps"] + g["path_module"] + g["d_bbs_snsconnect"])) 
+        {
+		    <tr>
+		    <td class="td1">소셜연동</td>
+		    <td class="td2 shift">
+		    </td>
+		    </tr>            
+        }
+    }
+    *@
+            
+	</table>
+
+    @{
+        string backtype_checked = "";
+        string backtype_checked_v = "";
+
+        if (Session["backtype"] == null || Session["backtype"].ToString() == "list")
+        {
+            backtype_checked = " checked='checked'";
+        }
+        else if (Session["backtype"].ToString() == "view")
+        {
+            backtype_checked_v = " checked='checked'";
+        }         
+	}
+
+	<div class="after">
+	게시물 등록(수정/답변)후
+    <input type="radio" name="backtype" id="backtype1" value="list"@backtype_checked /><label for="backtype1">목록으로 이동</label>
+	<input type="radio" name="backtype" id="backtype2" value="view"@backtype_checked_v /><label for="backtype2">본문으로 이동</label>
+	</div>
+
+	<div class="bottombox">
+		<input type="button" value="취소" class="btngray" onclick="cancelCheck();" />
+		<input type="submit" value="확인" class="btnblue" />
+	</div>
+
+	</form>
+
+
+</div>

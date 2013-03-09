@@ -1,0 +1,26 @@
+
+.sbox {padding:0 0 15px 0;}
+.sbox .btngray {margin:0;height:17px;}
+.sbox .account {width:192px;}
+.sbox div {padding:10px 0 0 0;}
+
+
+
+table {width:100%;_width:99.6%;margin:0 0 35px 0;border-bottom:#efefef solid 1px;padding:0;border-spacing:1px;border-collapse:separate;}
+table thead {height:25px;}
+table thead th {text-align:center;height:25px;border-bottom:#dfdfdf solid 1px;background:#efefef;font-size:11px;font-family:dotum;color:#666;}
+
+table .rooptd0 td {padding:5px 0 5px 0;text-align:center;}
+table .rooptd1 td {padding:5px 0 5px 0;text-align:center;background:#f9f9f9;}
+
+
+table .number {font:bold 13px arial;color:#ff0000;}
+table .std0 {width:80px;}
+table .std0 a {font: 13px arial;color:#c0c0c0;}
+table .std1 {width:80px;}
+table .std1 a {font: 13px arial;color:#0000ff;}
+table .etc {font:bold 12px arial;color:#0000ff;}
+
+
+.nodata {text-align:center;padding:0 0 35px 0;font-size:12px;font-family:dotum;color:#999;border-bottom:#dfdfdf dashed 1px;}
+.nodata img {position:relative;top:2px;}

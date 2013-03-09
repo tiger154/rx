@@ -1,0 +1,223 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var parent = Request["parent"];
+    var uid = Request["uid"];
+    var name = Request["name"];
+    var nic = Request["nic"];
+    var content = Request.Unvalidated("content").Trim();
+    var id = my["id"];
+    var pw = Request["pw"];
+    var html = Request["html"];
+    var hidden = Request["hidden"];
+    var iframe = Request["iframe"];
+    var p = Request["p"];
+    var sort = Request["sort"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var orderby = Request["orderby"];
+    var skin = Request["skin"];
+    var agent = Request["agent"];
+    
+    var ip = AppState["myip"].ToString();
+    
+    string getlink_url = "./?";
+    string d_modify = "";
+    string d_oneline = "";
+
+    int mbruid = 0;
+    int singo = 0;
+    int parentmbr = 0;
+    
+    dynamic R = null;
+    dynamic d_comment = _DB.Get_code("comment");
+
+    string point = d_comment["give_opoint"];
+    string today_cut = date["year"]+date["month"]+date["day"];    
+
+    if(my["uid"] == 0) {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;        
+    }    
+    
+    int R_count = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "uid="+parent);
+
+    if(R_count == 0) {
+        @_System.getLink("", "", "부모댓글이 지정되지 않았습니다.", "")
+        return;
+    }    
+      
+    if(my["uid"] > 0) {
+        name = my["name"];
+        nic = my["nic"];
+        mbruid = my["uid"];
+	}
+    else {
+        name = name.Trim();
+        nic = name;
+        mbruid = 0;
+	}
+            
+    if(pw != "" && pw != null) {
+        pw = FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1");       // SHA encording
+    }
+    else {
+        pw = "";
+	}
+
+    if (html == null || html == "" || html.ToUpper() != "HTML") 
+    {
+        html = "TEXT";
+	}
+    
+    R = _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "uid="+parent);
+    
+    parentmbr = R["mbruid"];
+    parent = R["uid"].ToString();
+
+    //string d_point = _DB.GetDbData_S(AppState["table_code_d_module"].ToString(), "module='"+m+"' AND id='give_opoint'", "id_value").ToString();
+
+    /////////////////// 욕설검사 (맨 뒤에 쉼표는 붙이지 않는 조건) /////////////////
+    if(d_comment["badword_action"] == "1") {
+        if(d_comment["badword"] != "") {
+            bool is_value = false;
+            char[] delimiter = {','};
+            string[] strArray = d_comment["badword"].Split(delimiter);
+
+            for(int k = 0; k < strArray.Length; k++) {
+                if(content.IndexOf(strArray[k]) > -1)  {
+                    if(d_comment["badword_escape"] != "") {
+                        int escape_length = strArray[k].Length;
+                        string escape_set = "";
+                        
+                        for(int es=1; es<=escape_length; es++) {        // 문자길이만큼 return
+                            escape_set = escape_set + d_comment["badword_escape"];
+						}
+                        content = content.Replace(strArray[k], escape_set);
+					}
+                    else {
+                        @_System.getLink("", "", "등록이 제한된 단어를 사용하셨습니다. ["+strArray[k]+"]", "")
+                        return;                    
+                    }
+				}
+			}
+        }
+    }
+
+    if (uid != null && uid != "" && uid != "0") 
+    {
+        int oneline_row = _DB.GetDbData_Count(AppState["table_s_oneline"].ToString(), "uid="+uid);
+        
+        if(oneline_row == 0) 
+        {
+            @_System.getLink("", "", "존재하지 않는 한줄의견입니다.", "")
+            return;                                
+        }
+
+        string UPDATE_OL_SQL = "UPDATE "+AppState["table_s_oneline"]+" SET hidden='"+hidden+"', content='"+content+"', html='"+html+"', d_modify=getdate()";
+
+        @_DB.Execute(UPDATE_OL_SQL);
+    }
+    else 
+    {
+        string[] fdexp = _System.getSyncValue(R["cync"].ToString(), 3).Split(',');
+        
+        if(_System.getSyncValue(R["cync"].ToString(), 4) != "" && fdexp[0] != "" && fdexp[2] != "") 
+        {
+		    string cyncQue = fdexp[2]+"="+fdexp[2]+"+1";
+            
+            if(fdexp[3] != "") 
+            {
+                cyncQue = cyncQue + ","+fdexp[3]+"=getdate()";
+            }
+            
+            string UPDATE_OL_SQL2 = "UPDATE "+_System.getSyncValue(R["cync"].ToString(), 4)+" SET "+cyncQue+" WHERE "+fdexp[0]+"="+_System.getSyncValue(R["cync"].ToString(), 2);
+            
+            @_DB.Execute(UPDATE_OL_SQL2);
+        }
+        
+        string maxuid = _DB.GetDbData_S(AppState["table_s_oneline"].ToString(), "", "max(uid)").ToString();
+        int uid2 = Convert.ToInt32(uid);
+
+        if(maxuid == "") 
+        {
+            uid2 = 1;
+        }
+        else 
+        {
+            uid2 = Convert.ToInt32(maxuid) + 1;                        
+        }
+        
+        string ONE_F = "uid,site,parent,parentmbr,hidden,name,nic,mbruid,id,content,html,singo,point,d_regis,d_modify,ip,agent,adddata";
+        string INSERT_OL_QUE = "INSERT INTO "+AppState["table_s_oneline"]+" ("+ONE_F+") VALUES (";
+        INSERT_OL_QUE += uid2+","+s+","+parent+","+parentmbr+",'"+hidden+"','"+name+"','"+nic+"',"+mbruid+",'"+id+"','"+content+"','"+html+"',"+singo+","+point+",'" + date["insert"] + "','"+d_modify+"','"+ip+"','"+agent+"','')";
+        
+        string UPDATE_CM_QUE = "UPDATE "+AppState["table_s_comment"]+" SET oneline=oneline+1, d_oneline=getdate() WHERE uid="+parent;
+        string UPDATE_NUMINFO_QUE = "UPDATE "+AppState["table_s_numinfo"]+" SET oneline=oneline+1 WHERE date='"+today_cut+"' AND site="+s;
+        
+        @_DB.Execute(INSERT_OL_QUE);
+        @_DB.Execute(UPDATE_CM_QUE);
+        @_DB.Execute(UPDATE_NUMINFO_QUE);
+
+        // update oneline point (member)
+    	if (Convert.ToInt32(d_comment["give_opoint"]) > 0 && my["uid"] > 0) 
+        {
+            string POINT_F = "my_mbruid,by_mbruid,price,content,d_regis";
+            string POINT_INS = "INSERT INTO "+AppState["table_s_point"]+" ("+POINT_F+") VALUES (";
+            POINT_INS += my["uid"] + ",0," + d_comment["give_opoint"] + ",'한줄의견(" + _System.getStrCut(content, 15, "..") + ")포인트',getdate())";
+
+            string MBPOINT_UP = "UPDATE " + AppState["table_s_mbrdata"] + " SET point=point+" + d_comment["give_opoint"] + " WHERE memberuid=" + my["uid"];
+            
+            @_DB.Execute(POINT_INS);
+            @_DB.Execute(MBPOINT_UP);
+        }
+    }
+
+    // bbs_reset variable setting
+    if (_HS["usescode"].ToString() == "1")
+    {
+        getlink_url += "r=" + r + "&";
+    }
+
+    if (c != "" && c != null)
+    {
+        getlink_url += "c=" + c;
+    }
+    else
+    {
+        getlink_url += "m=" + m;
+    }
+
+    getlink_url += _System.getLinkFilter("skin|iframe|sort|orderby|recnum|where|keyword", skin + "|" + iframe + "|" + sort + "|" + orderby + "|" + recnum + "|" + where + "|" + keyword);
+    getlink_url += "&uid=" + parent + "&oneOpen=Y";
+    
+    @_System.getLink(getlink_url, "parent.", "", "")
+    return;
+}

@@ -1,0 +1,73 @@
+﻿@using Microsoft.WindowsAzure;
+@using Microsoft.WindowsAzure.StorageClient;
+
+@helper upload(string folder_name)
+    {
+        string blobAdd = folder_name;
+
+        if (folder_name.Contains("\\"))
+        {
+            blobAdd = folder_name.Split('\\')[0] + folder_name.Split('\\')[1];
+        }
+
+        foreach (string files in Directory.GetFiles(Request.PhysicalApplicationPath + folder_name))
+        {
+            string file_name = Path.GetFileName(files);
+            WindowsAzureStorage.UploadBinaryToBlob(blobAdd + "/" + file_name, files);
+        }
+}
+
+@helper download(string folder_name)
+    {
+    string blobAdd = folder_name;
+
+    if (folder_name.Contains("\\"))
+    {
+        blobAdd = folder_name.Split('\\')[0] + folder_name.Split('\\')[1];
+    }
+
+    foreach (string blobFiles in WindowsAzureStorage.ListBlobs(blobAdd))
+    {
+        string file_name = blobFiles.Replace(blobAdd + "/", "");
+        WindowsAzureStorage.DownloadBlobToFile(blobFiles, Request.PhysicalApplicationPath + folder_name + "\\" + file_name);
+    }
+}
+    
+@helper upFileToBlob(string accountName, string accountKey, string container, string blobName, string filePath)
+{
+    CloudStorageAccount cloudStorageAccount2 = CloudStorageAccount.Parse("DefaultEndpointsProtocol=http;AccountName=" + accountName + ";AccountKey=" + accountKey);
+    CloudBlobClient blobClient2 = cloudStorageAccount2.CreateCloudBlobClient();
+    CloudBlobContainer blobContainer2 = blobClient2.GetContainerReference(container);
+    blobContainer2.CreateIfNotExist();
+    BlobContainerPermissions containerPermissions2 = new BlobContainerPermissions();
+    containerPermissions2.PublicAccess = BlobContainerPublicAccessType.Blob;
+    blobContainer2.SetPermissions(containerPermissions2);
+
+    CloudBlob blob2 = blobContainer2.GetBlobReference(blobName);
+    blob2.UploadFile(filePath);
+}
+
+@functions {
+    public static CloudBlobContainer getContainer(string accountName, string accountKey, string container)
+    {
+        CloudStorageAccount cloudStorageAccount2 = CloudStorageAccount.Parse("DefaultEndpointsProtocol=http;AccountName=" + accountName + ";AccountKey=" + accountKey);
+        CloudBlobClient blobClient2 = cloudStorageAccount2.CreateCloudBlobClient();
+        CloudBlobContainer blobContainer2 = blobClient2.GetContainerReference(container);
+        blobContainer2.CreateIfNotExist();
+        BlobContainerPermissions containerPermissions2 = new BlobContainerPermissions();
+        containerPermissions2.PublicAccess = BlobContainerPublicAccessType.Blob;
+        blobContainer2.SetPermissions(containerPermissions2);
+
+        return blobContainer2;
+    }
+    
+    public static CloudBlob getBlob(string accountName, string accountKey, string containerName, string blobName)
+    {
+        CloudBlobContainer blobContainer = getContainer(accountName, accountKey, containerName);
+        CloudBlob blob = blobContainer.GetBlobReference(blobName);
+        
+        return blob;
+    }   
+    
+}
+

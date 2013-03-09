@@ -1,0 +1,94 @@
+﻿@{
+    /******************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    
+    var g = PageData[0];
+    var my = PageData[1];
+    var m = PageData[2];
+    var d_bbsenv = PageData[3];
+    var B_var = PageData[4];
+    var mod = PageData[5];
+    var R = PageData[6];
+
+    string adminStr = "," + "." + ",";
+
+//    Session["module_" + m + "_view"] = "";
+
+    if (my["admin"] != "1" && !adminStr.Contains("," + my["id"] + ","))
+    {
+        if (d_bbsenv["perm_l_view"] > Convert.ToInt32(my["level"]) || d_bbsenv["perm_g_view"].Contains(my["sosok"].ToString()))
+        {
+            Session["g_main"] = g["dir_module"] + "mod\\_permcheck.cshtml";
+            B_var["isperm"] = false;
+        }
+    }
+    
+    if (B_var["isperm"] && R["hidden"] == "1")
+    {
+        if ((my["uid"] == 0 || (my["uid"] > 0 && my["uid"] != R["mbruid"])) && my["uid"].ToString() != R["pw"] && my["admin"] != "1")
+        {
+            if (!("_" + Session["module_" + m + "_pwcheck"]).Contains("[" + R["uid"] + "]"))
+            {
+                Session["g_main"] = g["dir_module"] + "mod\\_pwcheck.cshtml";
+                B_var["isperm"] = false;
+            }
+        }   
+    }
+    
+    if (B_var["isperm"] && (d_bbsenv["hitcount"] > 0 || !("_" + Session["module_" + m + "_view"]).Contains("[" + R["uid"] + "]")))
+    {
+        if (R["point2"] > 0)
+        {
+            Session["g_main"] = g["dir_module"] + "\\mod\\_pointcheck.cshtml";
+            B_var["isperm"] = false;
+        }
+        else
+        {
+            Session["module_" + m + "_view"] += "[" + R["uid"].ToString() + "]";
+            string UPDATE_HIT_SQL = "UPDATE " + AppState["table_" + m + "data"] + " SET hit=hit+1 WHERE uid=" + R["uid"];
+            
+            @_DB.Execute(UPDATE_HIT_SQL);
+        }
+    }
+
+    if (B_var["isperm"] && R["upload"] != "")
+    {
+        string tmp_uplaod = "";
+
+        foreach (var _val in _System.getArrayString(R["upload"]))
+        {
+            dynamic U = _DB.Get_module_data(AppState["table_s_upload"].ToString(), "uid", _val);
+
+            if (U["uid"] != 0)
+            {
+                tmp_uplaod = R["upload"].Replace("[" + _val + "]", "");
+            }
+            else
+            {
+                tmp_uplaod += "[" + _val + "]";
+            }
+
+            if (U["cync"] == null || U["cync"] == "")
+            {
+                string _CYNC = "'[" + m + "][" + R["uid"] + "][uid,down][" + AppState["table_" + m + "data"] + "][" + R["mbruid"] + "][m:" + m + ",bid:" + R["bbsid"] + ",uid:" + R["uid"] + "]'";
+                string _CYNC_UPDATE_SQL = "UPDATE " + AppState["table_s_upload"] + " SET cync=" + _CYNC + " WHERE uid=" + U["uid"];
+                
+                @_DB.Execute(_CYNC_UPDATE_SQL);
+            }
+        }
+
+        if (R["upload"] != tmp_uplaod)
+        {
+            string UPDATE_CMT_SQL = "UPDATE " + AppState["table_s_comment"] + " SET upload='" + R["upload"] + "' WHERE uid=" + R["uid"];
+            
+            @_DB.Execute(UPDATE_CMT_SQL);
+        }
+    }    
+}

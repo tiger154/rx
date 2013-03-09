@@ -1,0 +1,129 @@
+﻿@functions {
+    public static string pwd;
+
+    public static string getTPLname(string fname)
+    {
+        Dictionary<string, string> set1 = new Dictionary<string,string>();
+        
+        set1.Add("layouts", "레이아웃");
+        set1.Add("modules", "모듈");
+        set1.Add("widgets", "위젯");
+        set1.Add("pages", "페이지");
+        set1.Add("files", "첨부파일");
+        set1.Add("switchs", "스위치");
+        
+        if (fname == null || fname == "")
+        {
+            return "";
+        }
+        else if (!set1.ContainsKey(fname) || set1[fname] == "")
+        {
+            return fname;
+        }
+        else
+        {
+            return set1[fname];
+        }
+    }
+    
+    public static string getFILEname(string fname)
+    {
+        Dictionary<string, string> set2 = new Dictionary<string, string>();
+        
+        string[] fexp = fname.Split('.');
+        string nName = set2[fname.Replace("." + fexp[fexp.Length - 1], "")];
+        return (nName != "" ? nName + "." + fexp[fexp.Length - 1] : fname);
+    }
+
+    public static int getDirexists(string dir)
+    {
+        int fex = 0;
+
+        foreach (string file in Directory.GetDirectories(dir))
+        {
+            string file_name = Path.GetFileName(file);
+            
+            if (file_name != "."  && file_name != ".." && Directory.Exists(file))
+            {
+                fex = 1;
+                break;
+            }
+        }
+        
+        return fex;
+    }
+
+    public static string getPermision(string file)
+    {
+        //
+        return "";
+    }
+
+    public static string getFileuser(string file, bool state)
+    {
+        //
+        return "";
+    }
+}
+
+
+@helper getPrintdir(int nTab, string filepath, string files, bool state, int dir_ex, dynamic g, int step_start)
+{    
+    if (!Request["iframe"].IsEmpty())
+    {
+        g["adm_href"] = g["adm_href"] + "&iframe=" + Request["iframe"];
+    }
+    
+    if (step_start > 0)
+    {
+        nTab = nTab - step_start;
+    }
+
+    string css = pwd.Contains(filepath) ? "nowdir" : "alldir";
+    string fname1 = _System.getFolderName(filepath);
+    string fname2 = getTPLname(fname1);
+    
+    @:<div class="dir01">
+    @:<img src="@g["img_module_admin"]/blank.gif" width="@((nTab*17)+3)" height="1" alt="" />
+    @:<a href="@Html.Raw(g["adm_href"] + "&pwd=" + HttpUtility.UrlEncode(filepath))" title="@fname1">
+
+    if (state && dir_ex != 0)
+    {
+        @:<img src="@g["img_module_admin"]/dir_closef.gif" align="absmiddle" alt="" />
+        @: <img src="@g["img_module_admin"]/close_dir.gif" alt=""> <span class="@css">@fname2
+    }
+    else if (!state && dir_ex != 0)
+    {
+        @:<img src="@g["img_module_admin"]/dir_openf.gif" align="absmiddle" alt="" />
+        @: <img src="@g["img_module_admin"]/open_dir.gif" alt=""> <span class="@css">@fname2
+    }
+    else
+    {
+        @:<img src="@g["img_module_admin"]/blank.gif" width="11" height="18" align="absmiddle" alt="" />
+        @: <img src="@g["img_module_admin"]/close_dir.gif" alt=""> <span class="@css">@fname2
+    }
+    @:</span></a></div>
+}
+
+@helper getDirlist(string dirpath, int nStep, dynamic g, int step_start)
+{           
+    pwd = !Request["pwd"].IsEmpty() ? HttpUtility.UrlDecode(Request["pwd"]) : g["path_root_ps"];
+    
+    string[] arrPath = pwd.Replace(g["path_root_ps"], "").Split('\\');
+
+    foreach (string files in Directory.GetDirectories(dirpath))
+    {
+        string file_name = Path.GetFileName(files);
+        string subDir = files + "\\";
+
+        if (Directory.Exists(subDir) && (file_name != "." && file_name != ".."))
+        {
+            @getPrintdir(nStep, subDir, file_name, !pwd.Contains(subDir), getDirexists(subDir), g, step_start)
+            
+            if (arrPath[nStep] == file_name)
+            {
+                @getDirlist(subDir, nStep + 1, g, step_start)
+            }
+        }
+    }        
+}

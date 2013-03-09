@@ -1,0 +1,185 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var _m = PageData[1];
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);
+            
+    string _themeConfig = Request["_themeConfig"];
+    string prelayout = d_layout["dir"] + "/zone";
+    string tc_class1 = "";
+    string tc_class2 = "";
+    string tc_class3 = "";
+    string tc_class4 = "";
+    string tc_class5 = "";
+    string F_Path = g["path_root_ps"] + g["path_layout"] + d_layout["dir"];
+    
+    if(_themeConfig == "theme")
+    {
+        tc_class1 = "class='on'";
+    }
+    if(_themeConfig == "detail")
+    {
+        tc_class2 = "class='on'";
+    }
+    if(_themeConfig == "front")
+    {
+        tc_class3 = "class='on'";
+    }
+    if(_themeConfig == "sns")
+    {
+        tc_class4 = "class='on'";
+    }
+    if(_themeConfig == "page")
+    {
+        tc_class5 = "class='on'";
+    }
+}
+
+<div class="subbox">
+	<div class="wrap">
+		<div class="subtitle">
+		<h2>레이아웃 설정</h2>
+		</div>
+		<div class="searchbox">
+
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>
+
+<div class="wrap">
+	<div class="subsnb">
+		<ul class="submenu">
+		<li @Html.Raw(tc_class1)><a href="@g["s"]/?r=@r&amp;_themeConfig=theme&amp;prelayout=@prelayout">테마 변경</a></li>
+		<li @Html.Raw(tc_class2)><a href="@g["s"]/?r=@r&amp;_themeConfig=detail&amp;prelayout=@prelayout">세부 설정</a></li>
+		<li @Html.Raw(tc_class3)><a href="@g["s"]/?r=@r&amp;_themeConfig=front&amp;prelayout=@prelayout">메인화면 설정</a></li>
+		<li @Html.Raw(tc_class4)><a href="@g["s"]/?r=@r&amp;_themeConfig=sns&amp;prelayout=@prelayout">소셜 로그인</a></li>
+		<li @Html.Raw(tc_class5)><a href="@g["s"]/?r=@r&amp;_themeConfig=page&amp;prelayout=@prelayout">추가 페이지</a></li>
+		</ul>
+
+		<div class="info">
+		- 레이아웃 : <span class="b">@_System.getFolderName(F_Path, "name.txt")</span><br />
+		- 폴더명 : <span class="b">@d_layout["dir"]</span><br />
+		- 최적화  : IE 7~9/FF/CR/SF/OP<br />
+		- 라이선스 : RBL<br />
+		- 원작자 : <a href="http://www.kimsq.com" target="_blank">김성호(세븐고)</a><br />
+		</div>
+	</div>
+	<div id="subcontent">		
+        @RenderPage("../../" + d_layout["dir"] + "/_admin/_" + _themeConfig + ".cshtml", g, r, d_layout, my, _HS)
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+function colorChange(f,v)
+{
+	if (f == 'title_color_')
+	{
+		if(getId('_layout_title_')) getId('_layout_title_').style.color = '#'+v;
+	}
+	if (f == 'title_color1_')
+	{
+		if(getId('_layout_title1_')) getId('_layout_title1_').style.color = '#'+v;
+	}
+	if (f == 'memberlink_color_')
+	{
+		var ele = getId('_layout_memberlink_').childNodes;
+		var n = ele.length;
+		var i;
+		for (i = 0; i < n; i++)
+		{
+			if (ele[i].tagName != 'A' || ele[i].className == 'admin') continue;
+			ele[i].style.color = '#'+v;
+		}
+	}
+}
+function configCheck(f)
+{
+	getIframeForAction(f);
+	return confirm('정말로 변경하시겠습니까?      ');
+}
+function configCheck1(f)
+{
+	if (f.title.value == '')
+	{
+		alert('타이틀을 입력해 주세요.   ');
+		f.title.focus();
+		return false;
+	}
+
+	if (f.upfile.value != '')
+	{
+		var extarr = f.upfile.value.split('.');
+		var filext = extarr[extarr.length-1].toLowerCase();
+		var permxt = '[gif][jpg][jpeg][png]';
+
+		if (permxt.indexOf(filext) == -1)
+		{
+			alert('gif/jpg/png 파일만 등록할 수 있습니다.    ');
+			f.upfile.focus();
+			return false;
+		}
+	}
+
+	getIframeForAction(f);
+	return confirm('정말로 변경하시겠습니까?      ');
+}
+function configCheck2(f)
+{
+	if (f.upfile.value != '')
+	{
+		var extarr = f.upfile.value.split('.');
+		var filext = extarr[extarr.length-1].toLowerCase();
+		var permxt = '[gif][jpg][jpeg][png]';
+
+		if (permxt.indexOf(filext) == -1)
+		{
+			alert('gif/jpg/png 파일만 등록할 수 있습니다.    ');
+			f.upfile.focus();
+			return false;
+		}
+	}
+	if (f.upfile1.value != '')
+	{
+		var extarr1 = f.upfile1.value.split('.');
+		var filext1 = extarr1[extarr1.length-1].toLowerCase();
+		var permxt1 = '[swf]';
+
+		if (permxt1.indexOf(filext1) == -1)
+		{
+			alert('swf 파일만 등록할 수 있습니다.    ');
+			f.upfile1.focus();
+			return false;
+		}
+	}
+	getIframeForAction(f);
+	return confirm('정말로 변경하시겠습니까?      ');
+}
+//]]>
+</script>
+

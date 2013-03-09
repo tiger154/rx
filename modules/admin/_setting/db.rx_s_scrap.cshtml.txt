@@ -1,0 +1,8 @@
+﻿CREATE TABLE rx_s_scrap ( 
+uid  int  identity(1,1)  NOT NULL , 
+mbruid  int   NOT NULL , 
+category  nvarchar(50)   NOT NULL , 
+subject  nvarchar(200)   NOT NULL , 
+url  nvarchar(250)   NOT NULL , 
+d_regis  datetime   ,
+PRIMARY KEY (uid));

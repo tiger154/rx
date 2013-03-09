@@ -1,0 +1,179 @@
+﻿@using System.Web.Security;
+@using System.Drawing;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////  
+    var uploadedFile = Request.Files[0];
+    var gid = Request["gid"];
+    var sess_Code = Request["sess_Code"];
+    var saveDir = Request["saveDir"];
+    var Overwrite = Request["Overwrite"];
+    var cync = Request["cync"];
+    var upType = Request["upType"];
+    var mond = Request["mod"];
+    var gparam = Request["gparam"];
+    var cupload = Request["cupload"];
+    var mod = Request["mod"];
+ 
+    dynamic d_upload = _DB.Get_code("upload");
+
+    string caption = "";
+    string name = "";
+    string fserver = d_upload["use_fileserver"];
+    string url = g["url_root_host"] + "/files/";
+    string d_regis = date["totime"].ToString("yyyy-MM-dd HHmmss");
+    string d_update = "";
+    string thumbname = "";
+    
+    string[] sessArr = sess_Code.Split('_');
+    string tmpcode = sessArr[0];
+    string mbruid = sessArr[1];
+
+    int size = 0;
+    int width = 640;
+    int height = 480;
+    int down = 0;
+    int hidden = 0;
+
+    name = Path.GetFileName(uploadedFile.FileName);     // loading file name
+    size = uploadedFile.ContentLength;                  // loading file size
+    caption = caption.Trim();
+
+    if (fserver != "" && fserver != null) {
+        url = g["d_ftp_urlpath"];
+    }
+    else {
+        fserver = "0";
+    }
+
+    if (!IsPost) {
+        @_System.getLink("", "", "Click 'Browse' to select the file to upload.", "")
+        return;
+    }
+
+    string fileExt = _System.getExt(name);                  // file name ext.
+
+    if (fileExt == "jpeg") {
+        fileExt = "jpg";
+    }
+
+    int type = _System.getFileType(fileExt);                // type = 2 (image file)
+    string tmpname = name.Split('.')[0];
+
+    tmpname = FormsAuthentication.HashPasswordForStoringInConfigFile(tmpname, "SHA1");      // SHA1 encording 
+    tmpname = tmpname + d_regis.Substring(11, 6);
+
+    if (type == 2) {
+        tmpname = tmpname + "." + fileExt;
+        hidden = 1;
+    }
+
+    if (d_upload["ext_cut"] != null && d_upload["ext_cut"] != "") {
+        if (d_upload["ext_cut"].Contains(fileExt))
+        {
+            @_System.getLink("", "", "정상적인 접근이 아닙니다.", "");
+        }
+    }
+
+    // save path
+    saveDir = g["path_root_ps"] + saveDir;
+    string[] savePath = { saveDir + d_regis.Substring(0, 4), 
+                            saveDir + d_regis.Substring(0, 4) + "\\" + d_regis.Substring(5, 2), 
+                            saveDir + d_regis.Substring(0, 4) + "\\" + d_regis.Substring(5, 2) + "\\" + d_regis.Substring(8, 2) };
+
+    // folder
+    string folder = d_regis.Substring(0, 4) + "\\" + d_regis.Substring(5, 2) + "\\" + d_regis.Substring(8, 2);
+
+    // folder create
+    for (int i = 0; i < 3; i++) {
+        if (Directory.Exists(savePath[i]) == false) {
+            Directory.CreateDirectory(savePath[i]);
+        }
+    }
+
+    // path + file name
+    string saveFile = savePath[2] + "\\" + tmpname;
+
+    if (Overwrite == "ture" || !File.Exists(saveFile)) {
+        uploadedFile.SaveAs(saveFile);  // saved file to directory        
+        
+        if (type == 2) {                                          // image file
+            thumbname = FormsAuthentication.HashPasswordForStoringInConfigFile(tmpname, "SHA1");
+            thumbname = thumbname + "." + fileExt;
+            string thumbFile = savePath[2] + "\\" + thumbname;
+            
+            using(Image Img = Image.FromFile(saveFile)) {
+                int newHeight = Img.Height * 150 / Img.Width;
+                using(Image thumbImg = new Bitmap(Img, 150, newHeight)) {                    
+                    thumbImg.Save(thumbFile, Img.RawFormat);
+                    width = Img.Width;
+                    height = Img.Height;
+                }
+            }            
+        }
+    }
+
+    string mingid = _DB.GetDbData_S(AppState["table_s_upload"].ToString(), "", "min(gid)").ToString();
+
+
+    if (mingid != null && mingid != "")
+    {
+        if (mingid.Contains("."))
+        {
+            mingid = mingid.Split('.')[0];
+        }
+        gid = (Convert.ToInt32(mingid) - 1).ToString();
+    }
+    else
+    {
+        gid = "99999999";
+    }        
+    
+    string QKEY = "gid,hidden,tmpcode,site,mbruid,type,ext,fserver,url,folder,name,tmpname,thumbname,size,width,height,caption,down,d_regis,d_update,cync";
+    string QVAL = "'" + gid + "','" + hidden + "','" + tmpcode + "'," + s + ",'" + mbruid + "','" + type + "','" + fileExt + "'," + Convert.ToInt32(fserver) + ",'" + url + "','" + folder + "','" +
+        name + "','" + tmpname + "','" + thumbname + "','" + size + "','" + width + "','" + height + "','" + caption + "','" + down + "','" + date["insert"] + "','" + d_update + "','" + cync + "'";
+    string INSERT_UD_SQL = "INSERT INTO " + AppState["table_s_upload"].ToString() + " (" + QKEY + ") VALUES (" + QVAL + ")";
+    string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"].ToString() + " SET upload=upload+1 WHERE date=getdate()"; //site 일단 생략
+    
+    @_DB.Execute(INSERT_UD_SQL);
+    @_DB.Execute(UPDATE_NUM_SQL);
+
+    if (upType == "normal")
+    {
+        string cupStr = "";
+
+        if (cupload != null && cupload != "")
+        {
+            cupStr = "&cupload=" + cupload;
+        }
+       
+        @_System.getLink("?r=" + r + "&m=" + m + "&mod=" + mod + "&gparam=" + gparam + cupStr, "", "", "");
+    }
+    
+}

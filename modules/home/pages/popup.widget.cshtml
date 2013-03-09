@@ -1,0 +1,208 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    
+    var wdgvar = new Dictionary<string, string>();
+
+    var g = PageData[0];
+    var _m = PageData[1];    
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    //var r = PageData[12];
+    var _HP = PageData[13];
+    var _HM = PageData[14];
+
+    string r = Request["r"];
+    string dropfield = Request["dropfield"];
+    string option = Request["option"];
+    string isWcode = Request["isWcode"];
+    string system = Request["system"];
+    string iframe = Request["iframe"];
+    string pwd = Request["pwd"];
+   
+
+    int step_start = 1;
+    string pwd_start = g["path_root_ps"] + g["path_widget"];
+
+    string swidget = "";
+    string droFStr = "";
+    string optStr = "";
+    string isWcdStr = "";
+    
+    if(dropfield!=null && dropfield!="") { 
+        droFStr = "&dropfield=" + dropfield;
+    }
+    if(option!=null && option!="") { 
+        optStr = "&option=" + option;
+    }    
+
+    if(isWcode!=null && isWcode!="") { 
+        isWcdStr = "&isWcode=" + isWcode;
+    }
+    g["adm_href"] = "?r=" + r + "&system=" + system + "&iframe=" + iframe + droFStr + optStr + isWcdStr;
+      
+    if(option!=null && option!="") {
+        string[] swval = HttpUtility.UrlDecode(option.Replace("[!]" , "&")).Split(',');
+        swidget = swval[0];
+        pwd = pwd_start + swidget + "\\";
+        
+        foreach(string _cval in swval) {      
+            if(!_cval.Contains("^")) {
+                continue;
+            }
+            string[] _xval = _cval.Split('^');                        
+            wdgvar.Add(_xval[0], _xval[1]);
+        }
+    }
+    else {
+        
+        if(pwd!=null && pwd!="") {
+            pwd = HttpUtility.UrlDecode(pwd);
+        }
+        else{
+            pwd = pwd_start;            
+        }
+        
+        if(File.Exists(pwd+"main.cshtml")) {
+            swidget = pwd.Replace(g["path_root_ps"] + g["path_widget"], "");       
+        }        
+        else {
+            swidget = "";
+        }
+        
+        if(swidget!=null && swidget!="") {
+            swidget = swidget.Substring(0, swidget.Length-1);
+        }
+    }
+    
+    if(pwd.Contains("..")) { 
+        @_System.getLink("","","정상적인 접근이 아닙니다.","close")
+                                                       return;
+    }
+    
+    if(!Directory.Exists(pwd)) {
+        @_System.getLink("", "", "존재하지 않는 폴더입니다.", "close")
+                                                       return;        
+    }    
+}
+
+
+<div id="widgetbox">
+
+	<div class="header">
+    
+        @if (isWcode == "Y")
+        {
+            <h1>위젯코드 추출</h1>    
+        }
+        else
+        {
+            <h1>위젯추가</h1>
+        }
+		<div class="guide">
+		위젯을 이용하면 다양한 콘텐츠요소를 쉽고 빠르게 구성할 수 있습니다.<br />
+		추가하려는 위젯을 선택해 주세요.
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div class="line1"></div>
+	<div class="line2"></div>
+	<div class="line3"></div>
+
+	<div class="category">
+
+
+		<div class="tree">
+        @_Module_home.getDirlist(pwd_start, step_start, g, step_start)
+
+		</div>
+
+	</div>
+
+	<div class="content">
+
+    @{
+        if (swidget != null && swidget != "")
+        {
+
+            if (option != null && option != "")
+            {
+		        <input type="hidden" id="s_w" value="" />
+		        <input type="hidden" id="s_h" value="" />
+		        <input type="hidden" id="s_t" value="" />
+		        <input type="hidden" id="s_l" value="" />                
+            }
+            
+            @RenderPage("../../../" + g["path_widget"] + swidget + "/admin.cshtml", g, _HS, wdgvar, swidget, _HM, _HP, my, c)             
+        }
+        else
+        {
+  		<div class="none">
+		<img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+		추가할 위젯을 선택하세요.
+		</div>          
+        }
+    }
+
+	</div>
+
+	<div class="footer">
+		<input type="button" value="취소(닫기)" class="btngray" onclick="top.close();" />
+	</div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function dropJoint(m)
+{
+	var f = opener.getId('@dropfield');
+	f.value = m;
+	f.focus();
+	top.close();
+}
+
+@{
+    if (swidget != null && swidget != "")
+    {
+        if (option != null && option != "")
+        {
+            @Html.Raw("var dp = " + dropfield + ";");
+            @Html.Raw("var sz = opener.moveObject[dp];");
+            @Html.Raw("getId('s_w').value = parseInt(sz.style.width);");
+            @Html.Raw("getId('s_h').value = parseInt(sz.style.height);");
+            @Html.Raw("getId('s_t').value = parseInt(sz.style.top);");
+            @Html.Raw("getId('s_l').value = parseInt(sz.style.left);");
+        }
+    }
+
+    if (isWcode == "Y")
+    {
+        @Html.Raw("document.title = '위젯코드 추출';");
+    }
+    else
+    {
+        @Html.Raw("document.title = '위젯추가';");
+    }
+}
+
+top.resizeTo(650,600);
+//]]>
+</script>
+
+
+
+
+
+
+

@@ -1,0 +1,72 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var job = Request["job"];
+    var pw_question = Request["pw_question"];
+    var _join_menu = Request["_join_menu"];
+    var addFieldMembers = Request["addFieldMembers"];
+    
+    @_System.checkAdmin(my["admin"], 0)     // 관리자 체크
+
+    dynamic MODULE_ARR = _DB.Get_code(m);
+
+    string filePath = g["path_root_ps"] + "modules\\" + m + "\\var\\var.cshtml";
+
+    File.WriteAllText(filePath, "", System.Text.Encoding.UTF8);    
+    
+    StreamWriter sw = File.AppendText(filePath);
+
+    foreach (string key in MODULE_ARR.Keys)
+    {
+        sw.WriteLine("[" + m + "][" + key + "][" + Request[key] + "]");
+    }
+    
+    sw.Close();
+
+    string mfile = "";
+
+    if (_join_menu == "2")
+    {
+        mfile = g["path_root_ps"] + g["path_module"] + m + "\\var\\job.txt";
+        File.WriteAllText(mfile, _System.stripslashes(job).Trim(), System.Text.Encoding.UTF8);
+
+        mfile = g["path_root_ps"] + g["path_module"] + m + "\\var\\pw_question.txt";
+        File.WriteAllText(mfile, _System.stripslashes(pw_question).Trim(), System.Text.Encoding.UTF8);
+    }
+
+    if (_join_menu == "3")
+    {//구현중        
+        mfile = g["path_root_ps"] + g["path_module"] + m + "\\var\\add_field.txt";
+    }
+
+    Session["_join_menu"] = _join_menu;
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

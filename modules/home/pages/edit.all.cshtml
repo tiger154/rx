@@ -1,0 +1,2164 @@
+﻿@using System.Collections;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var typeset = new Dictionary<string, string>();
+
+    var g = PageData[0];
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var _HP = PageData[13];
+    int p = PageData[4];
+
+    string _mod = Request["_mod"];
+    string _keyword = Request["_keyword"];
+    string _rec = Request["_rec"];
+    string recnum = Request["recnum"];
+    string ismain = Request["ismain"];
+    string category = Request["category"];
+    string pagetype = Request["pagetype"];
+    string where = Request["where"];
+    string keyword = Request["keyword"];
+    string sort = Request["sort"];
+    string orderby = Request["orderby"];
+    string r = Request["r"];
+    string module = Request["module"];
+    string type = Request["type"];
+    string uid = Request["uid"];
+    string makemenu = Request["makemenu"];
+    string cat = Request["cat"];
+    string vtype = Request["vtype"];
+    string iframe = Request["iframe"];
+    
+    string typesite_select = "leftside";
+    string typemenu_select = "";
+    string typepage_select = "";
+    string typepageadd_select = "";
+    string typemenuadd_select = "";
+    string makemenu_set = "";
+    string typeset_set = "";    
+    string catcode = "";
+    string delparent = "0";
+    string pwd = g["path_layout"] + d_layout["dir"] + "/";
+    string frame_name = "_action_frame_" + m;
+    string tdir = g["path_root_ps"] + g["path_layout"];
+
+    string r_prn = _System.getRvalue(r);
+
+
+    //int CINFO_uid = 0;          // 전역으로 쓰기위해 상단에 지정 (menu 쪽)
+
+    Session["url_reset"] = "?r=" + r + "&system=" + system + "&type=" + type;
+
+    if (type == null || type == "")
+    {
+        type = "page";
+    }
+    if (type == "site")
+    {
+        typeset.Add("site", "사이트 등록정보");
+        typesite_select = typesite_select + " selected";
+        typeset_set = typeset["site"];
+    }
+    if (type == "menu")
+    {
+        typeset.Add("menu", "메뉴관리");
+
+        if (makemenu == null || makemenu == "")
+        {
+            typemenu_select = "class='selected'";
+        }
+        typeset_set = typeset["menu"];
+    }
+    if (type == "page" || (type == "pageadd" && uid != "" && uid != null))
+    {
+        typeset.Add("page", "페이지관리");
+
+        typepage_select = "class='selected'";
+        typeset_set = typeset["page"];
+    }
+    if (type == "pageadd")
+    {
+        if (uid != null && uid != "")
+        {
+            typeset.Add("pageadd", "페이지 수정");
+
+            typepageadd_select = "";
+        }
+        else
+        {
+            typeset.Add("pageadd", "새 페이지 추가");
+
+            typepageadd_select = "class='selected'";
+        }
+
+        typeset_set = typeset["pageadd"];
+    }
+    if (type == "menu" && makemenu == null)
+    {
+        if (makemenu == "Y")
+        {
+            typemenuadd_select = "class='selected'";
+        }
+
+        typeset_set = typeset["menu"];
+    }
+
+    if (makemenu != null && makemenu != "")
+    {
+        makemenu_set = "새 메뉴 추가";
+        typemenuadd_select = "class='selected'";
+    }
+    else
+    {
+        makemenu_set = typeset_set;
+    }
+}
+
+<div class="@Html.Raw("iframe" + iframe)">
+<div id="pages_top">
+
+	<div class="title">
+		<div class="xl"><h2><a href="@Session["url_reset"]">@makemenu_set</a></h2></div>
+		<div class="xr">
+		
+			<ul>
+			<li class="@typesite_select"><a href="@g["s"]/?r=@r&system=edit.all&type=site">사이트</a></li>
+			<li @Html.Raw(typemenu_select)><a href="@g["s"]/?r=@r&system=edit.all&type=menu">메뉴</a></li>
+            <li @Html.Raw(typepage_select)><a href="@g["s"]/?r=@r&system=edit.all&type=page">페이지</a></li>
+			<li @Html.Raw(typemenuadd_select)><a href="@g["s"]/?r=@r&system=edit.all&type=menu&makemenu=Y">새 메뉴</a></li>
+            <li @Html.Raw(typepageadd_select)><a href="@g["s"]/?r=@r&system=edit.all&type=pageadd">새 페이지</a></li>
+			</ul>
+
+		</div>
+		<div class="clear"></div>
+	</div>
+	
+</div>
+
+@{
+    /*****************************************
+    사이트 시작
+    *****************************************/
+    if (type == "site")
+    {
+
+        //int DOMAINN = _DB.GetDbData_Count(AppState["table_s_domain"].ToString(), "site=" + s);
+        int DOMAINN = 0;
+        
+        <div id="sitebox">
+	        <div class="infobox">
+            <form name="procForm" action="@g["s"]/" method="post" onsubmit="return saveCheck(this);">
+		    <input type="hidden" name="r" value="@r" />
+		    <input type="hidden" name="m" value="@g["sys_module"]" />
+		    <input type="hidden" name="a" value="regissite" />
+		    <input type="hidden" name="site_uid" value="@_HS["uid"]" />
+		    <input type="hidden" name="icon" value="@_HS["icon"]" />
+
+		    <table cellspacing="0" cellpadding="0">
+			<tr>
+			<td class="td1">사 이 트 명</td>
+			<td class="td2">
+			<input type="text" name="name" class="input sname" value="@_HS["name"]" />
+			<a href="@g["s"]/?r=@r&m=admin&module=@g["sys_module"]&front=main&type=makesite" target="_blank"><img src="@g["img_core"]/_public/btn_add.gif" alt="사이트추가" title="사이트추가" /></a>
+			</td>
+			<td class="td1">사이트제목
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="himg hand" onclick="layerShowHide('guide_title','block','none');" />				
+			</td>
+            
+			<td class="td2">
+			<input type="text" name="title" class="input sname" value="@_HS["title"]" />
+			<input type="checkbox" name="titlefix" value="1" @_System.getChkStr(_HS["titlefix"], 1) />고정
+			</td>
+			</tr>
+
+			<tr>
+			<td class="td1">사이트언어
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_language','block','none');" />
+			</td>
+ 			<td class="td2">
+				<select name="sitelang" class="select1">
+
+                @foreach (string tpl in Directory.GetDirectories(g["path_root_ps"] + g["path_var"] + "language\\"))
+                {
+                    string folder_name = Path.GetFileName(tpl);
+                    
+                    if (folder_name == "." || folder_name == "..")
+                    {
+                        continue;
+                    }
+                    <option value="@folder_name" @_System.getSltStr(g["sys_selectlang"], folder_name) title="@folder_name">ㆍ @_System.getFolderName(tpl)</option>    
+                }
+                
+				</select>
+			</td>               
+			<td class="td1">사이트코드
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_sitecode','block','none');" />	
+			</td>
+			<td class="td2"><input type="text" name="id" class="input sname" value="@_HS["id"]" title="영문 대소문자/숫자/_ 조합으로 입력해 주세요." />
+            
+            <input type="checkbox" name="usescode" value="1" @_System.getChkStr(_HS["id"], 1) />사용
+			</td>
+			</tr>
+                
+			<tr>
+			<td class="td1">레 이 아 웃</td>
+			<td class="td2">
+			<select name="layout" class="select1">
+			<option value="">&nbsp;+ 선택하세요</option>
+            @{                            
+        foreach (string tpl in Directory.GetDirectories(tdir))
+        {
+            string lay_name = tpl.Substring(tdir.Length, tpl.Length - tdir.Length);         // 디렉토리 명 구하기
+                            
+                    <option value="">--------------------------------</option>
+                        
+            if (lay_name != "_blank")
+            {
+                foreach (string tpl1 in Directory.GetFiles(tpl))
+                {
+                    string f_name = tpl1.Substring(tpl.Length + 1, tpl1.Length - tpl.Length - 1);         // 파일명 구하기
+
+                    if (!f_name.Contains(".cshtml") || f_name == "_main.cshtml")
+                    {
+                        continue;
+                    }
+
+                            <option value="@lay_name\@f_name" @_System.getSltStr(_HS["layout"], lay_name + "\\" + f_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@f_name.Replace(".cshtml", ""))</option>
+                }
+            }
+        }
+            }           
+                
+			</select>
+			</td>
+			<td class="td1">시작페이지</td>
+			<td class="td2">
+			<select name="startpage" class="select1">
+			<option value="">&nbsp;+ 선택하세요</option>
+			<option value="">--------------------------------</option>
+                
+            @{
+        string PAGES1_SQL = "SELECT * FROM " + AppState["table_s_page"].ToString() + " WHERE ismain=1 ORDER BY uid ASC";
+        string page_sel = "";
+        int PAGES1_row = _DB.GetDbData_Count(AppState["table_s_page"].ToString(), "ismain=1");
+
+        if (PAGES1_row == 0)
+        {
+    		        <option value="">ㆍ시작페이지 등록 후 지정</option>                    
+        }
+        else
+        {
+            foreach (var S in _DB.Query(PAGES1_SQL))
+            {
+                if (Convert.ToInt32(_HS["startpage"]) == S["uid"])
+                {
+                    page_sel = "selected='selected'";
+                }
+                    
+        	    		<option value="@S["uid"]" @Html.Raw(page_sel)>ㆍ @S["name"] (@S["id"])</option>
+            }
+        }
+            }
+			</select>
+			<a href="?r=@r&system=@system&type=pageadd"><img src="@g["img_core"]/_public/btn_add.gif" alt="페이지추가" title="페이지추가" /></a>
+			</td>
+			</tr>
+
+			<tr>
+			<td class="td1 m">(모바일접속)
+			<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="himg hand" onclick="layerShowHide('guide_mobile','block','none');" />				
+			</td>
+			<td class="td2">
+			<select name="m_layout" class="select1">
+			<option value="">&nbsp;+ PC접속과 동일</option>
+            @{                            
+        foreach (string tpl in Directory.GetDirectories(tdir))
+        {
+            string lay_name = tpl.Substring(tdir.Length, tpl.Length - tdir.Length);         // 디렉토리 명 구하기
+                            
+                    <option value="">--------------------------------</option>
+                        
+            if (lay_name != "_blank")
+            {
+                foreach (string tpl1 in Directory.GetFiles(tpl))
+                {
+                    string f_name = tpl1.Substring(tpl.Length + 1, tpl1.Length - tpl.Length - 1);         // 파일명 구하기
+
+                    if (!f_name.Contains(".cshtml") || f_name == "_main.cshtml")
+                    {
+                        continue;
+                    }
+
+                            <option value="@lay_name\@f_name" @_System.getSltStr(_HS["m_layout"], lay_name + "\\" + f_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@f_name.Replace(".cshtml", ""))</option>
+                }
+            }
+        }
+            }           
+                
+			</select>
+			</td>
+
+			<td class="td1 m">(모바일접속)</td>
+			<td class="td2">
+			<select name="m_startpage" class="select1">
+			<option value="">&nbsp;+ PC접속과 동일</option>
+			<option value="">--------------------------------</option>
+
+            @{
+        string PAGES1_SQL2 = "SELECT * FROM " + AppState["table_s_page"].ToString() + " WHERE mobile=1 ORDER BY uid ASC";
+        string page_sel2 = "";
+        int PAGES1_row2 = _DB.GetDbData_Count(AppState["table_s_page"].ToString(), "ismain=1");
+
+        if (PAGES1_row2 == 0)
+        {
+    		        <option value="">ㆍ시작페이지 등록 후 지정</option>                    
+        }
+        else
+        {
+            foreach (var S in _DB.Query(PAGES1_SQL2))
+            {
+                if (Convert.ToInt32(_HS["m_startpage"]) == S["uid"])
+                {
+                    page_sel2 = "selected='selected'";
+                }
+                    
+        	    		<option value="@S["uid"]" @Html.Raw(page_sel2)>ㆍ @S["name"] (@S["id"])</option>
+            }
+        }
+            }                
+			</select>
+			<a href="?r=@r&system=@system&type=pageadd"><img src="@g["img_core"]/_public/btn_add.gif" alt="페이지추가" title="페이지추가" /></a>
+			</td>
+			</tr>
+
+			<tr>
+			<td class="td1">서비스상태</td>
+			<td class="td2">
+			<select name="open" class="select1">
+			<option value="1" @_System.getSltStr(_HS["opend"], 1)>ㆍ정상서비스</option>
+			<option value="2" @_System.getSltStr(_HS["opend"], 2)>ㆍ관리자오픈</option>
+			<option value="3" @_System.getSltStr(_HS["opend"], 3)>ㆍ정지</option>
+			</select>
+			</td>
+                
+			<td class="td1">D T D 형식</td>
+			<td class="td2">
+			<select name="dtd" class="select1">
+			<option value="xhtml_1" @_System.getSltStr(_HS["dtd"], "xhtml_1")>ㆍXHTML 1.0</option>
+			<option value="html5" @_System.getSltStr(_HS["dtd"], "html5")>ㆍHTML 5</option>
+			</select>
+			</td>
+			</tr>
+			
+            <tr>
+			<td class="td1">이 름 표 시</td>
+			<td class="td2">
+			<select name="nametype" class="select1">
+			<option value="nic" @_System.getSltStr(_HS["nametype"], "nic")>ㆍ닉네임</option>
+			<option value="name" @_System.getSltStr(_HS["nametype"], "name")>ㆍ이름(실명)</option>
+			<option value="id" @_System.getSltStr(_HS["nametype"], "id")>ㆍ아이디</option>
+			</select>
+			</td>
+                
+			<td class="td1">시 간 조 정</td>
+			<td class="td2">
+			<select name="timecal" class="select1">
+            @{
+        for (int i = -23; i < 24; i++)
+        {
+            string plus = "";
+            string time_prn = i + "시간";
+
+            if (i > 0)
+            {
+                plus = "+";
+            }
+            if (i == 0)
+            {
+                time_prn = "조정안함";
+            }
+                    
+        			<option value="@i" @_System.getSltStr(_HS["timecal"], i)>ㆍ @plus@time_prn</option>                    
+        }
+            }
+			</select>
+			</td>
+			</tr>
+                    
+       	    <tr>       
+            <td class="td1">
+				퍼 포 먼 스
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_rewrite','block','none');" />	
+			</td>
+			<td class="td2">
+				<div class="shift">
+				<div class="shift">
+				<input type="checkbox" name="rewrite" value="1"@_System.getChkStr(_HS["rewrite"], 1) />짧은주소사용
+				<input type="checkbox" name="buffer" value="1"@_System.getChkStr(_HS["buffer"], 1) />버퍼전송사용
+				</div>
+				</div>
+			</td>
+
+			@{
+        // string DOMAIN_SQL = "SELECT * FROM " + AppState["table_s_domain"].ToString() + " WHERE site=" + s;
+
+			    <td class="td1">연결도메인</td>
+			    <td class="td2" colspan="3">
+                
+                @*    
+                @if (DOMAINN > 0)
+                {
+                    <ul>
+                        
+                    @foreach (var D in _DB.Query(DOMAIN_SQL))
+                    {
+                        <li><a href="#." onclick="viewDomainMode('@D["name"]');">@D["name"]</a></li>
+                    }
+                    </ul>
+                }
+                else
+                {
+                    <span class="nodomain">연결된 도메인이 없습니다.</span>
+                    <a href="?r=@r&m=admin&module=domain&selsite=@_HS["uid"]&type=makedomain" class="jtdomain" target="_blank">도메인연결하기</a>                        
+                }*@
+
+                <span class="nodomain">연결된 도메인이 없습니다.</span>
+
+			    </td>
+            }
+            </tr>   
+            </table>
+
+		    <div id="guide_title" class="guide hide">
+                <div class="b">사이트제목 :</div>
+                사이트제목에 입력된 메세지는 브라우져의 타이틀에 출력됩니다.<br />
+                [고정]에 체크하면 입력된 타이틀이 모든페이지에 고정되며 체크해제시 페이지별로 타이틀이 출력됩니다.<br />
+                이 입력값은 일부 레이아웃의 사이트제목으로 사용됩니다.<br />
+		    </div>
+
+            <div id="guide_language" class="guide hide">
+            <div class="b">사이트언어 :</div>
+            </div>
+    
+            <div id="guide_sitecode" class="guide hide">
+            <div class="b">사이트코드 :</div>
+            사이트별로 계정아이디를 등록합니다.(영문대/소문자+숫자+_ 조합으로 등록할 수 있습니다)<br />
+            [사용]에 체크하면 사이트별로 계정값을 부여할 수 있으며 하나의 도메인으로 복수의 사이트에 접속할 수 있습니다.<br />
+            사용하지 않을경우 현재의 도메인 @Html.Raw((g["url_root"].Replace("http://", "")).Replace("/rx", ""))으로 사이트패널내의 첫번째 사이트만 접속할 수 있으며 나머지 사이트를 접속하려면 별도의 도메인을 연결해야 합니다.<br />
+            사이트코드를 사용하면 사이트코드만큼 주소가 길어집니다.(kimsq.com/rx/ -> kimsq.com/rx/사이트코드/)<br />
+            영문사이트 서비스 연결예제) kimsq.com/rx/kr/ , kimsq.com/rx/en/<br />
+            </div>
+    
+            <div id="guide_mobile" class="guide hide">
+            <div class="b">모바일접속 :</div>
+            모바일기기로 접속시 출력할 사이트 레이아웃(UI)을 지정합니다.<br />
+            지정된 모바일 레이아웃은 모든메뉴,모든페이지에 대해서 일괄적용됩니다.<br />
+            모바일기기에 대해 정의하거나 모바일 전용사이트 등으로 이동시키려면 <a href="?r=@r&m=@m&module=mobile" target="_blank" class="u">모바일설정</a>을 이용하세요.<br />
+            </div>
+    
+            <div id="guide_rewrite" class="guide hide">
+            <div class="b">짧은주소사용 :</div>
+            긴 주소줄을 간단하게 줄일 수 있습니다.(서버에서 rewrite_mod 를 허용해야합니다)<br />
+            보기) ./?c=menu&uid=1000 -> /c/menu/1000<br />
+            사이트코드를 사용하면 사이트코드를 포함한 주소를 줄여줍니다.<br />
+            보기) @g["s"]/?r=home&c=menu&uid=1000 -> /home/c/menu/1000<br />
+            <div class="b">버퍼전송사용 :</div>
+            실행결과를 브라우져에 출력해주는 과정에서 버퍼에 담아두었다가 실행이 완료되면 화면에 출력해 줍니다.<br />
+            실행속도가 느릴경우 화면이 일부분만 출력되는 것을 한번에 열리도록 합니다.
+            </div>                
+
+		    <div id="headertail" class="headertail">
+			    <div class="tt">헤더코드 <span>- &lt;head&gt; 와 &lt;/head&gt; 사이에 삽입하고자 할 코드가 있을 경우 등록해 주세요.</span></div>
+			    <div><textarea name="headercode" rows="8" cols="70">@Html.Raw(_HS["headercode"])</textarea></div>
+
+			    <div class="tt">테일코드 <span>- &lt;/body&gt;&lt;/html&gt; 바로앞에 삽입하고자 할 코드가 있을 경우 등록해 주세요.</span></div>
+			    <div><textarea name="footercode" rows="8" cols="70">@Html.Raw(_HS["footercode"])</textarea></div>
+		    </div>
+
+		    <div class="submitbox">
+			    <input type="button" class="btngray" value="헤더/테일코드" onclick="layerShowHide('headertail','block','none');" />
+			    <input type="submit" class="btnblue" value="사이트속성 변경" />
+		    </div>
+		    
+            </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+        //<![CDATA[
+            function viewDomainMode(domain) {
+                var ux = location.href.split('?');
+                var us = ux[0].split('/');
+                var uh = 'http://' + domain + '/' + us[us.length - 2].replace('index.cshtml', '') + '/';
+
+                window.open(uh);
+            }
+
+            function saveCheck(f) {
+                if (f.name.value == '') {
+                    alert('사이트명을 입력해 주세요.      ');
+                    f.name.focus();
+
+                    return false;
+                }
+                if (f.title.value == '') {
+                    alert('타이틀을 입력해 주세요.      ');
+                    f.title.focus();
+
+                    return false;
+                }
+                if (f.layout.value == '') {
+                    alert('대표 레이아웃을 지정해 주세요.      ');
+                    f.layout.focus();
+
+                    return false;
+                }
+
+                return confirm('정말로 실행하시겠습니까?         ');
+            }
+        //]]>
+        </script>
+    }
+    /*****************************************
+    사이트 끝
+    *****************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*****************************************
+    페이지 시작
+    *****************************************/
+
+
+
+    if (type == "page")
+    {
+        string[] typeset1 = { "", "모듈콘텐츠", "위젯콘텐츠", "직접꾸미기" };
+        if (sort == null || sort == "")
+        {
+            sort = "uid";
+        }
+        if (orderby == null || orderby == "")
+        {
+            orderby = "asc";
+        }
+        if (recnum == "" || recnum == null || recnum == "0" || Convert.ToInt32(recnum) >= 200)
+        {
+            recnum = "20";
+        }
+
+        string sqlque = "uid>0";
+
+        if (pagetype != null && pagetype != "")
+        {
+            sqlque += " and pagetype='" + pagetype + "'";
+        }
+        if (ismain != null && ismain != "")
+        {
+            sqlque += " and ismain='" + (Convert.ToInt32(ismain) - 1).ToString() + "'";
+        }
+        if (category != null && category != "")
+        {
+            sqlque += " and category='" + category + "'";
+        }
+
+        if (where != null && where != "")
+        {
+            if (keyword != null && keyword != "")
+            {
+                sqlque += _System.getSearchSql(where, keyword, "", "or");
+            }
+        }
+
+        int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);      // Number of page-list
+        string RCD_sql = _System.GetQuery(AppState["table_s_page"].ToString(), "", sqlque, sort, orderby, list_start, recnum);
+
+        int NUM = _DB.GetDbData_Count(AppState["table_s_page"].ToString(), sqlque);
+        Decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));     // total page count      
+
+<div id="pages_all">
+	<form action="@g["s"]/">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="system" value="@system" />
+	<input type="hidden" name="type" value="@type" />
+	<input type="hidden" name="orderby" value="@orderby" />
+	<input type="hidden" name="recnum" value="@recnum" />
+
+	<div class="info">
+
+		<div class="article">
+			@string.Format("{0:#,0}", Convert.ToInt32(NUM))개(@p/@TPG 페이지)
+		</div>
+		<div class="category">
+
+			<select name="ismain" onchange="this.form.submit();">
+			<option value="">&nbsp;+ 형식(전체)</option>
+			<option value="">-------------</option>            
+			<option value="1"@_System.getSltStr(ismain, 1)>ㆍ일반페이지</option>
+			<option value="2"@_System.getSltStr(ismain, 2)>ㆍ시작페이지</option>
+			<option value="3"@_System.getSltStr(ismain, 3)>ㆍ모바일페이지</option>
+			</select>
+
+			<select name="pagetype" onchange="this.form.submit();">
+			<option value="">&nbsp;+ 전시(전체)</option>
+			<option value="">-------------</option>
+			<option value="3"@_System.getSltStr(pagetype, 1)>ㆍ직접꾸미기</option>
+			<option value="2"@_System.getSltStr(pagetype, 2)>ㆍ위젯콘텐츠</option>
+			<option value="1"@_System.getSltStr(pagetype, 3)>ㆍ모듈콘텐츠</option>
+			</select>
+
+			<select name="category" onchange="this.form.submit();">
+			<option value="">&nbsp;+ 분류(전체)</option>
+			<option value="">-------------</option>
+            @{
+        string _CATS_sql = "SELECT category FROM " + AppState["table_s_page"].ToString() + " GROUP BY category";
+
+        foreach (var _R in _DB.Query(_CATS_sql))
+        {
+            <option value="@_R["category"]" @_System.getSltStr(_R["category"], category)>ㆍ @_R["category"]</option>
+        }
+            }
+			</select>
+
+		</div>
+		<div class="clear"></div>
+	</div>
+
+	<table summary="페이지 리스트입니다.">
+	<caption>페이지</caption> 
+	<colgroup> 
+	<col width="50"> 
+	<col width="70"> 
+	<col> 
+	<col width="70"> 
+	<col width="70"> 
+	<col width="120"> 
+	<col width="90"> 
+	<col width="90"> 
+	<col width="30"> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col">번호</th>
+	<th scope="col">분류</th>
+	<th scope="col">페이지명</th>
+	<th scope="col">코드</th>
+	<th scope="col">전시형태</th>
+	<th scope="col">레이아웃</th>
+	<th scope="col">등록일시</th>
+	<th scope="col">최종수정</th>
+	<th scope="col" class="side2"></th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @{
+        if (NUM == 0)
+        {
+            <tr>
+	        <td colspan="9" class="sbj1">등록된 페이지가 없습니다</td>
+	        </tr> 
+        }
+        foreach (var R in _DB.Query(RCD_sql))
+        {
+	        <tr>
+            @{
+            string pageStr = (1 + (((p - 1) * Convert.ToInt32(recnum)) + Convert.ToInt32(_rec))).ToString();
+            _rec = (Convert.ToInt32(_rec) + 1).ToString();
+            }
+	        <td>@pageStr</td>
+	        <td class="cat">@R["category"]</td>
+	        <td class="sbj"><a href="?r=@r&system=@system&type=pageadd&uid=@R["uid"]" title="등록정보">@R["name"]</a></td>
+	        <td><a href="@Html.Raw("?mod=" + R["id"])" title="새창으로보기" target="_blank">@R["id"]</a></td>
+	        <td><a href="@g["s"]/?r=@r&system=edit.page&_page=@R["uid"]" title="편집모드">@typeset1[Convert.ToInt32(R["pagetype"])]</a></td>    
+	        <td title="@R["layout"].Replace(".cshtml", "")">
+            @if (R["layout"] == null || R["layout"] == "")
+            {
+                @:대표레이아웃
+            }
+            else
+            {
+                @R["layout"].Replace(".cshtml", "")
+            }
+            </td>
+            
+	        <td>@R["d_regis"].ToString("yy.MM.dd hh:mm")</td>
+
+            @if (R["d_update"] != null)
+            {
+                <td>@R["d_update"].ToString("yy.MM.dd hh:mm")</td>
+            }
+            else
+            {
+                <td>-</td>
+            }
+	        <td><a href="?r=@r&m=@g["sys_module"]&a=deletepage&uid=@R["uid"]" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?     ')"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="삭제" title="삭제" /></a></td>
+	        </tr>            
+        }
+    }
+
+	</tbody>
+	</table>
+	
+
+	<div class="pagebox01">
+	<script type="text/javascript">getPageLink(10,@p,@TPG,"@g["img_core"]/page/default");</script>
+	</div>
+
+	<div class="searchform">
+		<select name="where">        
+		<option value="name"@_System.getSltStr(where, "name")>페이지명</option>
+		<option value="id"@_System.getSltStr(where, "id")>페이지코드</option>
+		</select>
+		
+		<input type="text" name="keyword" size="30" value="@_keyword" class="input" />
+		<input type="submit" value=" 검색 " class="btngray" />
+	</div>
+	
+	</form>
+</div>
+    }
+
+
+    /*****************************************
+    페이지 끝
+    *****************************************/
+
+
+
+
+
+    /*****************************************
+    새페이지 시작
+    *****************************************/
+    if (type == "pageadd")
+    {
+        ArrayList _cats = new ArrayList();
+
+
+        dynamic R = _DB.Get_module_data(AppState["table_s_page"], "uid", 0);
+
+        if (uid != null && uid != "" && uid != "0")
+        {
+            R = _DB.Get_module_data(AppState["table_s_page"], "uid", uid);
+        }
+
+        string CATS_sql = "SELECT category FROM " + AppState["table_s_page"] + " GROUP BY category";
+        foreach (var C in _DB.Query(CATS_sql))
+        {
+            _cats.Add(C["category"]);
+        }
+<div id="pageinfo">
+
+
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@g["sys_module"]" />
+	<input type="hidden" name="a" value="regispage" />
+	<input type="hidden" name="backc" value="add" />
+	<input type="hidden" name="uid" value="@R["uid"]" />
+	<input type="hidden" name="orign_id" value="@R["id"]" />
+	<input type="hidden" name="perm_g" value="@R["perm_g"]" />
+
+	<div class="title">
+		<div class="xleft">페이지 등록정보</div>
+		<div class="xright"></div>
+	</div>
+
+	<div class="notice">
+		관리가 편하도록 페이지분류를 적절히 지정하여 등록해 주세요.<br />
+		전시할내용을 모듈콘텐츠로 지정하면 권한은 접근권한은 해당모듈의 설정을 따릅니다.
+	</div>
+
+	<table>
+		<tr>
+			<td class="td1">
+				페이지명칭
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_startpage','block','none');" />
+			</td>
+			<td class="td2">
+				<input type="text" name="name" value="@R["name"]" class="input sname" />
+				<div id="guide_startpage" class="guide hide">
+				페이지의 명칭을 입력합니다.<br />
+				보기)메인화면,로그인,회원가입,마이페이지,통합검색,이용약관,고객센터<br />
+				시작페이지에 체크할 경우 사이트속성에서 시작페이지로 지정할 수 있습니다.<br />
+				모바일용에 체크할 경우 모바일페이지로 사용할 수 있습니다.<br />
+				메인화면으로 사용할 페이지일 경우 시작페이지에 체크해 주세요.<br />
+				</div>
+			</td>
+		</tr>
+
+        <tr>
+			<td class="td1">
+			</td>
+			<td class="td2 shift">
+				<input type="checkbox" name="ismain" value="1"@_System.getChkStr(R["ismain"], 1) />시작페이지
+				<input type="checkbox" name="mobile" value="1"@_System.getChkStr(R["mobile"], 1) />모바일용페이지
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">
+				페이지코드
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_pagecode','block','none');" />
+			</td>
+			<td class="td2">
+            @{
+        string valId = _mod;
+        if (R["id"] != "")
+        {
+            valId = R["id"];
+        }
+            }
+				<input type="text" name="id" value="@valId" class="input sname" />
+                @if (R["id"] != "")
+                {
+                    <span class="btn01"><a href="@g["s"]/?r=@r&m=@g["sys_module"]&a=deletepage&uid=@R["uid"]" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?     ')">페이지삭제</a></span>    
+                }
+
+				<div id="guide_pagecode" class="guide hide">
+				페이지 호출시에 사용되는 코드이며 영문대소문자/숫자/_ 조합으로 등록할 수 있습니다.<br />
+				보기) 페이지호출주소 : @_System.RW("mod=<span class=\"b\">페이지코드</span>", g["r"], _HS)<br />
+				보기) 마이페이지호출 : @_System.RW("mod=<span class=\"b\">페이지코드</span>", g["r"], _HS)<br />
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">
+				페이지분류
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_pagecat','block','none');" />
+			</td>
+			<td class="td2">
+				<input type="text" name="category" value="@R["category"]" class="input sname" />
+				<select name="site" class="select2" onchange="catSelect(this);">
+				<option value="">&nbsp;+ 선택하세요</option>
+				<option value="">--------------------------------</option>                
+            @foreach (string _val in _cats)
+            {
+                <option value="@_val">ㆍ @_val</option>
+            }
+
+            @if (_cats.Count != 0)
+            {
+                <option value="">--------------------------------</option>
+            }
+				<option value="">ㆍ 직접입력</option>
+				</select>
+
+				<div id="guide_pagecat" class="guide hide">
+				페이지 분류는 직접 입력하거나 이미 등록된 분류를 선택할 수 있습니다.<br />
+				분류를 직접입력하면 분류선택기에 자동으로 추가됩니다.
+				</div>
+
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">
+				전시할내용
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_contenttype','block','none');" />
+			</td>
+			<td class="td2">
+
+				<select name="pagetype" class="select1" onchange="displaySelect(this);">
+                @{
+            string hideStr1 = " hide";
+            string hideStr2 = " hide";
+            string hideStr3 = " hide";
+
+            if (R["pagetype"] == "3")
+            {
+                hideStr3 = "";
+            }
+            if (R["pagetype"] == "2")
+            {
+                hideStr2 = "";
+            }
+            if (R["pagetype"] == "1")
+            {
+                hideStr1 = "";
+            }
+                }
+				<option value="3" @_System.getSltStr(R["pagetype"], 3)>ㆍ직접꾸미기</option>
+				<option value="2" @_System.getSltStr(R["pagetype"], 2)>ㆍ위젯콘텐츠</option>
+				<option value="1" @_System.getSltStr(R["pagetype"], 1)>ㆍ모듈콘텐츠</option>
+				</select>
+
+
+				<div id="jointBox" class="@Html.Raw("guide" + hideStr1)">
+					<input type="text" name="joint" id="jointf" value="@R["joint"]" class="input sname" />
+					<input type="button" class="btngray" value="모듈연결" onclick="OpenWindow('@g["s"]/?r=@r&system=popup.joint&iframe=Y&dropfield=jointf&cmodule=[@g["sys_module"]]');" />
+                    @if (R["joint"] != "")
+                    {
+                        <input type="button" class="btngray" value="미리보기" onclick="window.open('@R["joint"]');" />    
+                    }
+					<div class="guide">
+					이 페이지에 연결시킬 모듈이 있을 경우 모듈연결을 클릭한 후 선택해 주세요.<br />
+					모듈 연결주소가 지정되면 이 페이지를 호출시 해당 연결주소의 모듈이 출력됩니다.<br />
+					접근권한은 연결된 모듈의 권한설정을 따릅니다.
+					</div>
+				</div>
+				<div id="widgetBox" class="@Html.Raw("guide" + hideStr2)">
+                @if (R["uid"] != 0)
+                {
+                    <input type="button" class="btngray w" value="위젯으로 꾸미기" onclick="goHref('@g["s"]/?r=@r&system=edit.page&_page=@R["uid"]&type=widget');" />
+                }
+                else
+                {
+                    @:페이지 등록 후 사용자페이지에서 직접 편집할 수 있습니다.<br />
+                }
+				</div>
+				<div id="codeBox" class="@Html.Raw("guide" + hideStr3)">
+                @if (R["uid"] != 0)
+                {
+                    <input type="button" class="btngray w" value="소스코드 직접편집" onclick="goHref('?r=@r&system=edit.page&_page=@R["uid"]&type=source');" />
+                }
+                else
+                {
+                    @:페이지 등록 후 사용자페이지에서 직접 편집할 수 있습니다.<br />
+                }
+				</div>
+
+				<div id="guide_contenttype" class="guide hide">
+				<span class="b">직접꾸미기 : </span>소스코드를 직접 편집할 수 있습니다.<br />
+				<span class="b">위젯콘텐츠 : </span>위젯을 이용하여 메뉴를 꾸밀 수 있습니다.<br />
+				<span class="b">모듈콘텐츠 : </span>모듈 콘텐츠를 출력할 수 있습니다.<br />
+				</div>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="td1">레 이 아 웃</td>
+			<td class="td2">
+					<select name="layout" class="select1">
+					<option value="">&nbsp;+ 사이트 대표레이아웃</option>
+
+                    @{
+                string dirs = g["path_root_ps"] + g["path_layout"];
+                foreach (string tpl in Directory.GetDirectories(dirs))
+                {
+                    string tpl_name = tpl.Substring(dirs.Length, tpl.Length - dirs.Length);
+                    if (tpl_name == "." || tpl_name == ".." || tpl_name == "_blank" || File.Exists(tpl))
+                    {
+                        continue;
+                    }
+                            <option value="">--------------------------------</option>
+                        
+                    string dirs1 = tpl + "\\";
+                    foreach (string tpl1 in Directory.GetFiles(dirs1))
+                    {
+                        string tpl1_name = tpl1.Substring(dirs1.Length, tpl1.Length - dirs1.Length);
+
+                        if (tpl1_name.Contains(".cshtml") == false || tpl1_name == "_main.cshtml")
+                        {
+                            continue;
+                        }
+                        string sltTpl = "";
+                        if (R["layout"] == tpl_name + "\\" + tpl1_name)
+                        {
+                            sltTpl = " selected='selected'";
+                        }
+                                
+                                <option value="@tpl_name\@tpl1_name"@sltTpl>ㆍ @_System.getFolderName(tpl, "name.txt") (@tpl1_name.Replace(".cshtml", ""))</option>
+                    }
+                }    
+                    }
+					</select>
+			</td>
+
+		</tr>
+		<tr>
+			<td class="td1">
+				소 속 메 뉴
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_sosokmenu','block','none');" />				
+			</td>
+				<td class="td2">
+					<select name="sosokmenu" class="select1">
+					<option value="">&nbsp;+ 사용안함</option>
+					<option value="">--------------------------------</option>
+					@{
+                        cat = R["sosokmenu"];
+                        @_Menu.getMenuShowSelect(s.ToString(), AppState["table_s_menu"].ToString(), 0, 0, 0, 0, "", "", g, cat)
+                    }
+					</select>
+					<div id="guide_sosokmenu" class="guide hide">
+					이 페이지의 소속메뉴가 종종 필요할 수 있습니다.<br />
+					특정메뉴의 서브페이지로 사용되기를 원할경우 지정해 주세요.<br />
+					</div>
+				</td>
+		</tr>
+		<tr>
+			<td class="td1">허 용 등 급</td>
+			<td class="td2">
+				<select name="perm_l" class="select1">
+				<option value="">&nbsp;+ 전체허용</option>
+				<option value="">--------------------------------</option>
+                    @{
+                string _LEVEL_sql = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid asc";
+                foreach (var _L in _DB.Query(_LEVEL_sql))
+                {
+                    <option value="@_L["uid"]" @_System.getSltStr(_L["uid"], R["perm_l"])>ㆍ @_L["name"] (@string.Format("{0:#,0}", Convert.ToInt32(_L["num"]))) 이상</option>
+                        
+                    if (_L["gid"] != 0)
+                    {
+                        break;
+                    }
+                }
+                    }
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">
+				차 단 그 룹
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_permg','block','none');" />
+			</td>
+			<td class="td2">
+				<select name="_perm_g" class="select1" multiple="multiple" size="5">
+
+                @{
+                     // string perm_g_sel = "";
+                     string SOSOK_SQL = "SELECT * FROM " + AppState["table_s_mbrgroup"] + " ORDER BY gid ASC";
+
+                            
+                                    <option value="" @_System.getSltStr(R["perm_g"] == "")>ㆍ차단안함</option>
+                                            
+                    foreach (var _S in _DB.Query(SOSOK_SQL))
+                    {
+         
+                        <option value="@_S["uid"]" @_System.getSltStr(R["perm_g"].Contains("[" + _S["uid"] + "]"))>ㆍ @_S["name"] (@string.Format("{0:#,0}", Convert.ToInt32(_S["num"])))</option>
+                     }
+                }                   
+
+				</select>
+				<div id="guide_permg" class="guide hide">
+				선택된 그룹에 속한 회원들은 이 메뉴에 대한 접근이 차단됩니다.<br />
+				복수의 그룹을 선택하려면 드래그또는 Ctrl키를 누른다음 클릭해 주세요.
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="td1">
+				캐 시 적 용
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_cache','block','none');" />
+			</td>
+			<td class="td2">
+                @{
+                string cachefile = g["path_page"] + R["id"] + ".txt";
+                string cachetime = "";
+
+                if (File.Exists(cachefile))
+                {
+                    StreamReader sr = new StreamReader(cachefile);
+                    string line = "";
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        cachetime = cachetime + line;
+                    }
+                }
+                else
+                {
+                    cachetime = "0";
+                }
+                }
+				<select name="cachetime" class="select1">
+				<option value="">&nbsp;+ 적용안함</option>
+				<option value="">--------------------------------</option>
+
+                    @for (int i = 1; i < 61; i++)
+                    {
+                        string sltTime = "";
+                        if (Convert.ToInt32(cachetime) == i)
+                        {
+                            sltTime = " selected='selected'";
+                        }
+                        string istr = i.ToString();
+                        if ((i / 10) < 1)
+                        {
+                            istr = "0" + i.ToString();
+                        }
+
+                        <option value="@i"@sltTime>@Html.Raw(istr + "분")</option>
+                    }
+				</select>
+
+				<div id="guide_cache" class="guide hide">
+				DB접속이 많거나 위젯을 많이 사용하는 페이지일 경우 캐시를 적용하면<br />
+				서버부하를 줄 일 수 있으며 속도를 높일 수 있습니다.<br />
+				다만 반드시 실시간 처리를 요하는 페이지일 경우 적용하지 마세요.
+				</div>
+			</td>
+		</tr>
+            @{
+                    if (R["uid"] != 0)
+                    {
+			        <tr>
+				        <td class="td1">
+					        페이지주소
+					        <img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_addr','block','none');" />
+				        </td>
+				        <td class="td2">
+					        <div class="addr1">
+					        물리주소 : <span class="hand" onclick="window.open(this.innerHTML);" title="접속하기">./index.cshtml?r=@r&mod=@R["id"]</span><br />
+					        현재주소 : <span class="link hand" onclick="window.open(this.innerHTML);" title="접속하기">@_System.RW("/?" + r_prn + "mod=" + R["id"], g["r"], _HS)</span>
+					        </div>
+					        <div id="guide_addr" class="guide hide">
+					        <span class="b">물리주소 :</span> 이 페이지의 물리적인 실제 주소입니다.<br />
+					        <span class="b">현재주소 :</span> 주소줄이기/사이트코드 사용옵션 결과주소입니다.
+					        </div>
+				        </td>
+			        </tr>                    
+                    }
+            }
+	</table>
+	
+	<div class="submitbox">
+    @{
+                    string valPagetype = "새페이지 등록";
+                    if (R["uid"] != 0)
+                    {
+                        valPagetype = "페이지속성 변경";
+            <input type="button" class="btngray" value="편집모드" onclick="goHref('@g["s"]/?r=@r&system=edit.page&_page=@R["uid"]');" />        
+                    }
+    }
+		<input type="submit" class="btnblue" value="@valPagetype" />
+		<div class="clear"></div>
+	</div>
+
+	</form>
+	
+
+</div>       
+    
+    
+<script type="text/javascript">
+//<![CDATA[
+    function displaySelect(obj) {
+        var f = document.procForm;
+        if (obj.value == '1') {
+            getId('jointBox').style.display = 'block';
+            getId('widgetBox').style.display = 'none';
+            getId('codeBox').style.display = 'none';
+            f.joint.focus();
+        }
+        else if (obj.value == '2') {
+            getId('jointBox').style.display = 'none';
+            getId('widgetBox').style.display = 'block';
+            getId('codeBox').style.display = 'none';
+        }
+        else if (obj.value == '3') {
+            getId('jointBox').style.display = 'none';
+            getId('widgetBox').style.display = 'none';
+            getId('codeBox').style.display = 'block';
+        }
+        else {
+            getId('jointBox').style.display = 'none';
+            getId('widgetBox').style.display = 'none';
+            getId('codeBox').style.display = 'none';
+        }
+    }
+    function catSelect(obj) {
+        if (obj.value) {
+            obj.form.category.value = obj.value;
+            obj.value = '';
+            obj.form.pagetype.focus();
+        }
+        else {
+            obj.form.category.value = '';
+            obj.value = '';
+            obj.form.category.focus();
+        }
+    }
+    function saveCheck(f) {
+        var l1 = f._perm_g;
+        var n1 = l1.length;
+        var i;
+        var s1 = '';
+
+        for (i = 0; i < n1; i++) {
+            if (l1[i].selected == true && l1[i].value != '') {
+                s1 += '[' + l1[i].value + ']';
+            }
+        }
+
+        f.perm_g.value = s1;
+
+        if (f.name.value == '') {
+            alert('페이지명 입력해 주세요.      ');
+            f.name.focus();
+            return false;
+        }
+        if (f.id.value == '') {
+            alert('페이지코드를 입력해 주세요.      ');
+            f.id.focus();
+            return false;
+        }
+
+        if (!chkFnameValue(f.id.value)) {
+            alert('페이지코드는 영문대소문자,숫자,_만 사용할 수 있습니다.      ');
+            f.id.focus();
+            return false;
+        }
+        if (f.category.value == '') {
+            alert('페이지분류를 입력해 주세요.      ');
+            f.category.focus();
+            return false;
+        }
+        if (f.pagetype.value == '1') {
+            if (f.joint.value == '') {
+                alert('모듈을 연결해 주세요.      ');
+                f.joint.focus();
+                return false;
+            }
+        }
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+    document.procForm.name.focus();
+//]]>
+</script>    
+    }
+
+
+
+    /*****************************************
+    새페이지 끝
+    *****************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*****************************************
+    메뉴 시작
+    *****************************************/
+    if (type == "menu")
+    {
+        Session["arr_uid"] = null;
+        Session["j"] = null;
+        Session["MenuOpen"] = null;
+        
+        dynamic CINFO = new Dictionary<string, object>();
+
+        CINFO = _DB.getFromDB(CINFO, null, AppState["table_s_menu"]);
+
+        // 한쪽은 DB, 다른쪽은 일반 Array 이므로
+        ArrayList ctarr = new ArrayList();
+        ArrayList CXA = new ArrayList();
+
+        //int CINFO_perm_l = 0;
+        int ctnum = 0;
+
+        int ISCAT = _DB.GetDbData_Count(AppState["table_s_menu"].ToString(), "site='" + s + "'");
+
+        if (cat != null && cat != "" && cat != "0")
+        {
+            CINFO = _DB.Get_module_data(AppState["table_s_menu"], "uid", cat);
+
+            
+            @_Menu.getMenuCodeToPath(AppState["table_s_menu"].ToString(), cat, 0)        
+
+            foreach (string val in Session["arr_uid"].ToString().Split('|'))
+            {
+                if (val == "")
+                {
+                    continue;
+                }
+
+                var strVal = new Dictionary<string, string>();
+                strVal.Add("uid", val.Split(',')[0]);
+                strVal.Add("name", val.Split(',')[1]);
+                strVal.Add("id", val.Split(',')[2]);
+
+                ctarr.Add(strVal);  //{[uid][name][id]} array 저장
+                CXA.Add(strVal["uid"]); //uid값 저장
+                ctnum++;
+            }
+        }
+
+        bool is_fcategory = CINFO["uid"] != 0 && vtype != "sub";
+        bool is_regismode = CINFO["uid"] == 0 || vtype == "sub";
+
+        if (is_regismode == true)
+        {
+            CINFO["menutype"] = "";
+            CINFO["name"] = "";
+            CINFO["joint"] = "";
+            CINFO["redirect"] = "";
+            CINFO["hidden"] = "";
+            CINFO["target"] = "";
+            CINFO["imghead"] = "";
+            CINFO["imgfoot"] = "";
+        } 
+
+        <div id="catebody">
+
+	        <div id="category">
+		        <div class="title">
+
+			        <div class="xml">
+				        <a href="@g["s"]/?r=@r&m=@m&a=dumpmenu&type=xml" target="_blank" title="메뉴구조를 XML파일로 생성/받기" onclick="return confirm('정말로 이 사이트의 메뉴구조를 XML파일로 받으시겠습니까?\n받기와함께 _var/xml폴더에 [menu_사이트코드.xml]로 생성됩니다    ');"><img src="@g["img_core"]/file/small/xml.gif" alt="xml" /></a>
+				        <a href="@g["s"]/?r=@r&m=@m&a=dumpmenu&type=xls" target="@frame_name" title="메뉴구조를 엑셀파일로 받기" onclick="return confirm('정말로 이 사이트의 메뉴구조를 엑셀파일로 받으시겠습니까?');"><img src="@g["img_core"]/file/small/xls.gif" alt="xls" /></a>
+				        <a href="@g["s"]/?r=@r&m=@m&a=dumpmenu&type=txt" target="@frame_name" title="메뉴구조를 텍스트파일로 받기" onclick="return confirm('정말로 이 사이트의 메뉴구조를 텍스트파일로 받으시겠습니까?');"><img src="@g["img_core"]/file/small/txt.gif" alt="txt" /></a>
+			        </div>
+                @_HS["name"]
+
+                </div>
+
+		        
+        @if (ISCAT > 0)
+        {
+            string tree_set = "tree";
+
+            if (Request["HTTP_USER_AGENT"].IndexOf("MSIE 7") > -1)
+            {
+                tree_set = tree_set + " ie7";
+            }
+    		            
+            <div class="joinimg"></div>                    
+                <div class="@tree_set">
+                                
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/core.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/events.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/css.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/coordinates.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/drag.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/dragsort.js"></script>
+                
+                <script type="text/javascript">
+                //<![CDATA[
+                var dragsort = ToolMan.dragsort();
+                var TreeImg = "@g["img_core"]/tree/default_none";
+                var ulink = "@g["s"]/?r=@r&system=@system&type=@type&cat=";
+                //]]>
+                </script>
+                                
+                <script type="text/javascript" src="@g["url_root"]/_core/js/tree.js"></script>
+                <script type="text/javascript">
+                //<![CDATA[
+                var TREE_ITEMS = [['', null, @_Menu.getMenuShow(s, AppState["table_s_menu"].ToString(), 0, 0, 0, Convert.ToInt32(cat), CXA, "0", g)]];
+                new tree(TREE_ITEMS, tree_tpl);
+                @Session["MenuOpen"]
+                //]]>
+                </script>
+                                
+                </div>
+        }
+        else
+        {
+                	    <div class="none">등록된 메뉴가 없습니다.</div>                    
+        }
+
+        @if (CINFO["isson"] == "1" || ((cat == null || cat == "" || cat == "0") && ISCAT > 0))
+        {   
+                        <form action="@g["s"]/" method="post" target="@frame_name">
+                        <input type="hidden" name="r" value="@r" />
+                        <input type="hidden" name="m" value="@g["sys_module"]" />
+                        <input type="hidden" name="a" value="modifymenugid" />
+
+                        <div class="savebtn">
+                            <img src="@g["img_core"]/_public/btn_admin.gif" alt="" title="펼치기" onclick="orderOpen();" />
+                            <input type="image" src="@g["img_core"]/_public/btn_save.gif" title="순서저장" />
+                        </div>
+                        <div class="tt1">메뉴순서</div>
+                        <ul id="menuorder">
+            
+                        @{
+            string _MENUS_sql = "SELECT * FROM " + AppState["table_s_menu"].ToString() + " WHERE site='" + s + "' and parent='" + CINFO["uid"]
+                                + "' and depth='" + Convert.ToInt32(CINFO["depth"]) + 1 + "' ORDER BY gid ASC";
+
+            foreach (var _M in _DB.Query(_MENUS_sql))
+            {
+                                    <li>
+			                        <input type="checkbox" name="menumembers" value="@_M["uid"]" checked="checked" />
+			                        <img src="@g["img_core"]/_public/ico_drag.gif" alt="" class="drag" />
+                                    @_M["name"]
+                                        
+                                    @if (_M["hidden"] == "1")
+                                    {                                    
+			                            <img src="@g["img_core"]/_public/ico_hidden.gif" alt="" />
+                                    }
+                                        
+		                            </li>
+            }          
+                            }
+		                       
+                        </ul>
+                        </form>
+        }
+                </div>
+
+                <div id="catinfo">                
+                <form name="procForm" action="@g["s"]/" method="post" target="@frame_name" enctype="multipart/form-data" onsubmit="return saveCheck(this);">
+                <input type="hidden" name="r" value="@r" />
+                <input type="hidden" name="m" value="@g["sys_module"]" />
+		        <input type="hidden" name="a" value="regismenu" />
+		        <input type="hidden" name="backc" value="user" />
+		        <input type="hidden" name="account" value="@s" />                    
+                <input type="hidden" name="cat" value="@CINFO["uid"]" />
+		        <input type="hidden" name="vtype" value="@vtype" />
+		        <input type="hidden" name="depth" value="@CINFO["depth"]" />
+		        <input type="hidden" name="parent" value="@CINFO["uid"]" />
+		        <input type="hidden" name="perm_g" value="@CINFO["perm_g"]" />
+        
+                <div class="title">
+			        <div class="xleft">
+
+		@if (is_regismode == true)
+  {
+      if (vtype == "sub")
+      {
+                            @:서브메뉴 만들기
+						}
+      else
+      {
+                            @:최상위메뉴 만들기
+						}
+  }
+  else
+  {
+				        @:메뉴 등록정보
+			        }
+                    
+			        </div>
+                    
+			        <div class="xright">
+				        <a href="?r=@r&system=@system&type=@type&makemenu=Y">최상위메뉴 등록</a>
+			        </div>
+                </div>
+		        
+                <div class="notice">
+		            @if (is_regismode == true)
+              {
+                        @:<br />
+	                    @:복수의 메뉴를 한번에 등록하시려면 메뉴명을 콤마(,)로 구분해 주세요.<br />
+			            @:보기)회사소개,커뮤니티,고객센터<br />
+			            @:메뉴코드를 같이 등록하시려면 다음과 같은 형식으로 등록해 주세요.<br />
+			            @:보기)회사소개=company,커뮤니티=community,고객센터=center<br />
+			            @:메뉴코드는 미등록시 자동생성됩니다.
+			        }
+              else
+              {
+			            @:속성을 변경하려면 설정값을 변경한 후 [속성변경] 버튼을 클릭해주세요.<br />
+			            @:메뉴를 삭제하면 소속된 하위메뉴까지 모두 삭제됩니다.
+			        }
+		        </div>
+            		
+                <table>
+			    @{
+              if (vtype == "sub")
+              {
+                  int _i = 0;
+                        <tr>
+                        <td class="td1">상위메뉴</td>
+                        <td class="td2 b">
+
+                    @foreach (dynamic catarr_i in ctarr)
+                    {
+                        <a href="@g["s"]/?r=@r&iframe=@iframe&system=@system&type=@type&cat=@catarr_i["uid"]">@catarr_i["name"]</a>
+                    
+                        if (_i < ctnum - 1)
+                        {
+                            @:&gt;
+                        }
+
+                        catcode += catarr_i["id"] + "/";
+                        _i++;
+                    }                                                
+                        </td>
+			            </tr>
+              }
+              else
+              {
+                  if (cat != null && cat != "" && cat != "0")
+                  {
+                      int _i = 0;
+                      
+                    <tr>
+                    <td class="td1">상위메뉴</td>
+                    <td class="td2 b">
+
+                    @foreach (dynamic catarr_i in ctarr)
+                    {
+                        if (_i == ctnum - 1)
+                        {
+                            break;
+                        }
+                        <a href="@g["s"]/?r=@r&iframe=@iframe&system=@system&type=@type&cat=@catarr_i["uid"]">@catarr_i["name"]</a>
+                    
+                        if (_i < ctnum - 2)
+                        {
+                            @:&gt;
+                        }
+
+                        delparent = catarr_i["uid"];
+                        catcode += catarr_i["id"] + "/";
+
+                        _i++;
+                    }
+
+                    @if (delparent == "0")
+                    {
+                        @:최상위메뉴
+                    }
+                    </td>
+                    </tr>
+                  }
+              }
+
+
+
+              // session init.
+              Session["arr_uid"] = null;
+              Session["numhidden"] = null;
+              Session["headfoot"] = null;
+              Session["MenuOpen"] = null;
+              Session["checkbox"] = null;
+              Session["result"] = null;
+              Session["j"] = null;
+                }
+                    
+                <tr>
+			    <td class="td1">메뉴명칭</td>
+			    <td class="td2">
+
+                @{
+              string input_sname_set = "";
+
+              if (is_fcategory == true)
+              {
+                  input_sname_set = "input sname1";
+              }
+              else
+              {
+                  input_sname_set = "input sname2";
+              }
+                }
+					
+                <input type="text" name="name" value="@CINFO["name"]" class="@input_sname_set" />
+					    
+                @if (is_fcategory == true)
+                { 
+				    <span class="btn01"><a href="@g["s"]/?r=@r&m=@g["sys_module"]&a=deletemenu&account=@s&cat=@cat&parent=@CINFO["parent"]&backc=user" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?     ')">메뉴삭제</a></span>
+				    <span class="btn01"><a href="@g["s"]/?r=@r&system=@system&type=@type&cat=@cat&vtype=sub&makemenu=Y">서브메뉴등록</a></span>
+                }
+                    
+				</td>
+			    </tr>                    
+
+			    @if (CINFO["uid"] > 0 && vtype != "sub")
+       {
+	        		<tr>
+    				<td class="td1">
+					메뉴코드
+					<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_menucode','block','none');" />
+    				</td>
+	    			<td class="td2">
+					<input type="text" name="id" value="@CINFO["id"]" maxlength="20" class="input sname1" /> <span>@Html.Raw("(고유키=" + String.Format("{0:00000}", CINFO["uid"]) + ")")</span>
+					<div id="guide_menucode" class="guide hide">
+					이 메뉴를 잘 표현할 수 있는 단어로 입력해 주세요.<br />
+					영문대소문자/숫자/_ 조합으로 등록할 수 있습니다.<br />
+					보기) 메뉴호출주소 : @_System.RW("c=<span class=\"b\">메뉴코드</span>", g["r"], _HS)<br />
+					같은 사이트내에서 메뉴코드는 중복될 수 없습니다.<br />
+					</div>
+				    </td>
+			        </tr>
+       }
+                    
+        		<tr>
+				<td class="td1">
+				전시내용
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_contenttype','block','none');" />
+				</td>
+				<td class="td2">
+                @{
+ 
+       string jointbox_hide = "guide";
+       string widjetbox_hide1 = "guide";
+       string widjetbox_hide2 = "guide";
+
+       if (CINFO["menutype"] == "3")
+       {
+           jointbox_hide = "guide hide";
+           widjetbox_hide1 = "guide hide";
+       }
+       else if (CINFO["menutype"] == "2")
+       {
+           jointbox_hide = "guide hide";
+           widjetbox_hide2 = "guide hide";
+       }
+       else if (CINFO["menutype"] == "1")
+       {
+           widjetbox_hide1 = "guide hide";
+           widjetbox_hide2 = "guide hide";
+       }
+       else
+       {
+           jointbox_hide = "guide hide";
+           widjetbox_hide1 = "guide hide";
+       }                        
+                }
+    
+                <select name="menutype" class="select1" onchange="displaySelect(this);">
+				<option value="3" @_System.getSltStr(CINFO["menutype"], 3)>ㆍ직접꾸미기</option>
+				<option value="2" @_System.getSltStr(CINFO["menutype"], 2)>ㆍ위젯콘텐츠</option>
+				<option value="1" @_System.getSltStr(CINFO["menutype"], 1)>ㆍ모듈콘텐츠</option>
+				</select>
+
+    			    <div id="jointBox" class="@jointbox_hide">
+				        <input type="text" name="joint" id="jointf" value="@CINFO["joint"]" class="input sname1" />
+					    <input type="button" class="btngray" value="모듈연결" onclick="jointWin('?r=@r&system=popup.joint&iframe=Y&dropfield=jointf');" />
+						    
+                        @if (CINFO["joint"] != "")
+                        {
+    					    <input type="button" class="btngray" value="미리보기" onclick="window.open('@CINFO["joint"]');" />                            
+                        }                        
+                        
+                        <div class="guide">
+                            <div class="shift">
+					            <input type="checkbox" name="redirect" id="xredirect" value="1" @_System.getChkStr(CINFO["redirect"], 1) />
+					            <label for="xredirect">입력된 주소로 리다이렉트 시켜줍니다.(외부주소 링크시 사용)</label>
+					        </div>
+                            이 메뉴에 연결시킬 모듈이 있을 경우 모듈연결 클릭 후 선택해 주세요.<br />
+                            연결주소가 지정되면 이 메뉴를 호출시 지정된 모듈이 출력됩니다.<br />
+                            접근권한은 연결된 모듈의 권한설정을 따릅니다.
+					    </div>
+                        
+					</div>
+                    
+                    <div id="widgetBox" class="@widjetbox_hide1">
+					@if (CINFO["uid"] > 0)
+     {
+					    <input type="button" class="btngray w" value="위젯으로 꾸미기" onclick="goHref('@g["s"]/?r=@r&system=edit.menu&_menu=@CINFO["uid"]&type=widget');" />
+     }
+     else
+     {
+					    @:메뉴 등록 후 사용자페이지에서 직접 편집할 수 있습니다.<br />
+                    }
+					</div>
+					    
+                    <div id="codeBox" class="@widjetbox_hide2">
+					@if (CINFO["uid"] > 0)
+     {
+					    <input type="button" class="btngray w" value="소스코드 직접편집" onclick="goHref('@g["s"]/?r=@r&system=edit.menu&_menu=@CINFO["uid"]&type=source');" />
+     }
+     else
+     {
+					    @:메뉴 등록 후 사용자페이지에서 직접 편집할 수 있습니다.<br />
+					}
+					</div>
+
+					<div id="guide_contenttype" class="guide hide">
+                        <span class="b">직접꾸미기 : </span>소스코드를 직접 편집할 수 있습니다.<br />
+                        <span class="b">위젯콘텐츠 : </span>위젯을 이용하여 메뉴를 꾸밀 수 있습니다.<br />
+                        <span class="b">모듈콘텐츠 : </span>모듈 콘텐츠를 출력할 수 있습니다.<br />
+					</div>
+				</td>
+			    </tr>     
+
+        		<tr>
+				<td class="td1">
+				메뉴옵션
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_mpro','block','none');" />
+				</td>
+				<td class="td2 shift">
+				<input type="checkbox" name="mobile" id="xmobile" value="1" @_System.getChkStr(CINFO["mobile"], 1) /><label for="xmobile">모바일메뉴출력</label>
+				<input type="checkbox" name="target" id="xtarget" value="_blank" @_System.getChkStr(CINFO["target"], 1) /><label for="xtarget">새창열기</label>
+				<input type="checkbox" name="hidden" id="cat_hidden" value="1" @_System.getChkStr(CINFO["hidden"], 1) /><label for="cat_hidden">메뉴숨김</label>
+				<input type="checkbox" name="reject" id="cat_reject" value="1" @_System.getChkStr(CINFO["reject"], 1) /><label for="cat_reject">메뉴차단</label>
+
+				<div id="guide_mpro" class="guide hide">
+                    <span class="b">모바일메뉴출력 : </span>모바일 레이아웃 사용시 이 메뉴를 출력합니다.<br />
+                    <span class="b">새창열기 : </span>이 메뉴를 클릭시 새창으로 엽니다.<br />
+                    <span class="b">메뉴숨김 : </span>모든 레이아웃에서 이 메뉴를 출력하지 않습니다.<br />
+					<span class="b">메뉴차단 : </span>메뉴의 접근을 차단합니다.(링크접근불가)<br />
+				</div>
+				</td>
+			    </tr>                        
+                
+                <tr>
+			    <td class="td1">레이아웃</td>
+			    <td class="td2">
+				    <select name="layout" class="select1">
+				    <option value="">&nbsp;+ 사이트 대표레이아웃</option>
+                    @{                            
+     foreach (string tpl in Directory.GetDirectories(tdir))
+     {
+         string lay_name = tpl.Substring(tdir.Length, tpl.Length - tdir.Length);         // 디렉토리 명 구하기
+                                    
+                            <option value="">--------------------------------</option>
+                                
+         if (lay_name != "_blank")
+         {
+             foreach (string tpl1 in Directory.GetFiles(tpl))
+             {
+                 string f_name = tpl1.Substring(tpl.Length + 1, tpl1.Length - tpl.Length - 1);         // 파일명 구하기
+
+                 if (!f_name.Contains(".cshtml") || f_name == "_main.cshtml")
+                 {
+                     continue;
+                 }
+        
+                                    <option value="@lay_name\@f_name" @_System.getSltStr(CINFO["layout"], lay_name + "\\" + f_name)>ㆍ @_System.getFolderName(tpl, "name.txt") (@f_name.Replace(".cshtml", ""))</option>
+             }
+         }
+     }
+                    }           
+			        </select>
+                </td>
+                </tr>                        
+
+        		<tr>
+		    	<td class="td1">허용등급</td>
+			    <td class="td2">
+				   	<select name="perm_l" class="select1">
+				   	<option value="">&nbsp;+ 전체허용</option>
+				   	<option value="">--------------------------------</option>
+                    @{
+     string level_sql = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid ASC";
+
+     foreach (var _L in _DB.Query(level_sql))
+     {           
+					        <option value="@_L["uid"]" @_System.getSltStr(_L["uid"], CINFO["perm_l"])>ㆍ @_L["name"] (@string.Format("{0:#,0}", Convert.ToInt32(_L["num"]))) 이상</option>
+                                
+         if (_L["gid"] > 0)
+         {
+             break;
+         }
+     }
+                    }
+					</select>
+				</td>
+        		</tr>
+
+			    <tr>
+				<td class="td1">차단그룹
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_permg','block','none');" />
+				</td>
+				<td class="td2">
+				<select name="_perm_g" class="select1" multiple="multiple" size="5">
+                @{
+     // string perm_g_sel = "";
+     string SOSOK_SQL = "SELECT * FROM " + AppState["table_s_mbrgroup"] + " ORDER BY gid ASC";
+
+                            
+                                    <option value="" @_System.getSltStr(CINFO["perm_g"] == "")>ㆍ차단안함</option>
+                                            
+     foreach (var _S in _DB.Query(SOSOK_SQL))
+     {
+         
+                        <option value="@_S["uid"]" @_System.getSltStr(CINFO["perm_g"].Contains("[" + _S["uid"] + "]"))>ㆍ @_S["name"] (@string.Format("{0:#,0}", Convert.ToInt32(_S["num"])))</option>
+     }
+                }
+			    </select>            
+                        
+			    <div id="guide_permg" class="guide hide">
+                    선택된 그룹에 속한 회원들은 이 메뉴에 대한 접근이 차단됩니다.<br />
+                    복수의 그룹을 선택하려면 드래그또는 Ctrl키를 누른다음 클릭해 주세요.
+			    </div>
+			    </td>
+			    </tr>
+
+                @if (CINFO["uid"] > 0)
+                {
+        		    <tr>
+		    	    <td class="td1">코드확장</td>
+			   	    <td class="td2 shift">
+                            
+                    @{
+                    string imghead_sel = "";
+                    string imgfoot_sel = "";
+                    string addinfo_sel = "";
+
+                    if (CINFO["imghead"] != "" || File.Exists(g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", CINFO["uid"]) + ".header.cshtml") == true)
+                    {
+                        imghead_sel = "checked='checked'";
+                    }
+                    if (CINFO["imgfoot"] != "" || File.Exists(g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", CINFO["uid"]) + ".footer.cshtml") == true)
+                    {
+                        imgfoot_sel = "checked='checked'";
+                    }
+                    if (CINFO["addinfo"] != "")
+                    {
+                        addinfo_sel = "checked='checked'";
+                    }
+                    }
+                    
+				    <input type="checkbox" @imghead_sel disabled="disabled" />메뉴헤더
+				    <img src="@g["img_core"]/_public/ico_under.gif" alt="접기/펼치기" title="접기/펼치기" id="dm_img_header" class="dm" onclick="codShowHide('menu_header','block','none',this);" />
+				    <input type="checkbox" @imgfoot_sel disabled="disabled" />메뉴풋터
+				    <img src="@g["img_core"]/_public/ico_under.gif" alt="접기/펼치기" title="접기/펼치기" id="dm_img_footer" class="dm" onclick="codShowHide('menu_footer','block','none',this);" />
+				    <input type="checkbox" @addinfo_sel disabled="disabled" />부가필드
+				    <img src="@g["img_core"]/_public/ico_under.gif" alt="접기/펼치기" title="접기/펼치기" id="dm_img_addinfo" class="dm" onclick="codShowHide('menu_addinfo','block','none',this);" />
+			        </td>
+		            </tr>                        
+                }
+                </table>
+
+                @if (CINFO["uid"] > 0)
+                {
+             		<div id="menu_header" class="hide">
+                        <table>
+                        <tr>
+                        <td class="td1">헤더파일</td>
+                        <td class="td2">
+                        <input type="file" name="imghead" class="upfile" />
+                        
+                    @if (CINFO["imghead"] != "")
+                    {
+                        <div><a href="@g["s"]/?r=@r&m=admin&module=filemanager&front=main&editmode=Y&pwd=@Server.UrlEncode(g["path_root_ps"] + "_var\\menu\\")&file=@CINFO["imghead"]" target="_blank" title="@CINFO["imghead"]" class="u">파일수정</a> <a href="@g["s"]/?r=@r&m=@module&a=menu_file_delete&cat=@CINFO["uid"]&dtype=head" target="@frame_name" class="u" onclick="return confirm('정말로 삭제하시겠습니까?     ');">삭제</a></div>
+                    }
+                    else
+                    {
+                        <div>(gif/jpg/png/swf 가능)</div>
+                    }
+                        </td>
+                        </tr>
+                                
+                        <tr>
+                        <td class="td1">헤더코드
+                        <img src="@g["img_core"]/_public/btn_code.gif" class="dn hand" alt="편집기" title="" onclick="editWindow('@g["s"]/?r=@r&system=edit.editor&iframe=Y&droparea=codheadArea');" />
+                        </td>
+                        <td class="td2">                                                  
+                        @{
+                            string codehead = "";    
+                            if (File.Exists(g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", CINFO["uid"]) + ".header.cshtml"))
+                            {
+                                codehead = File.ReadAllText(g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", CINFO["uid"]) + ".header.cshtml", System.Text.Encoding.UTF8).Trim();
+                            }
+                        }
+                        <textarea name="codhead" id="codheadArea">@codehead</textarea>
+                        </td>
+                        </tr>
+                                
+                        <tr>
+                        <td class="td1">노출위치</td>
+                        <td class="td2">
+                        <select name="puthead" class="select1">       
+                        <option value="0" @_System.getSltStr(CINFO["puthead"], 0)>콘텐트</option>
+                        <option value="1" @_System.getSltStr(CINFO["puthead"], 1)>콘테이너</option>
+                                
+                        </select>
+                        </td>
+                        </tr>
+                        </table>
+ 		            </div>
+                    
+	                <div id="menu_footer" class="hide">
+                        <table>
+                        <tr>
+                        <td class="td1">풋터파일</td>
+                        <td class="td2">
+                        <input type="file" name="imgfoot" class="upfile" />
+                     
+                    @if (CINFO["imgfoot"] != "")
+                    {
+                        <div><a href="@g["s"]/?r=@r&m=admin&module=filemanager&front=main&editmode=Y&pwd=@Server.UrlEncode(g["path_root_ps"] + "_var\\menu\\")&file=@CINFO["imgfoot"]" target="_blank" title="@CINFO["imgfoot"]" class="u">파일수정</a> <a href="@g["s"]/?r=@r&m=@module&a=menu_file_delete&cat=@CINFO["uid"]&dtype=head" target="@frame_name" class="u" onclick="return confirm('정말로 삭제하시겠습니까?     ');">삭제</a></div>
+                    }
+                    else
+                    {
+                        <div>(gif/jpg/png/swf 가능)</div>
+                    }
+
+                        </td>
+                        </tr>
+                            
+                        <tr>
+                        <td class="td1">풋터코드
+                        <img src="@g["img_core"]/_public/btn_code.gif" class="dn hand" alt="편집기" title="" onclick="editWindow('?r=@r&system=edit.editor&iframe=Y&droparea=codfootArea');" />
+                        </td>
+                        <td class="td2">
+                        @{
+                            string codefoot = "";
+                            if (File.Exists(g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", CINFO["uid"]) + ".footer.cshtml"))
+                            {
+                                codefoot = File.ReadAllText(g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", CINFO["uid"]) + ".footer.cshtml", System.Text.Encoding.UTF8).Trim();
+                            }
+                        }
+                        <textarea name="codfoot" id="codheadArea">@codefoot</textarea>
+                        </td>
+                        </tr>
+                            
+                        <tr>
+                        <td class="td1">노출위치</td>
+                        <td class="td2">
+                        <select name="putfoot" class="select1">
+                        <option value="0" @_System.getSltStr(CINFO["putfoot"], 0)>콘텐트</option>
+                        <option value="1" @_System.getSltStr(CINFO["putfoot"], 1)>콘테이너</option>
+                        </select>
+                        </td>
+                        </tr>
+                        </table>
+	                </div>
+                    
+		            <div id="menu_addinfo" class="hide">
+		            <table>
+			            <tr>
+				            <td class="td1">
+					            부가필드
+					            <img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_addinfo','block','none');" />
+				            </td>
+				            <td class="td2">
+					            <textarea name="addinfo" class="add">@Html.Raw(CINFO["addinfo"])</textarea>
+					            <div id="guide_addinfo" class="guide hide">
+					            이 메뉴에 대해서 추가적인 정보가 필요할 경우 사용합니다.<br />
+					            필드명은 <span class="b">[addinfo]</span> 입니다. 
+					            </div>
+				            </td>
+			            </tr>
+		            </table>
+		            </div>        
+                    
+                    
+                }
+		
+                <div class="submitbox">
+
+		        @{
+                if (is_fcategory == true && CINFO["isson"] == "1")
+                {
+		                <div class="sbcopybox shift">
+			                <input type="checkbox" name="subcopy" id="cubcopy" value="1" checked="checked" /><label for="subcopy">이 설정(메뉴숨김,레이아웃,권한)을 서브메뉴에도 일괄적용합니다.</label> 
+		                </div>
+                }
+
+                if (CINFO["uid"] > 0)
+                {
+                    if (vtype != "sub")
+                    {
+                            <input type="button" class="btngray" value="편집모드" onclick="goHref('@g["s"]/?r=@r&system=edit.menu&_menu=@CINFO["uid"]');" />
+                    }
+                    else
+                    {
+                            <input type="button" class="btngray" value="등록취소" onclick="history.go(-1);" />
+                    }
+                }
+
+                string submit_prn = "신규메뉴 등록";
+
+                if (is_fcategory == true)
+                {
+                    submit_prn = "메뉴속성 변경";
+                }
+                }
+                    
+		        <input type="submit" class="btnblue" value="@submit_prn" />
+		        <div class="clear"></div>
+                        
+		    </div>
+            </form>
+        </div>
+    <div class="clear"></div>
+    </div>
+
+
+    <script type="text/javascript">
+    //<![CDATA[
+    var orderopen = false;
+        
+    function orderOpen() {
+        if (orderopen == false) {
+            getId('menuorder').style.display = 'block';
+            orderopen = true;
+        }
+        else {
+            getId('menuorder').style.display = 'none';
+            orderopen = false;
+        }
+    }
+        
+    function displaySelect(obj) {
+        var f = document.procForm;
+            
+        if (obj.value == '1') {
+            getId('jointBox').style.display = 'block';
+            getId('widgetBox').style.display = 'none';
+            getId('codeBox').style.display = 'none';
+            f.joint.focus();
+        }
+        else if (obj.value == '2') {
+            getId('jointBox').style.display = 'none';
+            getId('widgetBox').style.display = 'block';
+            getId('codeBox').style.display = 'none';
+        }
+        else if (obj.value == '3') {
+            getId('jointBox').style.display = 'none';
+            getId('widgetBox').style.display = 'none';
+            getId('codeBox').style.display = 'block';
+        }
+        else {
+            getId('jointBox').style.display = 'none';
+            getId('widgetBox').style.display = 'none';
+            getId('codeBox').style.display = 'none';
+        }
+    }
+        
+    function codShowHide(layer,show,hide,img) {
+        if(getId(layer).style.display != show) {
+            getId(layer).style.display = show;
+            img.src = img.src.replace('ico_under','ico_over');
+            setCookie('ck_'+layer,show,1);
+        }
+        else {
+            getId(layer).style.display = hide;
+            img.src = img.src.replace('ico_over','ico_under');
+            setCookie('ck_'+layer,hide,1);
+        }
+    }
+        
+    function editWindow(url) {
+        window.open(url,'','left=0,top=0,width=800px,height=750px,statusbar=no,scrollbars=no,toolbar=no,resizable=yes');
+    }
+     
+    function jointWin(url) {
+        window.open(url,'','top=0px,left=0px,width=100px,height=100px,resizable=no,scrollbars=no,status=yes');
+    }
+        
+    function saveCheck(f) {
+        var l1 = f._perm_g;
+        var n1 = l1.length;
+        var i;
+        var s1 = '';
+        
+        for	(i = 0; i < n1; i++) {
+            if (l1[i].selected == true && l1[i].value != '') {
+                s1 += '['+l1[i].value+']';
+            }
+        }
+        
+        f.perm_g.value = s1;
+     
+        if (f.name.value == '') {
+            alert('매뉴명칭을 입력해 주세요.      ');
+            f.name.focus();
+                
+            return false;
+        }
+        if (f.menutype.value == '') {
+            alert('전시할 내용을 선택해 주세요.      ');
+            f.menutype.focus();
+                
+            return false;
+        }
+        if (f.menutype.value == '1') {
+            if (f.joint.value == '') {
+                alert('모듈을 연결해 주세요.      ');
+                f.joint.focus();
+                    
+                return false;
+            }
+        }
+           
+        return confirm('정말로 실행하시겠습니까?         ');
+    }
+        
+    function slideshowOpen() {
+        @if (CINFO["uid"] > 0)
+        {
+            @Html.Raw("var ch = getCookie('ck_menu_header');\n");
+            @Html.Raw("var cf = getCookie('ck_menu_footer');\n");
+            @Html.Raw("var ca = getCookie('ck_menu_addinfo');\n");
+        
+            @Html.Raw("if (ch == 'block') {\n");
+            @Html.Raw("getId('menu_header').style.display = ch;\n");
+            @Html.Raw("getId('dm_img_header').src = getId('dm_img_header').src.replace('ico_under','ico_over');\n");
+            @Html.Raw("}\n");
+            
+            @Html.Raw("if (cf == 'block') {\n");
+            @Html.Raw("getId('menu_footer').style.display = cf;\n");
+            @Html.Raw("getId('dm_img_footer').src = getId('dm_img_footer').src.replace('ico_under','ico_over');\n");
+            @Html.Raw("}\n");
+                
+            @Html.Raw("if (ca == 'block') {\n");
+            @Html.Raw("getId('menu_addinfo').style.display = ca;\n");
+            @Html.Raw("getId('dm_img_addinfo').src = getId('dm_img_addinfo').src.replace('ico_under','ico_over');\n");
+            @Html.Raw("}\n");
+        }
+             
+        if(getId('menuorder')) dragsort.makeListSortable(getId("menuorder"));
+    }
+        
+    slideshowOpen();
+      
+    @if (makemenu == "Y")
+    {
+        @Html.Raw("document.procForm.name.focus();");
+    }
+    //]]>
+    </script>
+                
+    }
+}
+
+</div> 
+
+<script type="text/javascript">
+//<![CDATA[
+    function morebox(layer) {
+        if (getId(layer).style.display == 'block') {
+            getId(layer).style.display = 'none';
+        }
+        else {
+            getId(layer).style.display = 'block';
+        }
+    }
+//]]>
+</script>
+
+

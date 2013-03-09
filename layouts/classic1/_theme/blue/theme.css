@@ -1,0 +1,9 @@
+﻿/* blue */
+#header .tabmenu {border:#2880C7 solid 1px;}
+#header .tabmenu .twrap {border:#5CA1E6 solid 1px;background:#4291DC;}
+#header .tabmenu .twrap li a {color:#F9FEF8;}
+#header .tabmenu .twrap li .on {color:#171916;}
+#header .tabmenu .twrap li div dl {border:#2681D0 solid 1px;}
+#header .tabmenu .twrap .vline {border-right:#7BB4E9 solid 1px;border-left:#2F689F solid 1px;}
+#header .tabmenu .twrap li div dt a {color:#222222;}
+#header .tabmenu .twrap li div dd a {color:#222222;}

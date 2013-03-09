@@ -1,0 +1,8 @@
+﻿CREATE TABLE rx_code_g_lang ( 
+uid  int  identity(1,1)  NOT NULL , 
+nation  nvarchar(20)   NOT NULL , 
+id  nvarchar(30)   NOT NULL , 
+id_value  ntext   NOT NULL , 
+type  nvarchar(100)   ,
+PRIMARY KEY (uid)
+);

@@ -1,0 +1,60 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////  
+    var file_uid = Request["file_uid"];
+    var gparam = Request["gparam"];
+    var code = Request["code"];
+
+    dynamic R = null;
+
+    if (file_uid != "" && file_uid != null)
+    {
+        R = _DB.GetDbData_M(AppState["table_s_upload"].ToString(), "uid=" + file_uid);
+    }
+    if (R == null)
+    {
+        return;
+    }
+    if (my["admin"] != "1" && ((R["mbruid"] == null || R["mbruid"] == "") || my["uid"] != R["mbruid"]))
+    {
+        return;
+    }
+
+    string hidden_val = "1";
+    
+    if(R["hidden"] == 1){
+        hidden_val = "0";
+    }
+    
+    string UPDATE_UP_SQL = "UPDATE " + AppState["table_s_upload"] + " SET hidden=" + hidden_val + " WHERE uid=" + R["uid"];
+    @_DB.Execute(UPDATE_UP_SQL);
+    
+    @_System.getLink("?r="+r+"&m="+m+"&mod=list&gparam="+gparam+"&code="+code,"parent.","","")
+    return;
+}

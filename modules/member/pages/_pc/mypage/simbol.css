@@ -1,0 +1,11 @@
+#pages_join {}
+
+#pages_join .photo {float:left;width:50px;height:50px;margin:3px 0 20px 20px;background:url('../../../../../../_var/simbol/0.gif') center center no-repeat;}
+#pages_join .msg {height:50px;padding:0 0 25px 20px;margin:0 0 0 70px;color:#1C5B8C;font-family:dotum;line-height:150%;}
+#pages_join .msg span {font-size:11px;color:#ff0000;}
+#pages_join .msg a {text-decoration:underline;font-size:11px;font-family:dotum;color:#093877;}
+
+#pages_join .upload {padding:20px 0 0 20px;border-top:#dfdfdf dashed 1px;}
+#pages_join .upload span {font-size:11px;font-family:dotum;color:#666;letter-spacing:-1px;}
+#pages_join .upload .upfile {height:21px;border:#c0c0c0 solid 1px;background:#ffffff;position:relative;top:-2px;}
+

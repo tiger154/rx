@@ -1,0 +1,5 @@
+﻿#guidebox {}
+#guidebox h1 {font-family:"malgun gothic",dotum;font-size:22px;padding:0 0 10px 0;margin:0 0 30px 0;border-bottom:#dfdfdf solid 1px;}
+#guidebox ul {}
+#guidebox li {padding:5px 0 5px 0;color:#999;}
+#guidebox .back {border-top:#dfdfdf solid 1px;margin:30px 0 0 0;padding:20px 0 30px 0;text-align:right;}

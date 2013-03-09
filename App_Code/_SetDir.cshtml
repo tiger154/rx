@@ -1,0 +1,67 @@
+﻿@helper initDir()
+{
+    
+    string[] _tmp_dirs = { "a", "app", "backup", "filemanagerUploadedFile", "out", "session", "tempIcon", "widgetcode" };
+    string[] _var_dirs = { "menu", "peak", "simbol", "update", "xml" };
+    string[] files_dirs = { "_etc" };
+    string[] pages_img_dirs = { "image1", "image2", "image3"};
+    
+    // _tmp
+    if (!Directory.Exists(Request.PhysicalApplicationPath + "_tmp"))
+    {
+        Directory.CreateDirectory(Request.PhysicalApplicationPath + "_tmp");
+    }
+
+    foreach (string dir in _tmp_dirs)
+    {
+        if (!Directory.Exists(Request.PhysicalApplicationPath + "_tmp" + "\\" + dir))
+        {
+            Directory.CreateDirectory(Request.PhysicalApplicationPath + "_tmp" + "\\" + dir);
+        }
+    }  
+
+    // _var
+    if (!Directory.Exists(Request.PhysicalApplicationPath + "_var"))
+    {
+        Directory.CreateDirectory(Request.PhysicalApplicationPath + "_var");
+    }
+
+    foreach (string dir in _var_dirs)
+    {
+        if (!Directory.Exists(Request.PhysicalApplicationPath + "_var" + "\\" + dir))
+        {
+            Directory.CreateDirectory(Request.PhysicalApplicationPath + "_var" + "\\" + dir);
+        }
+    }    
+    
+
+    // files
+    if (!Directory.Exists(Request.PhysicalApplicationPath + "files"))
+    {
+        Directory.CreateDirectory(Request.PhysicalApplicationPath + "files");
+    }
+
+    foreach (string dir in files_dirs)
+    {
+        if (!Directory.Exists(Request.PhysicalApplicationPath + "files" + "\\" + dir))
+        {
+            Directory.CreateDirectory(Request.PhysicalApplicationPath + "files" + "\\" + dir);
+        }
+    }    
+
+    // files
+    if (!Directory.Exists(Request.PhysicalApplicationPath + "pages\\image"))
+    {
+        Directory.CreateDirectory(Request.PhysicalApplicationPath + "pages\\image");
+    }
+
+    foreach (string dir in pages_img_dirs)
+    {
+        if (!Directory.Exists(Request.PhysicalApplicationPath + "pages\\image\\" + dir))
+        {
+            Directory.CreateDirectory(Request.PhysicalApplicationPath + "pages\\image\\" + dir);
+        }
+    }
+
+    return;
+}

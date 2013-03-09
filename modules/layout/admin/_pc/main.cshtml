@@ -1,0 +1,510 @@
+﻿@using System.Drawing;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var layout = Request["layout"];
+    var sublayout = Request["sublayout"];
+    var type = Request["type"];
+
+    string frame_name = "_action_frame_" + m;
+}
+
+<div id="catebody">
+	<div id="category">
+
+		<div class="title">
+			<span class="add">
+			<a href="?r=@r&m=@m&module=market&front=pack&type=layout" title="레이아웃 추가"><img src="@g["img_core"]/_public/btn_add.gif" alt="" /></a>
+			</span>
+			레이아웃 리스트
+		</div>
+		
+		<table>
+		
+        @{
+            if (layout == null || layout == "")
+            {
+                layout = _HS["layout"].Substring(0, _HS["layout"].IndexOf("\\"));
+            }
+
+            if (sublayout == null || sublayout == "")
+            {
+                sublayout = "main.cshtml";
+            }
+
+            if (type == null || type == "")
+            {
+                type = "layout";
+            }
+
+            string tdir = g["path_root_ps"] + g["path_layout"];
+            string[] dirs = Directory.GetDirectories(tdir);
+
+            foreach (string tpl in dirs)
+            {
+                string lay_name = tpl.Substring(tdir.Length, tpl.Length - tdir.Length);
+                string lay_path = "";
+
+                if (lay_name != "_blank")
+                {
+                    lay_path = g["path_root_ps"] + g["path_layout"] + lay_name;
+                }
+
+                string idir1 = lay_path + "\\";
+                string[] dirs1 = Directory.GetFiles(idir1);
+                string OnStr = "";
+
+                if (lay_name == layout)
+                {
+                    OnStr = " on";
+                }   
+                
+
+		        <tr class="layout1">
+		        <td class="ltd">
+                <a href="?r=@r&m=@m&module=filemanager&pwd=@HttpUtility.UrlEncode(tpl + "\\")" target="_blank"><img src="@g["img_core"]/_public/ico_folder_02.gif" alt="폴더열기" title="폴더열기" /></a>
+			    <a href="@Html.Raw(g["adm_href"] + "&layout=" + lay_name)" class="@OnStr">@_System.getFolderName(tpl, "name.txt")</a>
+			    <span>(@lay_name)</span>
+		        </td>
+		        <td class="rtd">
+			        <a href="?r=@r&m=@module&a=layout_delete&killlayout=@lay_name" target="@frame_name"  onclick="return delCheck();"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="삭제" title="삭제" /></a>
+		        </td>
+		        </tr>
+            
+                if (lay_name == layout)
+                {
+                    <tr class="laygap"><td colspan="2"></td></tr>
+            
+                    foreach (string tpl1 in dirs1)
+                    {
+                        string lay_name1 = tpl1.Substring(idir1.Length, tpl1.Length - idir1.Length);
+
+
+
+                        if (!lay_name1.Contains(".cshtml") || lay_name1 == "_main.cshtml")
+                        {
+                            continue;
+                        }
+                        
+                        <tr class="layout2">
+		                <td class="ltd">
+                            
+                        @{
+                        string onStr = "";
+
+                        if (lay_name1 == sublayout)
+                        {
+                            onStr = " on";
+                        }
+                        }
+			            
+                        ㆍ<a href="@g["adm_href"]&layout=@lay_name&sublayout=@lay_name1" class="@onStr">@lay_name1.Replace(".cshtml", "")</a>
+		                </td>
+
+
+		                <td class="rtd">
+                        @if (lay_name1 != "main.cshtml")
+                        {
+                            <a href="?r=@r&m=@module&a=layout_delete&layout=@lay_name1&sublayout=@lay_name1&type=@type" target="@frame_name" onclick="return delCheck();"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="삭제" title="삭제" /></a>
+                        }
+		                </td>
+		                </tr>
+                    }                    
+                    
+		            <tr class="laygap"><td colspan="2"></td></tr>
+		            <tr class="laygap"><td colspan="2"></td></tr>
+                }
+            }
+        }
+        
+		</table>
+	</div>
+
+	<div id="catinfo">
+
+
+
+
+        
+		<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" enctype="multipart/form-data" onsubmit="return saveCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="a" value="layout_update" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="layout" value="@(layout)" />
+		<input type="hidden" name="sublayout" value="@sublayout" />
+		<input type="hidden" name="type" value="@type" />
+
+		<div class="tab">
+			<ul>
+            @{
+                if (type == "layout")
+                {
+                    <li class="on"><a href="@g["adm_href"]&layout=@(layout)&type=layout">레이아웃코드</a></li>
+                }
+                else
+                {
+                    <li><a href="@g["adm_href"]&layout=@(layout)&type=layout">레이아웃코드</a></li>                        
+                }
+
+                if (type == "css")
+                {
+                    <li class="on"><a href="@g["adm_href"]&layout=@(layout)&type=css">CSS코드</a></li>                        
+                }
+                else
+                {
+                    <li><a href="@g["adm_href"]&layout=@(layout)&type=css">CSS코드</a></li>                        
+                }
+                if (type == "js")
+                {
+                    <li class="on"><a href="@g["adm_href"]&layout=@(layout)&type=js">자바스크립트</a></li>                        
+                }
+                else
+                {
+                    <li><a href="@g["adm_href"]&layout=@(layout)&type=js">자바스크립트</a></li>                        
+                }
+                if (type == "cshtml")
+                {
+                    <li class="on"><a href="@g["adm_href"]&layout=@(layout)&type=cshtml">CSHTML추가코드</a></li>                        
+                }
+                else
+                {
+                    <li><a href="@g["adm_href"]&layout=@(layout)&type=cshtml">CSHTML추가코드</a></li>                        
+                }
+                if (type == "image")
+                {
+                    <li class="on"><a href="@g["adm_href"]&layout=@(layout)&type=image">파일저장소</a></li>                        
+                }
+                else
+                {
+                    <li><a href="@g["adm_href"]&layout=@(layout)&type=image">파일저장소</a></li>                        
+                }
+            }
+			
+            @*파일매니져부분
+            <li><a href="?r=@r&m=@m&module=filemanager&front=main&pwd=@HttpUtility.UrlEncode(g["path_root_ps"] + g["path_layout"] + "\\")" target="_blank">탐색</a></li>*@
+			
+            </ul>
+			<div class="r">
+
+            @if (type != "image")
+            {
+				<select onchange="backChange(this.value);">
+				<option value="">배경</option>
+				<option value="1">흰색</option>
+				<option value="2">검정</option>
+				<option value="3">파랑</option>
+				</select>
+				<img src="@g["img_module_admin"]/btn_full.gif" alt="전체화면으로 편집" class="resizeimg hand" onclick="editBoxcontrol(this);" />        
+            }
+            else
+            {
+                <a href="?r=@r&m=@m&module=filemanager&front=main&pwd=@HttpUtility.UrlEncode(g["path_root_ps"] + g["path_layout"] + "\\" + type + "\\")" target="_blank"><img src="@g["img_module_admin"]/pre_dir.gif" alt="폴더보기" title="폴더보기" /></a>
+				<a href="?r=@r&m=@m&module=filemanager&front=main&fileupload=Y&pwd=@HttpUtility.UrlEncode(g["path_root_ps"] + g["path_layout"] + "\\" + type + "\\")" target="_blank"><img src="@g["img_module_admin"]/mk_up.gif" alt="업로드" title="업로드" /></a>       
+            }
+			</div>
+
+            </div>
+
+
+
+		    <div class="editbox">
+
+            @if (type == "image")
+            {
+                int i = 0;
+                string idir = g["path_root_ps"] + g["path_layout"] + layout + "\\" + type + "\\";
+
+                if (!Directory.Exists(idir))
+                {
+                    @_System.getLink("", "", layout + "/" + type + " 디렉토리가 존재하지 않습니다.", "")
+                    return;
+                }
+
+                string[] _dirs = Directory.GetFiles(idir);        
+                
+                <div class="imgarea">
+    
+
+                @foreach (string f in _dirs)
+                {
+                    if (!File.Exists(f))
+                    {
+                        continue;
+                    }
+
+                    string f_name = f.Substring(idir.Length, f.Length - idir.Length);
+
+
+                    string fext = f_name.Split('.')[f_name.Split('.').Length - 1];
+                    int ftype = _System.getFileType(fext);
+ 
+				    <div class="imgbox" title="@f_name">
+					    <div class="delbox"><a href="?r=@r&m=@module&a=layout_delete&layout=@(layout)&imgfile=@f_name" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?   ');"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="삭제" title="삭제" /></a></div>
+
+                        @if (ftype == 2)
+                        {
+                            int[] isize = new int[2];
+                            Image Img = Image.FromFile(f);
+                            isize[0] = Img.Width;
+                            isize[1] = Img.Height;
+
+                            string rtrSize = "";
+                            if (isize[0] > isize[1])
+                            {
+                                if (isize[0] > 90)
+                                {
+                                    rtrSize = "width='90'";
+                                }
+                                else
+                                {
+                                    rtrSize = "width='" + isize[0].ToString() + "'";
+                                }
+                            }
+                            else
+                            {
+                                if (isize[1] > 90)
+                                {
+                                    rtrSize = "height='90'";
+                                }
+                                else
+                                {
+                                    rtrSize = "height='" + isize[1].ToString() + "'";
+                                }
+                            }
+                            <table><tr><td><a href="?r=@r&m=@m&module=filemanager&front=main&editmode=Y&pwd=@HttpUtility.UrlEncode(idir)&file=@f_name" target="_blank"><img src="@Html.Raw(idir + f_name)" @rtrSize alt="@f_name" /></a></td></tr></table>                            
+                        }
+                        else
+                        {
+                            string strFext = "unknown";
+                            if (File.Exists(g["path_root_ps"] + g["path_core"] + "img\\file\\big\\" + fext + ".gif"))
+                            {
+                                strFext = fext;
+                            }
+                            <table><tr><td><a href="?r=@r&m=@m&module=filemanager&front=main&editmode=Y&pwd=@HttpUtility.UrlEncode(idir)&file=@f_name" target="_blank"><img src="@g["img_core"]/file/big/@Html.Raw(strFext + ".gif")" alt="@f_name" /></a></td></tr></table>    
+                        }
+				    </div>
+                    
+                        i++;
+                }
+
+                @if (i == 0)
+                {
+                    <div class="noimg"><img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> 파일저장소가 비어있습니다.</div>
+                }
+			    </div>                
+            }
+            else
+            {
+                string source_path = "";
+                string error_name = "";
+
+                if (type == "layout")
+                {
+                    source_path = g["path_root_ps"] + g["path_layout"] + layout + "\\" + sublayout;
+                    error_name = sublayout;
+                }
+                else
+                {
+                    source_path = g["path_root_ps"] + g["path_layout"] + layout + "\\" + "_main." + type;
+                    error_name = "_main." + type;
+                }
+
+                if (!File.Exists(source_path))
+                {
+                    @_System.getLink("", "", error_name + " 파일이 존재하지 않습니다.", "")
+                    return;
+                }
+                <textarea name="code" id="editboxarea">
+
+
+                @using (StreamReader writer = new StreamReader(source_path))
+                {
+                            @Html.Raw(writer.ReadToEnd());
+                }
+                    
+                </textarea>                
+            }
+		    </div>
+            
+
+
+            @if (type != "image")
+            {
+ 		        <div id="submitbox" class="submitbox">
+
+                @if (type == "layout")
+                {
+                    <input type="text" name="name" value="@_System.getFolderName(g["path_root_ps"] + g["path_layout"] + layout, "name.txt")" class="input" />
+			        @:의 서브레이아웃 <input type="text" name="subname" size="10" value="@sublayout.Replace(".cshtml", "")" class="input" />을 
+                    
+                }
+                <input type="submit" class="btnblue" value=" 수정/추가 " />
+
+                @if (type == "layout")
+                {
+                    @:또는 레이아웃폴더 <input type="text" name="cplayout" size="10" value="" class="input" /> 을 생성 후 현재 레이아웃을 
+			        <input type="submit" class="btnblue" value=" 복사 " />
+                }
+		
+		        </div>               
+            }
+    </form>
+
+    </div>
+	<div class="clear"></div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function editBoxcontrol(img)
+{
+	var fbox = getId('catinfo');
+	var ebox = getId('editboxarea');
+	var ebox1 = getId('submitbox');
+	
+	if (img.src.indexOf('btn_full') != -1)
+	{
+		fbox.style.zIndex = 10000;
+		fbox.style.position = 'absolute';
+		fbox.style.background = '#ffffff';
+		fbox.style.marginLeft = '-20px';
+		fbox.style.top = '0';
+		fbox.style.left = '0';
+		ebox.style.width = (screen.availWidth - 50) + 'px';
+		ebox.style.height = (screen.availHeight - 215) + 'px';
+		ebox.style.marginLeft = '10px';
+		ebox.style.marginRight = '25px';
+		ebox1.style.marginLeft = '10px';
+
+		img.src = img.src.replace('btn_full','btn_resize');
+		img.alt = '원래화면으로 편집';
+	}
+	else {
+		fbox.style.zIndex = '';
+		fbox.style.position = 'relative';
+		fbox.style.marginLeft = '220px';
+		ebox.style.marginLeft = '0px';
+		ebox.style.width = '99%';
+		ebox.style.height = '550px';
+		ebox.style.marginLeft = '0px';
+		ebox.style.marginRight = '0';
+		ebox1.style.marginLeft1 = '0px';
+
+		img.src = img.src.replace('btn_resize','btn_full');
+		img.alt = '전체화면으로 편집';
+	}
+}
+function backChange(val)
+{
+	if (val)
+	{
+		if (val == '1')
+		{
+			getId('editboxarea').style.background = '#ffffff';
+			getId('editboxarea').style.color = '#000000';
+		}
+		else if(val == '2') {
+			getId('editboxarea').style.background = '#222222';
+			getId('editboxarea').style.color = '#ffffff';
+		}
+		else {
+			getId('editboxarea').style.background = '#085388';
+			getId('editboxarea').style.color = '#ffffff';
+		}
+		setCookie('EditBackColor',val,1);
+		val = '';
+	}
+}
+function saveCheck(f)
+{
+	if (f.name.value == '')
+	{
+		alert('레이아웃명칭을 입력해 주세요.  ');
+		f.name.focus();
+		return false;
+	}
+	if (f.subname.value == '')
+	{
+		alert('서브 레이아웃명칭을 입력해 주세요.  ');
+		f.subname.focus();
+		return false;
+	}
+	if (!chkIdValue(f.subname.value))
+	{
+		alert('서브 레이아웃명은 영문소문자/숫자만 사용할 수 있습니다.  ');
+		f.subname.value = '';
+		f.subname.focus();
+		return false;
+	}
+	if (f.cplayout.value != '')
+	{
+		if (!chkIdValue(f.cplayout.value))
+		{
+			alert('복사할 레이아웃 폴더명은 영문소문자/숫자만 사용할 수 있습니다.  ');
+			f.cplayout.value = '';
+			f.cplayout.focus();
+			return false;
+		}
+	}
+}
+
+
+function delCheck() {
+	if (confirm('삭제된 레이아웃은 복구가 불가능합니다.\n현재 사용중인 레이아웃이라면 절대로 삭제하지 마세요.\n\n그래도 삭제하시겠습니까?')) {
+		if (confirm('실수로 인한 삭제를 막기위해 다시한번 확인합니다.\n\n정말로 삭제하시겠습니까?       ')) {
+			return true;
+		}
+	}
+    
+	return false;
+}
+
+@{
+    if (type != "image")
+    {
+@Html.Raw("function setStart() { \n")
+@Html.Raw("    backChange(getCookie('EditBackColor')); \n")
+@Html.Raw("	var ofs = getOfs(getId('catinfo'));  \n")
+@Html.Raw("    getId('editboxarea').style.width = (parseInt(ofs.width)-32) + 'px'; \n")
+@Html.Raw("}")
+
+@Html.Raw("setStart(); \n")
+@Html.Raw("window.onresize = setStart; \n")
+
+    }
+}
+
+
+
+
+//]]>
+</script>
+
+
+

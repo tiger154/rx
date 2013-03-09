@@ -1,0 +1,85 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var g = PageData[0];
+    var B = PageData[1];
+    var s = PageData[2];
+    var p = PageData[3];
+
+    var recnum = PageData[4];
+    
+    var cat = Request["cat"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];    
+
+    string bbsque0 = "site=" + s;
+    string bbsque1 = "site=" + s + " AND notice=1";
+    string bbsque2 = "site=" + s + " AND notice=0";
+
+    if (B["uid"] > 0)
+    {
+        bbsque0 = bbsque0 + " AND bbs=" + B["uid"];
+        bbsque1 = bbsque1 + " AND bbs=" + B["uid"];
+        bbsque2 = bbsque2 + " AND bbs=" + B["uid"];
+    }
+
+    if (cat != "" && cat != null)
+    {
+        bbsque2 = bbsque2 + " AND category='" + cat.Trim() + "'";
+    }
+
+    // search
+    if (where != "" && where != null && keyword != "" && keyword != null)
+    {
+        if (where == "name" || where == "nic" || where == "ip" || where == "id")
+        {
+            bbsque2 = bbsque2 + " AND " + where + "='" + keyword + "'";
+        }
+        else
+        {
+            string where_set = "(";
+            char[] delimiter = { '|' };       // delimiter = '|'
+            string[] strArray = where.Split(delimiter);
+            int str_int = 0;
+
+            bbsque2 = bbsque2 + " AND ";
+
+            foreach (var tmp in strArray)
+            {
+                if (str_int > 0)
+                {
+                    where_set = where_set + " OR ";
+                }
+
+                where_set = where_set + tmp + " LIKE '%" + keyword + "%'";
+                str_int++;
+            }
+            
+            where_set = where_set + ")";
+            bbsque2 = bbsque2 + where_set;
+        }
+    }
+    
+    int list_start = (Convert.ToInt32(p) - 1) * Convert.ToInt32(recnum);      // list count per page    
+
+    var _R_sql = _System.GetQuery(AppState["table_bbsdata"].ToString(), "", bbsque2, "gid", "asc", list_start, recnum);
+    var _N_sql = _System.GetQuery(AppState["table_bbsdata"].ToString(), "", bbsque1, "gid", "asc", list_start, recnum);
+    
+    var NUM = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), bbsque2);
+    var N_NUM = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), bbsque1);
+
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));    // total pages count
+
+    g["bbs_R_sql"] = _R_sql;
+    g["bbs_N_sql"] = _N_sql;
+    g["bbs_NUM"] = NUM;
+    g["bbs_N_NUM"] = N_NUM;
+    g["bbs_TPG"] = TPG;
+}

@@ -1,0 +1,196 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+
+    string frame_name = "_action_frame_" + m;
+
+    string SITES_sql = "SELECT * FROM " + AppState["table_s_site"].ToString() + " ORDER BY gid asc";
+    int SITE_cnt = _DB.GetDbData_Count(AppState["table_s_site"].ToString(), "");
+
+    string year = Request["year"] != null && Request["year"] != "" ? Request["year"] : date["year"];
+    string month = Request["month"] != null && Request["month"] != "" ? Request["month"] : date["month"];
+    string day = Request["day"] != null && Request["day"] != "" ? Request["day"] : date["day"];
+
+    string accountQue = Request["account"] != null && Request["account"] != "" ? "site=" + Request["account"] + " and " : "";
+
+    var numarr = new Dictionary<string, string>();
+
+    numarr.Add("visit", "방문자");
+    numarr.Add("login", "로그인");
+    numarr.Add("mbrjoin", "회원가입");
+    numarr.Add("mbrout", "탈퇴");
+    numarr.Add("comment", "댓글");
+    numarr.Add("oneline", "한줄의견");
+    numarr.Add("upload", "파일첨부");
+    numarr.Add("download", "다운로드");
+    numarr.Add("rcvtrack", "받은트랙백");
+    numarr.Add("sndtrack", "보낸트랙백");
+
+    var _S = new Dictionary<string, int>();
+    
+}
+
+<form name="procForm" action="@g["s"]/" method="get">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="m" value="@m" />
+<input type="hidden" name="module" value="@module" />
+<input type="hidden" name="front" value="@Request["front"]" />
+
+<div class="sbox">
+	<select name="account" class="account" onchange="this.form.submit();">
+	<option value="">&nbsp;+ 전체사이트</option>
+	<option value="">---------------------------</option>
+    @foreach (var S in _DB.Query(SITES_sql))
+    {
+        <option value="@S["uid"]" @_System.getSltStr(Request["account"], S["uid"])>ㆍ@(S["name"])</option>
+    }
+
+    @if (SITE_cnt == 0)
+    {
+        <option value="">등록된 사이트가 없습니다.</option>
+    }
+	</select>
+	- 
+	<select name="year" onchange="this.form.submit();">
+    @for (int i = Convert.ToInt32(date["year"]); i > 2009; i--)
+    {
+        <option value="@i" @_System.getSltStr(year, i)>@(i)년</option>
+    }
+	</select>
+
+	<select name="month" onchange="this.form.submit();">
+    @for (int i = 1; i < 13; i++)
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(month, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)월</option>                                                                           
+    }
+	<option value="-1" @_System.getSltStr(month, -1) class="mall">전체</option>
+	</select>
+
+	<input type="button" value="@date["year"]년" class="btngray" onclick="this.form.year.value='@date["year"]',this.form.month.value='-1',this.form.submit();" />
+	<input type="button" value="@date["month"]월" class="btngray" onclick="this.form.year.value='@date["year"]',this.form.month.value='@date["month"]',this.form.submit();" />
+
+</div>
+</form>
+
+<table cellspacing="1">
+	<colgroup> 
+	<col width="65"> 
+	<col width="60"> 
+	<col width="55"> 
+	<col width="55"> 
+	<col width="55"> 
+	<col width="55"> 
+	<col width="55"> 
+	<col width="55"> 
+	<col width="55"> 
+	<col width="70"> 
+	<col width="70"> 
+	<col>
+	</colgroup> 
+	<thead>
+	<tr class="sbjtr">
+		<th>날짜/구분</th>
+        @foreach (string key in numarr.Keys)
+        {
+            <th scope="col">@numarr[key]</th>
+        }
+		<th scope="col"></th>
+	</tr>
+	</thead>
+	
+	<tbody>
+
+    @if (Convert.ToInt32(month) > 0)
+    {
+        DateTime curDate = new DateTime(Convert.ToInt32(year), Convert.ToInt32(month), 1);
+        int numofmonth = Convert.ToInt32((curDate.AddMonths(1).AddDays(-1)).Day.ToString());
+
+        for (int i = 1; i < numofmonth + 1; i++)
+        {
+            dynamic _D = _DB.getDbData(AppState["table_s_numinfo"], accountQue + "date='" + year + month + String.Format("{0:00}", i) + "'", "*");
+                
+	        <tr class="looptr">
+		        <td class="datetd">@month/@String.Format("{0:00}", i)</td>
+
+                @foreach (string key in numarr.Keys)
+                {
+                    if (!_S.ContainsKey(key))
+                    {
+                        _S.Add(key, 0);
+                    }
+                    
+                    _S[key] += _D[key];                    
+		            <td class="sumtd1">@(_D[key] != 0 ? _D[key].ToString() : "")</td>
+                }
+		        <td></td>
+	        </tr>            
+        }
+    }
+    else
+    {
+        string _sumque = "";
+        foreach (string key in numarr.Keys)
+        {
+            _sumque += "sum(" + key + ")";
+        }
+
+        _sumque = _sumque.Substring(0, _sumque.Length - 1);
+            
+        for (int i = 1; i < 13; i++)
+        {
+            dynamic _D = _DB.getDbData(AppState["table_s_numinfo"], accountQue + "date like '" + year + "%'", _sumque);
+            int j = 0;
+                
+	        <tr class="looptr">
+		        <td class="datetd hand" onclick="document.procForm.month.value='@String.Format("{0:00}", i)';document.procForm.submit();">@year / @String.Format("{0:00}", i)</td>
+                    
+                @foreach (string key in numarr.Keys)
+                {
+                    if (!_S.ContainsKey(key))
+                    {
+                        _S.Add(key, 0);
+                    }
+
+                    _S[key] += _D[key];
+                    <td class="sumtd1">@(_D[key] != 0 ? _D[key].ToString() : "")</td>
+                    j++;
+                }
+		        <td></td>
+	        </tr>
+        }
+    }
+
+	<tr class="sumtr">
+		<td class="datetd"><b>합 계</b></td>
+        @foreach (string key in numarr.Keys)
+        {
+            <td class="sumtd1">@(_S[key] != 0 ? _S[key].ToString() : "")</td>    
+        }
+		<td></td>
+	</tr>
+
+	</tbody>
+</table>
+

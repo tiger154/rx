@@ -1,0 +1,13 @@
+﻿CREATE TABLE rx_s_outkey ( 
+uid  int  identity(1,1)  NOT NULL , 
+site  int   NOT NULL , 
+date  int   NOT NULL , 
+keyword  nvarchar(8)   NOT NULL , 
+naver  int   NOT NULL , 
+nate  int   NOT NULL , 
+daum  int   NOT NULL , 
+yahoo  int   NOT NULL , 
+google  int   NOT NULL , 
+etc  int   NOT NULL , 
+total  int   NOT NULL ,
+PRIMARY KEY (uid));

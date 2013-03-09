@@ -1,0 +1,21 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    if (AppState["myip"] == "" || AppState["myip"] == null)
+    {
+        //AppState["myip"] = new System.Net.WebClient().DownloadString(("http://www.whatismyip.org"));       // remote ip 를 알려주는 사이트로 직접 access (공유기 내부아이피 추출방지)        
+        AppState["myip"] = Dns.GetHostByName(Dns.GetHostName()).AddressList[0].ToString();
+    }
+
+    Twitter.Initialize("", "");
+    Facebook.Initialize("", "");
+
+    WindowsAzureStorage.AccountName = "";
+    WindowsAzureStorage.AccountKey = "";
+}

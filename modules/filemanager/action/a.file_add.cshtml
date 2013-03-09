@@ -1,0 +1,43 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var folder = Request["folder"];
+    var newfile = Request["newfile"];
+    var content = Request.Unvalidated("content");
+    var alert = Request["alert"];
+    var history = Request["history"];
+    var nFile = folder + newfile;
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    File.WriteAllText(nFile, content.Trim(), System.Text.Encoding.UTF8);
+    
+    @_System.getLink("reload", "parent.", "생성 되었습니다.", "")
+    return;
+}

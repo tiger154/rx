@@ -1,0 +1,73 @@
+﻿@using System.Drawing;
+@using System.Drawing.Imaging;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uploadedFile = Request.Files[0];
+    
+    if(my["uid"]== 0 ) 
+    {
+        @_System.getLink("","","정상적인 접근이 아닙니다.", "")
+        return;
+    }    
+    
+    string name = Path.GetFileName(uploadedFile.FileName);
+    double size = uploadedFile.ContentLength;
+    string fileExt = _System.getExt(name).ToLower();    
+    
+    if(fileExt=="jpeg") {
+        fileExt = "jpg";
+    }    
+    
+    string photo = my["id"] + "." + fileExt;    
+    string saveFile = g["path_root_ps"] + g["path_var"] + "simbol\\" + photo;                           //축소사진
+    string oriFile = g["path_root_ps"] + g["path_var"] + "simbol\\" + my["id"] + "_ori." + fileExt;    //원본사진
+    
+    if (name!=null && name!="") {
+        
+        if(!("[gif][jpg][png]").Contains(fileExt)) {
+            @_System.getLink("", "", "gif/jpg/png 파일만 등록할 수 있습니다.", "")
+            return;
+        }
+        uploadedFile.SaveAs(oriFile);
+        
+        using (Image Img = Image.FromFile(oriFile)){
+            using(Image thumbImg = new Bitmap(Img, 50, 50)) {
+                thumbImg.Save(saveFile, Img.RawFormat);
+                thumbImg.Dispose();
+            }
+        }
+        
+        string UPDATE_MODULE_SQL = "UPDATE " + AppState["table_s_mbrdata"].ToString() + " SET photo='" + photo + "' WHERE memberuid=" + my["uid"];
+        @_DB.Execute(UPDATE_MODULE_SQL);
+    }      
+      
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

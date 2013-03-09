@@ -1,0 +1,79 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var id = Request["id"].Trim();
+    var name = Request["name"].Trim();
+    var title = Request["title"].Trim();
+    var headercode = Request["headercode"].Trim();
+    var footercode = Request["footercode"].Trim();
+    var titlefix = Request["titlefix"];
+    var icon = Request["icon"];
+    var layout = Request["layout"];
+    var startpage = Request["startpage"];
+    var m_layout = Request["m_layout"];
+    var m_startpage = Request["m_startpage"];
+    var sitelang = Request["sitelang"];
+    var open = Request["open"];
+    var dtd = Request["dtd"];
+    var nametype = Request["nametype"];
+    var timecal = Request["timecal"];
+    var site_uid = Request["site_uid"];
+    var buffer = Request["buffer"];
+    var rewrite = Request["rewrite"];
+    var usescode = Request["usescode"];
+
+    @_System.checkAdmin(my["admin"], 0)        // admin check
+
+    if(site_uid != null && site_uid != "0") 
+    {
+        string UPDATE_SITE_SQL = "UPDATE "+AppState["table_s_site"]+" SET name='"+name+"',title='"+title+"',titlefix='"+titlefix+"',icon='"+icon+"',layout='"+layout+"',startpage='"+startpage+"',";
+        UPDATE_SITE_SQL = UPDATE_SITE_SQL + "m_layout='"+m_layout+"',m_startpage='"+m_startpage+"',opend='"+open+"',dtd='"+dtd+"',nametype='"+nametype+"',timecal='"+timecal+"',headercode='"+headercode+"',footercode='"+footercode+"',";
+        UPDATE_SITE_SQL = UPDATE_SITE_SQL + "id='"+id+"',buffer="+Convert.ToInt32(buffer)+",rewrite="+Convert.ToInt32(rewrite)+",usescode="+Convert.ToInt32(usescode)+" WHERE uid="+site_uid;
+
+        @_DB.Execute(UPDATE_SITE_SQL);
+        
+	    @_System.getLink("reload", "parent.", "", "")
+        return;
+         
+    }
+    else 
+    {
+        string MAXC = _DB.GetDbData_S(AppState["table_s_site"].ToString(), "", "max(gid)").ToString();
+        int gid = Convert.ToInt32(MAXC) + 1;
+
+        string INSERT_SITE_SQL = "INSERT INTO " + AppState["table_s_site"] + " (gid,id,name,title,titlefix,icon,layout,startpage,m_layout,m_startpage,lang,opend,dtd,nametype,timecal,rewrite,buffer,usescode,headercode,footercode) VALUES (";
+        INSERT_SITE_SQL = INSERT_SITE_SQL + gid + ",'" + id + "','" + name + "','" + title + "','" + titlefix + "','" + icon + "','" + layout + "','" + startpage + "','" + m_layout + "','" + m_startpage + "','" + sitelang + "','" + open + "','" + dtd + "','" + nametype + "',";
+        INSERT_SITE_SQL = INSERT_SITE_SQL + "'" + timecal + "','" + rewrite + "','" + buffer + "','" + usescode + "','" + headercode + "','" + footercode + "')";
+
+        @_DB.Execute(INSERT_SITE_SQL);
+
+	    @_System.getLink("reload", "parent.", "", "")
+        return;
+    }
+}

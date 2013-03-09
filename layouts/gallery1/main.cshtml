@@ -1,0 +1,204 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var _HS = PageData[0];
+    var my = PageData[1];
+    var _CA = PageData[2];
+    var s = PageData[3];
+    var d_layout = PageData[4];
+    var g = PageData[5];
+    var keyword = PageData[6];
+    var p = PageData[7];
+    var system = PageData[8];
+    var _m = PageData[9];
+    var c = PageData[10];
+    var m = PageData[11];
+    var _mod = PageData[12];
+    var _keyword = PageData[13];
+    var _HM = PageData[14];
+    var r = PageData[15];
+    var bid = PageData[16];
+    var _HP = PageData[17];
+    var date = PageData[18];
+    var referer = PageData[19];    
+    
+    var type = Request["type"];
+    var cat = Request["cat"];
+
+    var LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);
+    
+    System.Collections.ArrayList ctarr = new System.Collections.ArrayList();
+    System.Collections.ArrayList CXA = new System.Collections.ArrayList();
+
+    Session["arr_uid"] = null;
+    Session["MenuOpen"] = null;
+    Session["j"] = null;
+
+    if (_HM["uid"] != 0)
+    {
+        string[] _catrr = _Menu.getLayoutMenuCodeToPath(AppState["table_s_menu"], _HM["uid"], 0);
+
+        foreach (string _key in _catrr)
+        {   
+            @_System.getLink("", "", _key, "")
+            
+            CXA.Add(_key);
+        }
+    }
+
+    //////////////////////////////////////////////////////////
+    ///// Top File Rendering
+    //////////////////////////////////////////////////////////
+    @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/top.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR, c, _HM, system)
+}
+
+<div id="content">
+@if (d_layout["_is_ownmain"] == "1")
+{
+    @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/_main.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR)                    
+    
+    if (LAYOUT_ARR["begin"] == "0" || LAYOUT_ARR["begin"] == "")
+    {
+        @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/_begin.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR)           
+    }
+}
+
+@{    
+    if (d_layout["_is_content"] == "1")
+    {
+        <div class="contentbody">
+        @RenderPage("../../" + g["path_core"] + "engine/content.engine.cshtml", g, system, _m, c, m, p, _HS, my, d_layout, s, _keyword, _mod, r, bid, _HP, _HM, date, referer)
+        </div>
+    }
+}
+</div>
+
+<div class="snb">
+
+	<div class="titlebox">
+		<div class="tt">카테고리</div>
+		<div class="more"></div>
+		<div class="clear"></div>
+	</div>
+
+    <div class="ttitle"><img src="@g["img_core"]/tree/default_none/top.gif" alt="" /><a href="@g["s"]/"><span>전체분류</span></a></div>
+	<div class="joinimg"></div>
+	<div class="tree">
+	@if (!(system == "edit.all" && type == "menu"))
+ {
+        <script type="text/javascript">
+        //<![CDATA[
+        var TreeImg = "@g["img_core"]/tree/default_none";
+        var ulink = "@((cat != null && cat != "" && cat != "0") ? g["s"] + "/?r=" + r + "&cat=" + Server.UrlEncode(cat) + "&c=" : _System.RW("c=", g["r"], _HS))";
+
+        //]]>
+        </script>
+        <script type="text/javascript" src="@g["url_root_host"]/_core/js/tree.js"></script>
+        <script type="text/javascript">
+        //<![CDATA[
+        var TREE_ITEMS = [['', null, @_Menu.getLayoutMenuShow(_HS["uid"], AppState["table_s_menu"], 0, 0, 0, _HM["uid"], CXA, "", _HM["uid"])]];
+        new tree(TREE_ITEMS, tree_tpl);
+        @Session["MenuOpen"]
+        //]]>
+        </script>
+        
+     int ISCAT_NUM = _DB.GetDbData_Count(AppState["table_s_menu"].ToString(), "site='" + s + "'");
+
+     if (ISCAT_NUM == 0)
+     {
+                <div class="none">분류(메뉴)를 등록해 주세요.</div>            
+     }
+ }
+ else
+ {
+            <div class="none">메뉴 관리중 출력제한</div>        
+ }
+	</div>
+
+    <div class="titlebox">
+		<div class="tt">인기태그</div>
+		<div class="more"></div>
+		<div class="clear"></div>
+	</div>
+	
+	<div class="tags">
+    @{
+        DateTime d_regis1 = date["totime"].AddDays(-14);
+        DateTime d_regis2 = date["totime"];
+        string rec_T = "20";
+
+        string _RCD_T = _System.GetQuery(AppState["table_s_tag"].ToString(), "", "site=" + s + " AND date between '" + d_regis1.ToString("yyyyMMdd") + "' AND '" + d_regis2.ToString("yyyyMMdd") + "'", "hit", "DESC", 0, rec_T);
+
+        @_System.Random_Tag(_RCD_T, 5, 0, Convert.ToInt32(rec_T), r, g, db);    
+    }
+	</div>
+
+	@if (LAYOUT_ARR["adtype"] != "")
+ {
+        <div class="banner">
+            
+        @if (LAYOUT_ARR["adtype"] == "1")
+        {
+            <a href="@LAYOUT_ARR["ad_imglink"]" target="@LAYOUT_ARR["ad_imgtarget"]"><img src="@g["url_layout"]/_var/@LAYOUT_ARR["ad_img"]" width="280" alt="" /></a>
+        }
+        @if (LAYOUT_ARR["adtype"] == "2")
+        {
+            <embed src="@g["url_layout"]/_var/@LAYOUT_ARR["ad_swf"]" width="280"></embed>
+        }
+        @if (LAYOUT_ARR["adtype"] == "3")
+        {
+            @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_var/_ad.cshtml");
+        }
+        
+
+        </div>
+ }
+
+	<div class="hotbox">
+		<div class="tabbox">
+			<div class="tp tp1 vline on" onclick="tabCheck_s(1,this,'_myHOTlayer_');">많이 본</div>
+			<div class="tp tp1 vline" onclick="tabCheck_s(2,this,'_myHOTlayer_');">댓글 많은</div>
+			<div class="tp" onclick="tabCheck_s(3,this,'_myHOTlayer_');">추천자료</div>
+			<div class="clear"></div>
+		</div>
+		<div id="_myHOTlayer_" class="hbody">
+			<ul>
+            @{
+                DateTime _date1 = date["totime"].AddDays(-30);
+
+                string _RCD1 = "SELECT top 15 * FROM " + AppState["table_bbsdata"] + " WHERE site=" + s + " AND display='1' AND d_regis > '" + _date1.ToString("yyyy-MM-dd HH:mm:ss") + "' ORDER BY hit DESC";
+                int _i1 = 0;
+
+                foreach (var _R1 in _DB.Query(_RCD1))
+                {
+                    _i1++;
+
+                    int cmt_one_sum = _R1["comment"] + _R1["oneline"];
+                    string hit_class = "";
+                    string cmt_one_prn = "";
+
+                    if (_i1 < 4)
+                    {
+                        hit_class = "class='emp'";
+                    }
+                    if (cmt_one_sum > 0)
+                    {
+                        cmt_one_prn = "<span>(" + cmt_one_sum + ")</span>";
+                    }
+                      
+                    <li><i @Html.Raw(hit_class)>@_i1</i><a href="@_System.getPostLink(s, _R1, g["r"], _HS)">@_R1["subject"]</a>@Html.Raw(cmt_one_prn)</li>
+                }    
+            }
+			</ul>
+		</div>
+	</div>
+
+</div>
+<div class="clear"></div>
+@RenderPage("../../layouts/" + d_layout["dir"] + "/_cross/bottom.cshtml", g, r, _HS, _HM, system)

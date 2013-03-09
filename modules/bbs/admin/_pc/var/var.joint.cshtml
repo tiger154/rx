@@ -1,0 +1,415 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var g = PageData[0];
+    var m = PageData[1];
+
+    dynamic d_bbs = _DB.Get_code("bbs");
+    dynamic d_bbsenv = null;
+    
+    var id = Request["id"];
+    var r = Request["r"];
+    var _keyw = Request["_keyw"];
+    var p = Request["p"];
+    var where = Request["where"];
+    var system = Request["system"];
+    var iframe = Request["iframe"];
+    var dropfield = Request["dropfield"];
+    var smodule = Request["smodule"];
+    var cmodule = Request["cmodule"];
+    var skin = Request["skin"];
+    var cat = Request["cat"];
+    var newboard = Request["newboard"];
+    var catque = "uid > 0";
+    var frame_name = "_action_frame_" + g["m"];
+
+    string tdir = g["path_root_ps"] + g["path_module"] + smodule + "\\theme\\";
+    
+    string skinStr = "";
+    int recnum = 15;
+    
+    if(_keyw != "" && _keyw != null) {
+        catque = catque + " AND "+where+" LIKE '"+_keyw+"%'";
+    }
+    if(p == "" || p == null) {
+        p = "1";
+    }
+    
+    int list_start = (Convert.ToInt32(p)-1) * Convert.ToInt32(recnum);      // lists per page
+    int NUM = _DB.GetDbData_Count(AppState["table_bbslist"].ToString(), catque);
+
+    string PAGES = _System.GetQuery(AppState["table_" + smodule + "list"].ToString(), "", catque, "uid", "asc", list_start, recnum.ToString());
+    
+    decimal TPG = _System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));    // total page
+}
+
+<div id="mjointbox">
+
+	<div class="title">
+		<form name="bbsSform" action="@g["s"]/">
+        <input type="hidden" name="system" value="@system" />
+		<input type="hidden" name="r" value="@r" />		
+		<input type="hidden" name="iframe" value="@iframe" />
+		<input type="hidden" name="dropfield" value="@dropfield" />
+		<input type="hidden" name="smodule" value="@smodule" />
+		<input type="hidden" name="cmodule" value="@cmodule" />
+		<input type="hidden" name="p" value="@p" />
+ 		<input type="hidden" name="newboard" value="@newboard" />
+ 
+		<select name="where">
+
+		<option value="name" @_System.getSltStr(where, "name")>게시판제목</option>
+		<option value="id" @_System.getSltStr(where, "id")>게시판ID</option>
+		</select>
+		
+		<input type="text" name="_keyw" size="15" value="@_keyw" class="input" />
+		<input type="submit" value=" 검색 " class="btngray" />
+		<input type="button" value=" 리셋 " class="btngray" onclick="this.form.p.value=1;this.form._keyw.value='';this.form.submit();" />
+	
+		&nbsp;&nbsp;
+       @{
+            string newbd_css = "blue";
+
+            if(newboard != "" && newboard != null) 
+            {
+                newbd_css = "gray";
+            }            
+        }
+		<input type="button" value=" 새 게시판 " class="@Html.Raw("btn"+newbd_css)" onclick="this.form.newboard.value=1;this.form.submit();" />            
+		</form>
+
+	</div>
+    
+    @if (newboard != "" && newboard != null)
+    {
+        <form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+        <input type="hidden" name="r" value="@r" />
+        <input type="hidden" name="m" value="@smodule" />
+        <input type="hidden" name="a" value="makebbs" />
+        <input type="hidden" name="backUrl" value="@g["s"]/?r=@r&system=@system&iframe=@iframe&dropfield=@dropfield&smodule=@smodule&cmodule=@cmodule" />
+    
+        <input type="hidden" name="hitcount" value="0" />
+        <input type="hidden" name="recnum" value="20" />
+        <input type="hidden" name="sbjcut" value="40" />
+        <input type="hidden" name="newtime" value="24" />
+        <input type="hidden" name="point1" value="0" />
+        <input type="hidden" name="point2" value="0" />
+        <input type="hidden" name="perm_l_list" value="0" />
+        <input type="hidden" name="perm_l_view" value="0" />
+        <input type="hidden" name="snsconnect" value="0" />
+    
+        <table>
+    		<tr>
+			<td class="td1">
+				게시판이름					
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_bbsidname','block','none');" />
+			</td>
+			<td class="td2">
+				<input type="text" name="name" value="" class="input sname" />
+				아이디 <input type="text" name="id" value="" class="input sname2" />
+				<div id="guide_bbsidname" class="guide hide">
+				<span class="b">게시판이름</span> : 한글,영문등 자유롭게 등록할 수 있습니다.<br />
+				<span class="b">아이디</span> : 영문 대소문자+숫자+_ 조합으로 만듭니다.<br />
+				</div>
+			</td>
+    		</tr>
+    
+            <tr>
+			<td class="td1">
+				카 테 고 리
+				<img src="@g["img_core"]/_public/ico_q.gif" alt="도움말" title="도움말" class="hand" onclick="layerShowHide('guide_category','block','none');" />
+			</td>
+			<td class="td2">
+				<input type="text" name="category" value="" class="input sname1" />
+				<div id="guide_category" class="guide hide">
+				<span class="b">콤마(,)</span>로 구분해 주세요. <span class="b">첫분류는 분류제목</span>이 됩니다.<br />
+				보기)<span class="b">구분</span>,유머,공포,엽기,무협,기타
+				</div>
+			</td>
+		    </tr>
+
+    		<tr>
+			<td class="td1">레 이 아 웃</td>
+			<td class="td2">
+                <select name="layout" class="select1">
+                <option value="">&nbsp;+ 사이트 대표레이아웃</option>
+                <option value="">--------------------------------</option>
+                @{
+        string tdir1 = g["path_root_ps"] + g["path_layout"];
+
+        foreach (string tpl in Directory.GetDirectories(tdir1))
+        {
+            string lay_name = tpl.Substring(tdir1.Length, tpl.Length - tdir1.Length);         // get directory name
+            string lay_sel = "";
+
+            if (lay_name != "_blank")
+            {
+                <option value="@lay_name\main.cshtml" @Html.Raw(lay_sel)>ㆍ @_System.getFolderName(tpl, "name.txt")</option>
+            }
+        }
+                }
+                </select>
+            </td> 
+            </tr>
+
+    		<tr>
+			<td class="td1">게시판테마</td>
+			<td class="td2">
+                <select name="skin" class="select1">
+                <option value="">&nbsp;+ 게시판 대표테마</option>
+                <option value="">--------------------------------</option>
+                @{
+        string tdir2 = g["path_root_ps"] + "\\modules\\" + smodule + "\\theme\\_pc\\";
+
+        foreach (string tpl in Directory.GetDirectories(tdir2))
+        {
+            string theme_name = tpl.Substring(tdir2.Length, tpl.Length - tdir2.Length);         // get directory name
+            string theme_sel = "";
+            string F_Path = "";
+
+            if (theme_name != "_blank")
+            {
+                F_Path = g["path_root_ps"] + "\\modules\\" + smodule + "\\theme\\_pc\\" + theme_name;
+                                                            
+                            <option value="@Html.Raw("_pc\\" + theme_name)">ㆍ @_System.getFolderName(F_Path, "name.txt")</option>
+            }
+        }
+                }
+                </select>
+			</td>
+	    	</tr>
+
+		    <tr>
+			<td class="td1 sfont1">(모바일접속)</td>
+			<td class="td2">
+				<select name="m_skin" class="select1">
+				<option value="">&nbsp;+ 모바일 대표테마</option>
+				<option value="">--------------------------------</option>
+                @{
+        string tdir_mobile = g["path_root_ps"] + "\\modules\\" + smodule + "\\theme\\_mobile\\";
+
+        foreach (string tpl in Directory.GetDirectories(tdir_mobile))
+        {
+            string mobile_name = tpl.Substring(tdir_mobile.Length, tpl.Length - tdir_mobile.Length);         // get directory name
+            string mobile_sel = "";
+            string F_Path = "";
+
+            if (mobile_name != "_blank")
+            {
+                F_Path = g["path_root_ps"] + "\\modules\\" + smodule + "\\theme\\_mobile\\" + mobile_name;
+                                                                
+                            <option value="@Html.Raw("_mobile\\" + mobile_name)">ㆍ @_System.getFolderName(F_Path, "name.txt")</option>
+            }
+        }
+                }
+				</select>
+			</td>
+		    </tr>            
+
+    		<tr>
+			<td class="td1">글쓰기권한</td>
+			<td class="td2">
+				<select name="perm_l_write" class="select1">
+				<option value="0">&nbsp;+ 전체허용</option>
+				<option value="0">--------------------------------</option>
+                @{
+        string _LEVEL_sql3 = "SELECT * FROM " + AppState["table_s_mbrlevel"].ToString() + " ORDER BY uid ASC";
+
+        foreach (var _L in _DB.Query(_LEVEL_sql3))
+        {                        
+            <option value="@_L["uid"]" @_System.getSltStr(_L["uid"], 1)>@Html.Raw("ㆍ" + _L["name"] + "(" + string.Format("{0:#,0}", Convert.ToInt32(_L["num"])) + ") 이상")</option>
+                        
+            if (_L["gid"] != 0)
+            {
+                break;
+            }
+        }
+                }                            
+				</select>
+			</td>
+	    	</tr>
+        </table>
+
+    	<div class="submitbox">
+		    <input type="submit" class="btnblue" value="새게시판 만들기" />
+		    <a href="@g["s"]/?r=@r&m=admin&module=@smodule&front=main&type=makebbs" target="_blank">더 자세히</a>
+		    <a href="#." onclick="thisReset();">취소</a>
+	    </div>
+               
+    	</form>
+    }
+    else
+    {
+        d_bbsenv = _DB.Get_module_data(AppState["table_code_d_bbsenv"], "id", id);
+
+        if (NUM != 0)
+        {   
+
+	<table>
+		<tr>
+		<td class="name b"><a href="./?m=@smodule" target="_blank">전체게시물</td>
+		<td class="cat">
+		<select>
+		<option>@_System.getFolderName(tdir + d_bbs["skin_total"], "name.txt")</option>
+		</select>
+		</td>
+		<td class="aply">
+			<input type="button" value="C" title="게시판관리" class="btngray" onclick="window.open('@g["s"]/?r=@r&m=admin&module=@smodule&front=main');" />
+			<input type="button" value="T" title="테마설정" class="btngray" onclick="window.open('@g["s"]/?r=@r&m=admin&module=@smodule&front=skin&theme=@d_bbs["skin_total"].Replace("\\","/")');" />
+			<input type="button" value="연결" class="btnblue" onclick="dropJoint('@g["s"]/?r=@r&m=@smodule');" />
+		</td>
+		</tr>
+
+        @foreach (var R in _DB.Query(PAGES))
+        {   
+            <tr @Html.Raw(_System.isEqual(R["id"], id, "class='madetr'", ""))>
+		    <td>
+            
+            @if (R["category"] != "")
+            {
+                string[] _catexp = R["category"].Split(',');
+                int _catnum = _catexp.Count();
+                <select id="cat@(R["id"])" class="category1" title="@R["id"]">
+			    <option value="">&nbsp;+ @R["name"]</option>                
+			    <option value="">--------------------------------</option>
+                @for (int i = 1; i < _catnum; i++)
+                {
+                    if (_catexp[i] == "")
+                    {
+                        continue;
+                    }    
+                    <option value="@_catexp[i]">ㆍ @_catexp[i]</option>                    
+                }
+			    </select>
+            }
+            else
+            {
+			    <input type="hidden" id="cat@(R["id"])" value="" />
+			    <a href="@g["s"]/?r=@r&m=@smodule&bid=@R["id"]" target="_blank" title="게시판보기">@R["name"]</a><span>(@R["id"])</span>                
+            }
+		    </td>
+		    <td class="cat">
+			    <select>
+			    <option>
+                @if (d_bbsenv["skin"] != "")
+                {
+                    @_System.getFolderName(tdir + d_bbsenv["skin"], "name.txt")
+                    skinStr = d_bbsenv["skin"];
+                }
+                else
+                {
+                    skinStr = d_bbs["skin_main"];                                    
+                    @: 게시판 대표테마
+                }
+
+                </option>
+			    </select>
+		    </td>
+		    <td class="aply">
+			    <input type="button" value="C" title="게시판설정" class="btngray" onclick="window.open('@g["s"]/?r=@r&m=admin&module=@smodule&front=main&uid=@R["uid"]');" />
+			    <input type="button" value="T" title="테마설정" class="btngray" onclick="window.open('@g["s"]/?r=@r&m=admin&module=@smodule&front=skin&theme=@skinStr.Replace("\\", "/")');" />
+			    <input type="button" value="연결" class="btnblue" onclick="dropJoint('@g["s"]/?r=@r&m=@smodule&bid=@R["id"]'+(getId('cat@(R["id"])').value?'&cat='+getId('cat@(R["id"])').value:''));" />
+
+		    </td>
+		    </tr>
+        }
+	</table>            
+    
+        <div class="pagebox01">
+            <script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+        </div>	
+        }
+        else
+        {
+ 	    <div class="nonebbs">
+        @if (_keyw != null && _keyw != "")
+        {
+            <img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> @:검색결과에 해당되는 게시판이 없습니다.
+        }
+        else
+        {
+            <img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> @:아직 게시판이 만들어지지 않았습니다. 게시판을 만들어주세요.
+        }
+	    </div>
+        }
+    }
+</div>
+
+<style type="text/css">
+#mjointbox {}
+#mjointbox .title {border-bottom:#dfdfdf dashed 1px;padding:0 0 10px 0;margin:0 0 20px 0;}
+#mjointbox .title .cat {width:120px;}
+#mjointbox table {width:98%;}
+#mjointbox table .name {width:160px;}
+#mjointbox table .name span {font-size:11px;font-family:arial;color:#c0c0c0;padding:0 0 0 3px;}
+#mjointbox table .cat {text-align:right;}
+#mjointbox table .cat select {width:115px;}
+#mjointbox table .aply {text-align:right;}
+#mjointbox table .aply .btngray {width:25px;}
+#mjointbox table .aply .btnblue {width:45px;}
+#mjointbox .pagebox01 {text-align:center;padding:15px 0 15px 0;margin:15px 0 0 0;border-top:#efefef solid 1px;}
+#mjointbox .nonebbs {padding:20px 0 20px 0;font-size:12px;color:#888;}
+#mjointbox .nonebbs img {position:relative;top:2px;}
+#mjointbox .category1 {width:160px;}
+#mjointbox .madetr td {background:#efefef;}
+#mjointbox .td1 {padding:14px 0 5px 0;width:100px;vertical-align:top;}
+#mjointbox .td2 {padding:10px 0 5px 0;color:#666666;}
+#mjointbox .td2 .sname {width:154px;}
+#mjointbox .td2 .sname1 {width:287px;}
+#mjointbox .td2 .sname2 {width:82px;}
+#mjointbox .td2 .select1 {width:180px;letter-spacing:-1px;}
+#mjointbox .td2 .guide {font-size:11px;font-family:dotum;color:#555;line-height:150%;padding:10px 0 0 0;}
+#mjointbox .td2 .dn {margin-bottom:-5px;}
+#mjointbox .td2 .dm {position:relative;top:2px;padding:5px;margin:0 3px 0 0;border:#dfdfdf solid 1px;background:#f9f9f9;cursor:pointer;}
+#mjointbox .td2 .add {height:40px;}
+#mjointbox .td2 textarea {padding:5px;margin:0;width:330px;height:100px;overflow-x:hidden;overflow-y:auto;line-height:150%;color:#000000;font-family:Courier new, arial, dotum;font-size:9pt;text-align:left;}
+#mjointbox .sfont1 {font:normal 11px dotum;color:#c0c0c0;}
+#mjointbox .notice {padding:15px 0 10px 15px;margin:0 0 20px 0;font-size:11px;font-family:dotum;color:#02B6D6;border-bottom:#dfdfdf dashed 1px;line-height:150%;}
+#mjointbox .submitbox {margin:20px 0 20px 0;padding:15px 0 20px 107px;border-top:#dfdfdf dashed 1px;}
+#mjointbox .submitbox a {font-size:11px;font-family:dotum;text-decoration:underline;color:#c0c0c0;padding:0 0 0 10px;}
+
+</style>
+
+<script type="text/javascript">
+//<![CDATA[
+function thisReset() {
+	var f = document.bbsSform;
+
+    f.newboard.value = '';
+	f.p.value = 1;
+	f._keyw.value = '';
+	f.submit();
+}
+
+function saveCheck(f) {
+	if (f.name.value == '') {
+		alert('게시판이름을 입력해 주세요.     ');
+		f.name.focus();
+        
+		return false;
+	}
+	if (f.id.value == '') {
+		alert('게시판아이디를 입력해 주세요.      ');
+		f.id.focus();
+            
+		return false;
+	}
+	if (!chkFnameValue(f.id.value)) {
+		alert('게시판아이디는 영문 대소문자/숫자/_ 만 사용가능합니다.      ');
+		f.id.value = '';
+		f.id.focus();
+           
+		return false;
+	}
+    
+	return confirm('정말로 새 게시판을 만드시겠습니까?         ');
+}
+//]]>
+</script>

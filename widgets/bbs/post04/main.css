@@ -1,0 +1,16 @@
+.widget_post04 {position:relative;padding:0;}
+.widget_post04 h6 {border-bottom:#dfdfdf solid 1px;padding:0 0 9px 0;margin:0 0 15px 0;font-weight:bold;font-family:"gothic","dotum";font-size:13px;color:#384799;}
+.widget_post04 h6 a {color:#384799;}
+.widget_post04 ul {padding:0;margin:0;height:140px;}
+.widget_post04 li {list-style-type:none;padding:0 0 10px 0;margin:0;line-height:160%;height:12px;overflow:hidden;}
+.widget_post04 li a {color:#111;}
+.widget_post04 li a:hover {text-decoration:underline;}
+.widget_post04 .photo {float:left;width:115px;height:135px;margin-right:15px;margin-top:5px;}
+.widget_post04 .photo img {background:#efefef;}
+.widget_post04 .photo span {clear:both;display:block;line-height:130%;font-family:dotum;text-align:center;padding:7px 0 0 0;height:30px;overflow:hidden;}
+.widget_post04 .photo span a {color:#666;}
+.widget_post04 .photo span a:hover {color:#333;text-decoration:underline;}
+.widget_post04 .more {position:absolute;top:4px;right:1px;font-size:11px;font-family:dotum;color:#c0c0c0;}
+.widget_post04 .more:hover {text-decoration:underline;color:#000000;}
+.widget_post04 .comment {font:normal 11px arial;color:#FC6138;}
+.widget_post04 .new {font:normal 10px arial;color:#ff0000;}

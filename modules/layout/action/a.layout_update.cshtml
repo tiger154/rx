@@ -1,0 +1,98 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var cplayout = Request["cplayout"];
+    var type = Request["type"];
+    var layout = Request["layout"];
+    var name = Request["name"];
+    var codeName = Request["codeName"];
+    var sublayout = Request["sublayout"];
+    var subname = Request["subname"];
+    var code = Request.Unvalidated("code");        
+    
+    @_System.checkAdmin(my["admin"], 0)
+                                       
+    if (cplayout != null && cplayout != "")
+    {
+        if (!File.Exists(g["path_root_ps"] + g["path_layout"] + cplayout + "\\main.cshtml"))
+        {
+            /*mkdir($g['path_layout'].$cplayout,0707);
+		    @chmod($g['path_layout'].$cplayout,0707);*/
+
+            _System.DirCopy(g["path_root_ps"] + g["path_layout"] + layout, g["path_root_ps"] + g["path_layout"] + cplayout);
+            layout = cplayout;
+        }
+
+    }
+
+    if (type == "layout")
+    {
+        string nameFile = g["path_root_ps"] + g["path_layout"] + layout + "\\name.txt";
+        FileStream fp = new FileStream(nameFile, FileMode.OpenOrCreate);
+        StreamWriter sw = new StreamWriter(fp);
+        sw.Write(_System.stripslashes(name).Trim());  //trim(stripslashes($name))
+        sw.Close();
+
+        //	    @chmod($nameFile,0707);
+    }
+
+
+    if (type != "image")
+    {
+        if (type == "layout")
+        {
+            if (sublayout.Substring(0, sublayout.Length - 7) == subname)
+            {
+                codeName = sublayout;
+            }
+            else
+            {
+                codeName = subname.Substring(0, subname.Length - 7) + ".cshtml";
+            }
+        }
+        else
+        {
+            codeName = "_main." + type;
+        }
+
+        string codeFile = g["path_root_ps"] + g["path_layout"] + layout + "\\" + codeName;
+
+        FileStream fp = new FileStream(g["path_root_ps"] + g["path_layout"] + layout + "\\" + codeName, FileMode.OpenOrCreate);
+        StreamWriter sw = new StreamWriter(fp);
+
+        sw.Write(_System.stripslashes(code).Trim());
+        sw.Close();
+
+        //@chmod($codeFile,0707);        
+    }        
+
+    @_System.getLink("?r=" + r + "&m=admin&module=" + m + "&front=main&layout=" + layout + "&sublayout=" + codeName + "&type=" + type, "parent.", "", "");
+    
+}

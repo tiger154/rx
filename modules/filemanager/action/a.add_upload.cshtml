@@ -1,0 +1,65 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var module = Request["module"];
+    var pwd = Request["pwd"];
+    var pwd1 = Request["pwd1"];
+    var iframe = Request["iframe"];
+    var act = Request["act"];
+    var fileupload = Request["fileupload"];
+    var front = Request["front"];
+    var uploadedFile = Request.Files[0];
+
+    string sess_upFiles = "";
+    if (Session["upFiles"] != null && Session["upFiles"] != "")
+    {
+        sess_upFiles = Session["upFiles"].ToString();
+    }
+    
+    @_System.checkAdmin(my["admin"], 0)
+
+    string savePath = g["path_root_ps"] + g["path_tmp"] + "filemanagerUploadedFile";
+    string saveFile = savePath + "\\" + uploadedFile.FileName;
+    
+    if (!Directory.Exists(savePath))
+    {
+        Directory.CreateDirectory(savePath);
+    }
+    uploadedFile.SaveAs(saveFile);
+
+    if (sess_upFiles == null || sess_upFiles == "" || !sess_upFiles.Contains(saveFile))
+    {
+        sess_upFiles += "[" + saveFile + "]";
+        Session["upFiles"] = sess_upFiles;
+    }
+    
+    @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=" + module + "&front=" + front + "&iframe=" + iframe + "&fileupload=" + fileupload + "&pwd=" + Server.UrlEncode(pwd), "", "", "")
+    //_System.getLink("reload", "parent.", "첨부완료", "")
+    return;
+}

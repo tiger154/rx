@@ -1,0 +1,91 @@
+﻿@using System.Drawing;
+@using System.Drawing.Imaging;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var upfile = Request.Files[0];
+    var moduleid = Request["moduleid"];
+    var name = Request["name"];
+    var hidden = Request["hidden"];
+    var mobile = Request["mobile"];
+    
+    @_System.checkAdmin(my["admin"], 0)
+   
+    if (hidden!="1") 
+    {
+        hidden = "0";
+    }
+    
+    if(moduleid!=null && moduleid!="") {
+        string realname = Path.GetFileName(upfile.FileName);   // 파일명+확장명
+        string fileExt = (Path.GetExtension(realname)).ToLower();   //확장명
+        string tmpDir = g["path_root_ps"] + "\\_tmp\\tempIcon";  //임시사진파일 저장폴더
+        string saveFile = g["path_root_ps"] + g["path_module"] + moduleid + "\\icon.Gif";
+        string tmpFile = tmpDir + "\\" + moduleid + "_" + date["totime"].ToString("yyMMddHHddmm") + "." + fileExt;    //임시사진파일
+                
+        if(fileExt.Contains(".")) {
+            fileExt = fileExt.Substring(1, fileExt.Length-1);
+        }
+
+        if(fileExt=="jpeg") {
+            fileExt = "jpg";
+        }
+        
+        if(!Directory.Exists(tmpDir)) {
+            Directory.CreateDirectory(tmpDir);
+        }
+               
+        if (realname!=null && realname!="") {
+        
+            if(!("[gif][jpg][png]").Contains(fileExt)) {
+                @_System.getLink("", "", "gif/jpg/png 파일만 등록할 수 있습니다.", "");
+                                                                           return;
+            }           
+
+            upfile.SaveAs(tmpFile);  //원본 이미지 임시파일에 저장                       
+            
+            Image thumbImg = new Bitmap(tmpFile);      
+            thumbImg = thumbImg.GetThumbnailImage(60, 60, null, IntPtr.Zero);      //썸네일 이미지 생성
+
+            if (File.Exists(saveFile)) {
+                File.Delete(saveFile);
+            }                       
+            thumbImg.Save(saveFile, ImageFormat.Gif);        //gif로 이미지 저장
+            thumbImg.Dispose();            
+        }
+        
+        string UPDATE_MODULE_SQL = "UPDATE " + AppState["table_s_module"].ToString() + " SET name='" + name.Trim() + "',hidden='" + hidden + "',mobile='" + mobile + "' WHERE id='" + moduleid + "'";
+        @_DB.Execute(UPDATE_MODULE_SQL);
+
+        File.Delete(tmpFile);   //임시파일삭제 에러! ==> 파일은 다른 프로세스에서 사용 중이므로 프로세스에서 액세스할 수 없습니다.        
+    }
+    
+    @_System.getLink("reload", "parent.", "", "");    
+}
+

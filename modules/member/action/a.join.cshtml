@@ -1,0 +1,350 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    string id = Request["id"].Trim();
+    string email = Request["email"].Trim();
+    string nic = Request["nic"];
+    string pw1 = Request["pw1"];
+    string comp = Request["comp"];
+    string name = Request["name"].Trim();
+    string home = Request["home"];
+    string sex = Request["sex"];
+    string birthtype = Request["birthtype"];
+    string foreign = Request["foreign"];
+    string job = Request["job"];
+    string mailing = Request["remail"];
+    string pw_q = Request["pw_q"];
+    string pw_a = Request["pw_a"];
+    string birth1 = Request["birth_1"];
+    string birth2 = Request["birth_2"];
+    string birth3 = Request["birth_3"];    
+    string comp_num_1 = Request["comp_num_1"];    
+    string comp_num_2 = Request["comp_num_2"];    
+    string comp_num_3 = Request["comp_num_3"];    
+    string comp_name = Request["comp_name"];    
+    string comp_ceo = Request["comp_ceo"];    
+    string comp_upte = Request["comp_upte"];    
+    string comp_jongmok = Request["comp_jongmok"];    
+    string comp_tel_1 = Request["comp_tel_1"];    
+    string comp_tel_2 = Request["comp_tel_2"];    
+    string comp_tel_3 = Request["comp_tel_3"];    
+    string comp_fax_1 = Request["comp_fax_1"];    
+    string comp_fax_2 = Request["comp_fax_2"];    
+    string comp_fax_3 = Request["comp_fax_3"];    
+    string comp_zip_1 = Request["comp_zip_1"];    
+    string comp_zip_2 = Request["comp_zip_2"];    
+    string comp_addr1 = Request["comp_addr1"];    
+    string comp_addr2 = Request["comp_addr2"];    
+    string comp_part = Request["comp_part"];    
+    string comp_level = Request["comp_level"];    
+    string comp_type = Request["comp_type"];    
+    string sns = (Request["sns"] != null && Request["sns"] != "" ? Request["sns"] : "");
+    
+    dynamic d_member = _DB.Get_code("member");
+    
+    string isId;
+    string isEmail;
+    string isNic;
+    
+    string tel1 = "";
+    string tel2 = "";
+    string zip = "";    
+    string addr0 = "";
+    string addr1 = "";
+    string addr2 = "";
+    string marr1 = "0";
+    string marr2 = "0";
+    string sms = "0";
+    string smail = "0";
+    string usepoint = "0";
+    string num_login = "1";
+    string now_log = "1";
+    string is_paper = "0";    
+    string last_log = DateTime.Now.ToString();
+    string last_pw = DateTime.Now.ToString();
+    string d_regis = DateTime.Now.ToString();
+    string addfield = "";
+    string memberuid;
+    string auth;
+    string sosok;
+    string level;
+    string admin;
+    string adm_name = "";
+    string adm_view = "";
+    string photo = "";
+    string today = date["year"]+date["month"]+date["day"];
+    
+    if(pw_q != "" && pw_q != null) {
+        pw_q = pw_q.Trim();
+    }
+    if(pw_a != "" && pw_a != null) {
+        pw_a = pw_a.Trim();
+    }
+
+    if(job != null && job !="") {
+        job = job.Trim();
+    }    
+    
+    if(birth2==null) {
+        birth2 = "00";
+    }
+    if (birth3 == null) {
+        birth3 = "00";
+    }    
+    
+    if(birth2.Length == 1) {
+        birth2 = "0"+birth2;
+	}
+    if(birth3.Length == 1) {
+        birth3 = "0"+birth3;
+	}
+    
+    birth2 = birth2+birth3;
+    pw1 = FormsAuthentication.HashPasswordForStoringInConfigFile(pw1, "SHA1");       // 패스워드 sha1 암호화
+    
+    int point = Convert.ToInt32(d_member["join_point"]);
+        
+    if(Request["check_id"] == null || (d_member["form_comp"] == "1" && Request["check_nic"] == null) || Request["check_email"] == null) 
+    {
+        @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+	}
+    
+    isId = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "id='"+id+"'", "count(*)").ToString();
+    isEmail = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "email='"+email+"'", "count(*)").ToString();
+    isNic = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "nic='"+nic+"'", "count(*)").ToString();
+
+    if (_System.IsValue(d_member["join_cutid"], id, ',') == true || isId != "0") 
+    {
+        @_System.getLink("", "", "사용할 수 없는 아이디입니다.", "")
+        return;
+	}            
+    
+    if (d_member["join_rejoin"] == "0") 
+    {
+        if (File.Exists((g["path_root_ps"]+g["path_tmp"]+"out\\"+id+".txt").ToString()) == true) 
+        {
+            @_System.getLink("", "", "사용할 수 없는 아이디입니다.", "")
+            return;
+        }
+    }
+    
+    if (isEmail != "0") 
+    {
+        @_System.getLink("", "", "이미 존재하는 이메일입니다.", "")
+        return;
+	}            
+
+    if (d_member["form_comp"] == "1")
+    {
+        if (_System.IsValue(d_member["join_cutnic"], nic, ',') == true || isNic != "0") 
+        {
+            @_System.getLink("", "", "사용할 수 없는 닉네임입니다.", "")
+            return;
+        }                    
+    }
+    
+    @_DB.Execute("INSERT INTO " + AppState["table_s_mbrid"] + " (site, id, pw) VALUES ('" + s + "','" + id + "','" + pw1 + "')")
+
+    memberuid = _DB.GetDbData_S(AppState["table_s_mbrid"].ToString(), "", "max(uid)").ToString();
+    
+    auth = d_member["join_auth"];
+    sosok = d_member["join_group"];
+    level = d_member["join_level"];
+
+    if (d_member["form_comp"] == "1" && comp != null)
+    {
+        comp = "1";
+    }
+    else
+    {
+        comp = "0";
+    }
+
+    admin = "0";
+    name = name.Trim();
+
+    if (home != null)
+    {
+        if (home.IndexOf("http://") == -1)
+        {
+            home = "http://" + home;
+        }
+    }
+
+    if (sex == null)
+    {
+        sex = "1";
+    }
+    if (birthtype == null)
+    {
+        birthtype = "0";
+    }
+    if (Request["tel1_1"] != null && Request["tel1_2"] != null && Request["tel1_3"] != null)
+    {
+        tel1 = Request["tel1_1"] + "-" + Request["tel1_2"] + "-" + Request["tel1_3"];
+    }
+    if (Request["tel2_1"] != null && Request["tel2_2"] != null && Request["tel2_3"] != null)
+    {
+        tel2 = Request["tel2_1"] + "-" + Request["tel2_2"] + "-" + Request["tel2_3"];
+    }
+    if (foreign == null || foreign == "")
+    {
+        zip = Request["zip_1"] + Request["zip_2"];
+
+        if (Request["addr1"] != null && Request["addr1"] != "")
+        {
+            string addrx = Request["addr1"].Split(' ')[0];
+
+            if (Request["addr2"] != null && Request["addr2"] != "")
+            {
+                addr0 = addrx;
+                addr1 = Request["addr1"];
+            }
+        }
+
+        if (Request["addr2"] != null && Request["addr2"] != "")
+        {
+            addr2 = Request["addr2"].Trim();
+        }
+    }
+    else
+    {
+        zip = "";
+        addr0 = "해외";
+        addr1 = "";
+        addr2 = "";
+    }
+
+    if (Request["marr_1"] != null && Request["marr_2"] != null && Request["marr_3"] != null)
+    {
+        marr1 = Request["marr_1"];
+    }
+    if (Request["marr_1"] != null && Request["marr_2"] != null && Request["marr_3"] != null)
+    {
+        marr2 = Request["marr_2"] + Request["marr_3"];
+    }
+    if (tel2 != "" && Request["sms"] != null)
+    {
+        sms = "1";
+    }
+
+
+
+    var insert_sql = "INSERT INTO " + AppState["table_s_mbrdata"] + " (memberuid,site,auth,sosok,level,comp,admin,adm_name,adm_view,";
+    insert_sql = insert_sql + "email,name,nic,photo,home,sex,birth1,birth2,birthtype,tel1,tel2,zip,";
+    insert_sql = insert_sql + "addr0,addr1,addr2,job,marr1,marr2,sms,mailing,smail,point,usepoint,num_login,pw_q,pw_a,";
+    insert_sql = insert_sql + "now_log,last_log,last_pw,is_paper,d_regis,addfield, cash, money, grade, tmpcode, sns) VALUES (";
+    insert_sql = insert_sql + memberuid + "," + s + ",'" + auth + "'," + sosok + "," + level + ",'" + comp + "','" + admin + "','" + adm_name + "','" + adm_view + "','";
+    insert_sql = insert_sql + email + "','" + name + "','" + nic + "','" + photo + "','" + home + "','" + sex + "','" + birth1 + "','" + birth2 + "','" + birthtype + "','" + tel1 + "','" + tel2 + "','" + zip + "','";
+    insert_sql = insert_sql + addr0 + "','" + addr1 + "','" + addr2 + "','" + job + "','" + marr1 + "','" + marr2 + "','" + sms + "','" + mailing + "','" + smail + "'," + point + "," + usepoint + "," + num_login + ",'" + pw_q + "','" + pw_a + "','";
+    insert_sql = insert_sql + now_log + "','" + date["insert"] + "','" + date["insert"] + "','" + is_paper + "','" + date["insert"] + "','" + addfield + "',0,0,'','','" + sns + "')";
+
+    var level_update_sql = "UPDATE " + AppState["table_s_mbrlevel"] + " SET num=num+1 WHERE uid=" + level;
+    var group_update_sql = "UPDATE " + AppState["table_s_mbrgroup"] + " SET num=num+1 WHERE uid=" + sosok;
+    var numinfo_update_sql = "UPDATE " + AppState["table_s_numinfo"] + " SET login=login+1, mbrjoin=mbrjoin+1 WHERE date='" + today + "' AND site=" + s;
+
+    @_DB.Execute(insert_sql);
+    @_DB.Execute(level_update_sql);
+    @_DB.Execute(group_update_sql);
+    @_DB.Execute(numinfo_update_sql);
+
+    // comp. Join
+    if (comp == "1")
+    {
+        string comp_num = "0";
+        string comp_tel = "";
+        string comp_fax = "";
+        string comp_zip = comp_zip_1 + comp_zip_2;
+        string comp_addr0 = "";
+
+        if (comp_num_1 != "" && comp_num_1 != null && comp_num_2 != "" && comp_num_2 != null && comp_num_3 != "" && comp_num_3 != null)
+        {
+            comp_num = comp_num_1 + comp_num_2 + comp_num_3;
+        }
+        if (comp_tel_1 != "" && comp_tel_1 != null && comp_tel_2 != "" && comp_tel_2 != null)
+        {
+            comp_tel = comp_tel_1 + "-" + comp_tel_2;
+
+            if (comp_tel_3 != "" && comp_tel_3 != null)
+            {
+                comp_tel += "-" + comp_tel_3;
+            }
+        }
+        if (comp_fax_1 != "" && comp_fax_1 != null && comp_fax_2 != "" && comp_fax_2 != null && comp_fax_3 != "" && comp_fax_3 != null)
+        {
+            comp_fax = comp_fax_1 + "-" + comp_fax_2 + "-" + comp_fax_3;
+        }
+        if (comp_addr1 != "" && comp_addr1 != null && comp_addr2 != "" && comp_addr2 != null)
+        {
+            string addcomp0 = comp_addr1.Split(' ')[0];
+            comp_addr0 = addcomp0;
+        }
+        else
+        {
+            comp_addr1 = "";
+        }
+
+        string CP_QUE = "(memberuid,comp_num,comp_type,comp_name,comp_ceo,comp_upte,comp_jongmok,";
+        CP_QUE += "comp_tel,comp_fax,comp_zip,comp_addr0,comp_addr1,comp_addr2,comp_part,comp_level)";
+
+        string CP_VAL = "(" + memberuid + "," + comp_num + ",'" + comp_type + "','" + comp_name + "','" + comp_ceo + "','" + comp_upte + "','" + comp_jongmok + "',";
+        CP_VAL += "'" + comp_tel + "','" + comp_fax + "','" + comp_zip + "','" + comp_addr0 + "','" + comp_addr1 + "','" + comp_addr2 + "','" + comp_part + "','" + comp_level + "')";
+
+        string CP_SQL = "INSERT INTO " + AppState["table_s_mbrcomp"] + " " + CP_QUE + " VALUES " + CP_VAL;
+        @_DB.Execute(CP_SQL);
+    }
+    if (point > 0)
+    {           
+        var point_insert_sql = "INSERT INTO " + AppState["table_s_point"] + " (my_mbruid, by_mbruid, price, content, d_regis) VALUES (" + memberuid + ",0," + point + ",'" + d_member["join_pointmsg"] + "',getdate())";
+        @_DB.Execute(point_insert_sql);
+    }
+
+    if (auth == "1")
+    {
+        // Email Auth....
+
+        Session["mbr_uid"] = memberuid;
+        Session["mbr_pw"] = pw1;
+        
+	    @_System.getLink(_System.RW("", g["r"], _HS), "parent.", "축하합니다. 회원가입 승인되었습니다.", "")
+        return;
+    }
+    if (auth == "2")
+    {
+	    @_System.getLink(_System.RW("", g["r"], _HS), "parent.", "회원가입 신청서가 접수되었습니다. 관리자 승인후 이용하실 수 있습니다.", "")
+        return;
+    }
+    if (auth == "3")
+    {
+	    @_System.getLink(_System.RW("", g["r"], _HS), "parent.", "회원가입 인증메일이 발송되었습니다. 이메일(" + email + ")확인 후 인증해 주세요.", "")
+        return;
+    }
+}

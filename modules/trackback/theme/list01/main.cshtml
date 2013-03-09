@@ -1,0 +1,227 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var c = PageData[2];
+    var m = PageData[3];
+    var p = PageData[4];
+    var r = PageData[12];
+
+    dynamic g = Session["g"];
+    dynamic _HS = PageData[5];
+    dynamic my = PageData[6];    
+    dynamic d_trackback = _DB.Get_code("trackback");
+
+    var send = Request["send"];
+
+    var frame_name = "_action_frame_" + m;
+    
+    string[] cyncArr = _System.getArrayString(Session[m + "cync"]);
+
+    string RCD_sql = g["RCD_sql"];
+    string SRCD_sql = "SELECT * FROM " + AppState["table_s_trackback"] + " WHERE parent='" + cyncArr[0] + cyncArr[1] + "' AND type=2 ORDER BY uid desc";
+
+    int NUM = g["NUM"];
+    int RCD_cnt = g["RCD_cnt"];
+    int SRCD_cnt = _DB.GetDbData_Count(AppState["table_s_trackback"].ToString(), "parent='" + cyncArr[0] + cyncArr[1] + "' AND type=2");
+
+    decimal TPG = g["TPG"];
+
+    int _ol = 0;
+    
+
+}
+
+<div id="clist">
+	<div class="urlbox">
+
+        @if (send == "Y" && d_trackback["perm_write"] <= my["level"] || my["admin"] == "1")
+        {
+            <form name="sendform" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return sendCheck(this);">
+			<input type="hidden" name="r" value="@r" />
+			<input type="hidden" name="m" value="@m" />
+			<input type="hidden" name="a" value="send_trackback" />
+			받을주소 : <input type="text" name="trackback" value="" class="input" />
+			<input type="image" src="@g["img_module_skin"]/btn_send.gif" alt="보내기" class="vgap" />
+			<a href="@g["track_list"]"><img src="@g["img_module_skin"]/btn_cancel.gif" alt="취소" class="vgap" /></a>
+			</form>
+            
+            if (SRCD_cnt != 0)
+            {
+                <ul>
+
+                @foreach (var _R in _DB.Query(SRCD_sql))
+                {
+                    <li>
+			        <a href="@_R["url"]" target="_blank">@_R["url"]</a> 
+			        <span class="date">(@_R["d_regis"].ToString("yyyy.MM.dd HH:mm"))</span>
+
+                    @if (my["admin"] == "1")
+                    {
+                        <a href="@g["track_delete"]@_R["uid"]" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?');"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="삭제" title="삭제" /></a>    
+                    }
+			        </li>    
+                }
+
+			    </ul>                
+            }
+        }
+        else
+        {
+            <div class="url">
+			    <span>트랙백주소 : <a id="trackbackUrl">http://@Request.ServerVariables["HTTP_HOST"]@Request.ServerVariables["SCRIPT_NAME"]/@r/@cyncArr[0]/@cyncArr[1]</a></span>
+			    <a href="#." class="copy" onclick="copyStr(getId('trackbackUrl').innerHTML);"><img src="@g["img_module_skin"]/btn_urlcopy.gif" alt="복사" title="복사" /></a>
+		    </div>
+		    <div class="btn">
+                @if (Convert.ToInt32(d_trackback["perm_write"]) <= my["level"] || my["admin"] == "1")
+                {
+                    <a href="@g["track_list"]&send=Y"><img src="@g["img_module_skin"]/btn_track.gif" alt="이글을 엮인글로 보내기" /></a>
+                }
+		    </div>
+		    <div class="clear"></div>    
+        }
+	</div>
+
+
+
+	<table summary="트랙백리스트입니다.">
+	<caption>트랙백리스트</caption> 
+	<colgroup> 
+	<col width="15">
+	<col> 
+	<col width="150">
+	<col width="100">
+	<col width="70">
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"></th>
+	<th scope="col"></th>
+	<th scope="col">보낸이</th>
+	<th scope="col">보낸곳</th>
+	<th scope="col" class="side2">날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+
+    @if (NUM != 0)
+    {
+        foreach (var R in _DB.Query(RCD_sql))
+        {
+            string olStr = "";
+
+            if (RCD_cnt == ++_ol)
+            {
+                olStr = "none";
+            }
+	        <tr class="dotline @Html.Raw(olStr)">
+	        <td class="del">
+
+            @if (my["admin"] == "1")
+            {
+                <a href="@g["track_delete"]@R["uid"]" target="@frame_name" onclick="return confirm('정말로 삭제하시겠습니까?');"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="삭제" title="삭제" /></a>
+            }
+	        </td>
+	        <td class="sbj">
+	        <a href="@R["url"]" target="_blank" title="@_System.getStrCut(_System.htmlspecialchars(_System.Strip_tags(R["content"])), 100, "...")" onmouseover="qTilePop(this);" onmouseout="qTilePopKill(this);">@R["subject"]</a>
+	        
+            @if (_System.getNew(R["d_regis"].ToString(), 24))
+            {
+                <span class="new">new</span>    
+            }
+            
+	        </td>
+	        <td class="name"><a href="@R["url"]" target="_blank">@R["name"]</a></td>
+	        <td class="url">@_System.getDomain(R["url"])</td>
+
+	        <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+	        </tr>            
+        }
+    }
+    else
+    {
+        <tr class="none">
+	    <td>-</td>
+	    <td class="sbj">엮인글이 없습니다.</td>
+	    <td>-</td>
+	    <td></td>
+	    <td>-</td>
+	    </tr>    
+    }
+    
+	</tbody>
+	</table>
+	
+	<div class="page pagebox01">
+		<script type="text/javascript">getPageLink(10,@p,@TPG,'@g["img_core"]/page/default');</script>
+	</div>
+	
+
+
+</div>
+
+
+<div id="qTilePopDiv"></div>
+<script type="text/javascript">
+//<![CDATA[
+if (myagent != 'ie') document.captureEvents(Event.MOUSEMOVE);
+document.onmousemove = get_mouse;
+
+var skn = getId('qTilePopDiv');
+var itt = '';
+
+function qTilePop(obj)
+{
+    var content ='<div style="width:300px;line-height:150%;font-family:dotum;color:#666666;border:#999999 solid 1px;padding:3px;background:lightyellow;">'+obj.title+'</div>';
+	skn.style.position= 'absolute';
+	skn.style.display = 'block';
+	skn.style.zIndex = '1';
+	itt = obj.title;
+	obj.title = '';
+	skn.innerHTML = content;
+}
+function get_mouse(e) 
+{
+    var x = myagent != 'ie' ? e.pageX : event.x+(document.body.scrollLeft || document.documentElement.scrollLeft);
+    var y = myagent != 'ie' ? e.pageY : event.y+(document.body.scrollTop || document.documentElement.scrollTop);
+    skn.style.left = (x - 0) + 'px';
+    skn.style.top  = (y + 20) + 'px';
+}
+function qTilePopKill(obj) 
+{
+	obj.title = itt;
+	itt = '';
+	skn.style.top = '10000';
+	skn.style.display = 'none';
+}
+function sendCheck(f)
+{
+	if (f.trackback.value == '')
+	{
+		alert('보낼주소를 입력해 주세요.    ');
+		f.trackback.focus();
+		return false;
+	}
+	return confirm('정말로 이 글을 입력하신 주소로 보내시겠습니까?      ');
+}
+function frameSetting()
+{
+	var obj = parent.getId(frames.name);
+	if(obj)
+	{
+		obj.style.height = parseInt(document.body.scrollHeight) + 'px';
+		if(parent.getId('trackback_num@(cyncArr[1])'))
+		{
+			parent.getId('trackback_num@(cyncArr[1])').innerHTML = '@NUM';
+		}
+	}
+}
+window.onload = frameSetting;
+//]]>
+</script>

@@ -1,0 +1,792 @@
+﻿@using System.Drawing;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var pwd1 = Request["pwd1"];
+    var type = Request["type"];
+    var iframe = Request["iframe"];
+    var fileadd = Request["fileadd"];
+    var folderadd = Request["folderadd"];
+    var editmode = Request["editmode"];
+    var file = Request["file"];
+    var fileupload = Request["fileupload"];
+
+    string pwd_start = g["path_root_ps"];
+    string frame_name = "_action_frame_" + m;
+
+    
+    int step_start = 0;
+
+    if (p == null)
+    {
+        p = 1;
+    }
+
+    var pwd = HttpUtility.UrlDecode(!Request["pwd"].IsEmpty() ? Request["pwd"] : g["path_root_ps"]);
+
+    string url_pwd = pwd.Replace(g["path_root_ps"], "").Replace("\\", "/");
+
+    string tdir = pwd.Replace(g["path_root_ps"], "").Replace("\\", "/");
+
+    g["adm_href"] = g["adm_href"] + "&iframe=" + iframe;
+
+    if (pwd.Contains(".."))
+    {
+        @_System.getLink(g["s"] + "/?r=" + r + "&m=" + m, "", "더이상 접근권한이 없는 디렉토리입니다.", "")
+        return;
+    }
+
+    if (!Directory.Exists(pwd))
+    {
+        @_System.getLink("", "", "존재하지 않는 폴더입니다.", "-1")
+        return;
+    }
+
+    int i = 0;
+
+    long filesize = 0;
+}
+
+<div id="catebody">
+	<div id="category">
+
+		<div class="title">
+			파일메니져
+		</div>
+
+		<div class="tree">
+        @_Module_filemanager.getDirlist(pwd_start, step_start, g, step_start)
+		</div>
+
+	</div>
+
+	<div id="catinfo">
+    
+    @if (fileadd != null && fileadd != "")
+    {
+		<div class="title">
+			<div class="xleft">
+				새 파일 만들기
+			</div>
+			<div class="xright">
+				<a href="@g["adm_href"]&pwd=@pwd">목록</a>
+			</div>
+		</div>
+
+		<div class="notice">
+			새로 만들 파일명을 입력해 주세요.<br />
+			파일명은 <span style="b">영문소문자/숫자/_</span>만 사용가능합니다.
+		</div>
+
+		<div id="editform">
+		<form action="@g["s"]/" method="post" target="@frame_name" onsubmit="return mkFileCheck(this);">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="file_add" />
+		<input type="hidden" name="folder" value="@pwd" />
+		<input type="hidden" name="iframe" value="@iframe" />
+
+		<table>
+			<tr>
+				<td class="td1">생성위치</td>
+				<td class="td2 b">
+					@pwd
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">파일이름</td>
+				<td class="td2">
+					<input type="text" name="newfile" class="input" />
+					<input type="submit" class="btnblue" value=" 만들기 " />
+
+					<select onchange="backChange(this.value);">
+					<option value="">배경</option>
+					<option value="1">흰색</option>
+					<option value="2">검정</option>
+					<option value="3">파랑</option>
+					</select>
+					<img src="@g["img_module_admin"]/btn_full.gif" alt="전체화면으로 편집" id="fullimg" class="resizeimg hand" onclick="editBoxcontrol(this);" />
+					
+				</td>
+			</tr>
+		</table>
+
+		<div id="editbox" class="editdiv">
+			<textarea id="editboxarea" name="content"></textarea>
+		</div>
+
+		</form>
+        </div>
+			
+		<script type="text/javascript">
+		//<![CDATA[
+		    function setStart() {
+		        backChange(getCookie('EditBackColor'));
+		        if (getId('fullimg').src.indexOf('btn_full') != -1) {
+		            var ofs = getOfs(getId('catinfo'));
+		            getId('editboxarea').style.width = (parseInt(ofs.width) - 50) + 'px';
+		        }
+		    }
+		    setStart();
+		    window.onresize = setStart;
+		//]]>
+		</script>        
+
+    }
+    else if (folderadd != null && folderadd != "")
+    {
+		<div class="title">
+			<div class="xleft">
+				새 폴더 만들기
+			</div>
+			<div class="xright">
+				<a href="@g["adm_href"]&pwd=@pwd">목록</a>
+			</div>
+		</div>
+
+		<div class="notice">
+			새로 만들 폴더명을 입력해 주세요.<br />
+			폴더명은 <span style="b">영문소문자/숫자/_</span>만 사용가능합니다.
+		</div>
+		
+        <form action="@g["s"]/" method="post" target="@frame_name" onsubmit="return mkFolderCheck(this); target="@frame_name"">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="folder_add" />
+		<input type="hidden" name="folder" value="@pwd" />
+		<input type="hidden" name="iframe" value="@iframe" />
+
+		<table>
+			<tr>
+				<td class="td1">생성위치</td>
+				<td class="td2 b">
+					@pwd
+				</td>
+			</tr>
+			<tr>
+				<td class="td1">폴더이름</td>
+				<td class="td2">
+					<input type="text" name="newfolder" class="input" />
+					<input type="submit" class="btnblue" value=" 확 인 " />
+				</td>
+			</tr>
+		</table>
+
+
+		</form>
+    }
+    else if (fileupload != null && fileupload != "")
+    {
+        string agopwd = "";
+        string latpwd = "";
+        string[] pwdexp = pwd.Split('\\');
+
+        int pwdlen = pwdexp.Length - 2;
+        long totalSize = 0;
+        int totalCnt = 0;
+
+        string sess_upFiles = "";
+
+        if (Session["upFiles"] != null && Session["upFiles"].ToString() != "")
+        {
+            sess_upFiles = Session["upFiles"].ToString();
+        }
+        if (Session["totalSize"] != null && Session["totalSize"].ToString() != "")
+        {
+            totalSize = Convert.ToInt32(Session["totalSize"]);
+        }
+        if (Session["totalCnt"] != null && Session["totalCnt"].ToString() != "")
+        {
+            totalCnt = Convert.ToInt32(Session["totalCnt"]);
+        }
+        for (i = 0; i < pwdlen; i++)
+        {
+            agopwd += pwdexp[i] + "\\";
+        }
+
+        if (agopwd == "")
+        {
+            agopwd = ".\\";
+        }
+
+        latpwd = pwdexp[pwdlen];        
+
+		    <div class="title">
+			    <div class="xleft">
+				    파일 업로드
+			    </div>
+			    <div class="xright">
+				    <a href="@g["adm_href"]&pwd=@pwd">목록</a>
+			    </div>
+		    </div>
+
+		    <div class="notice">
+			    이미지/플래쉬파일만 첨부가능합니다. <span style="b">보기) jpg,jpeg,gif,png,swf</span><br />
+			    파일명에 한글이 포함되어 있을 경우 정상적으로 출력되지 않을 수 있습니다.<br />
+			    이미 같은이름으로 파일이 존재할 경우 덧씌워집니다.<br />
+			    첨부폴더는 지정된 경로와 그 안의 폴더들을 선택할 수 있습니다.<br />
+			    폴더를 선택하지 않으면 지정된 경로에 업로드됩니다.<br />
+		    </div>   
+
+        
+        /********************* 파일업로드 구현 *********************/
+        <form name="cform" action="@g["s"]/" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="a" value="file_upload" />
+		    <input type="hidden" name="act" value="" />
+            <input type="hidden" name="r" value="@r" />
+		    <input type="hidden" name="m" value="@m" />
+		    <input type="hidden" name="module" value="@module" />		    
+		    <input type="hidden" name="pwd" value="@pwd" />		    
+		    <input type="hidden" name="folder" value="@pwd" />
+		    <input type="hidden" name="iframe" value="@iframe" />
+		    <input type="hidden" name="fileupload" value="@fileupload" />
+          
+            <div class="addfolder">
+		        <table>
+			        <tr>
+				        <td class="td1">첨부폴더 : </td>
+				        <td class="td2 b">
+                            @pwd		                            
+					        <select name="pwd1" style="padding:2px;margin:1px;" onchange="this.form.submit();">
+					        <option value=""></option>
+                            @foreach (string tpl in Directory.GetDirectories(pwd))
+                            {
+                                string folder_name = Path.GetFileName(tpl);
+
+                                if (folder_name == "." || folder_name == ".." || File.Exists(tpl))
+                                {
+                                    continue;
+                                }
+                            
+                                <option value="@folder_name" @_System.getSltStr(pwd1, folder_name)>@folder_name</option>
+                            }
+					        </select>
+					        &lt;-
+					        <input type="text" name="newfolder" value="" size="15" class="input" />
+                            <input type="button" class="btngray" value="새 폴더 추가" onclick="actQue('new_folder');" />
+
+				        </td>
+			        </tr>
+		        </table>
+            </div>
+        
+   		    <div class="body">
+                <div class="title">      
+                    <div class="xl">
+                        <input type="FILE" name="Filedata" class="file" id="Upfile" />      
+                        <input type="button" class="btngray" value="첨부" onclick="actQue('add_upload');" />
+                    </div>
+                    <div class="xr">
+				        <span class="info">
+                        [total @totalCnt] @_System.getSizeFormat(totalSize)/@_System.getSizeFormat(0)
+				        </span>
+		            </div>
+		            <div class="clear"></div>
+                </div>
+
+			    <div class="ibox scrollbar01">
+                
+			    @if (totalCnt > 0)
+       {
+                    <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/core.js"></script>
+                    <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/events.js"></script>
+                    <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/css.js"></script>
+                    <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/coordinates.js"></script>
+                    <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/drag.js"></script>
+                    <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/dragsort.js"></script>
+                    
+                    <script type="text/javascript">
+                    //<![CDATA[
+                        var dragsort = ToolMan.dragsort();
+
+                        function slideshowOpen() {
+                            dragsort.makeListSortable(getId("fileorder"));
+                        }
+
+                        window.onload = slideshowOpen;
+                    //]]>
+                    </script>
+
+                    <ul id="fileorder">
+                    @if (sess_upFiles != null && sess_upFiles != "")
+                    {
+                        foreach (string val in _System.getArrayString(sess_upFiles))
+                        {
+                            FileInfo fi = new FileInfo(val);
+                            string file_ext = _System.getExt(Path.GetFileName(val));
+
+                            string small_icon = "unknown.gif";
+
+                            if (File.Exists(g["path_root_ps"] + "_core\\image\\file\\small\\" + file_ext + ".gif"))
+                            {
+                                small_icon = file_ext + ".gif";
+                            }
+                   
+                            <li>
+                                <input type="checkbox" name="filemembers" value="@val" checked="checked" />
+                                <img src="@g["img_core"]/file/small/@small_icon" alt="" />                            
+                                @Path.GetFileName(val)<span>(@_System.getSizeFormat(fi.Length))</span>
+                            </li>
+                        }
+                    }
+	    		    </ul>
+       }
+	
+			    </div>
+		    </div>
+           
+		    <div class="submitbox1">
+			    <input type="button" class="btngray" value=" 취 소 " onclick="actQue('cancel_upload');" />                
+			    <input type="button" class="btnblue" value=" 확 인 " onclick="actQue('submit_form');" />
+			    <div class="clear"></div>
+		    </div>
+
+		    </form>
+			<script type="text/javascript">
+		//<![CDATA[
+
+			    function actQue(flag) {
+			        var f = document.cform;
+
+			        if (flag == 'new_folder') {			            
+			            if (f.newfolder.value == '') {
+			                alert('폴더명을 입력해 주세요.');
+			                f.newfolder.focus();
+			                return false;
+			            }
+			            if (!chkIdValue(f.newfolder.value)) {
+			                alert('폴더명은 영문소문자+숫자+_ 만 사용할 수 있습니다.');
+			                f.newfolder.focus();
+			                return false;
+			            }
+			            
+			            f.m.value = f.module.value;
+			            f.act.value = flag;
+			            f.submit();
+			        }
+
+			        if (flag == 'add_upload') {
+			            if (f.Filedata.value == '') {
+			                alert('사진파일을 선택해 주세요.');
+			                f.Filedata.focus();
+
+			                return false;
+			            }
+
+			            var extarr = f.Filedata.value.split('.');
+			            var filext = extarr[extarr.length - 1].toLowerCase();
+			            var permxt = '[gif][jpg][jpeg][png]';
+			            var notext = '[html][php3][inc][cgi][pl][jsp]';
+
+			            if (notext.indexOf(filext) != -1) {
+			                alert('php,cgi,jsp 파일은 등록할 수 없습니다.    ');
+			                f.Filedata.focus();
+
+			                return false;
+			            }
+
+			            if (permxt.indexOf(filext) == -1) {
+			                alert('gif/jpg/png 파일만 등록할 수 있습니다.    ');
+			                f.Filedata.focus();
+
+			                return false;
+			            }
+			            
+			            f.m.value = f.module.value;
+			            f.module.value = '';
+			            //f.fileupload.value = '';
+			            f.act.value = flag;
+			            f.submit();
+			        }
+
+			        if (flag == 'submit_form') {
+			            if (confirm('정말로 실행하시겠습니까?        ')) {
+			                f.m.value = f.module.value;
+			                //submitFlag = true;
+			                f.act.value = flag;
+			                f.submit();
+			            }
+			            else {
+			                return false;
+			            }
+			        }
+
+			        if (flag == 'cancel_upload') {
+			            f.act.value = flag;
+			            f.m.value = f.module.value;
+			            f.submit();
+			        }
+			    }
+
+		//]]>
+		</script>      		
+
+    }
+    else if (editmode != null && editmode == "Y")
+    {
+        if (!File.Exists(pwd + file))
+        {
+            @_System.getLink("", "", "존재하지 않는 파일입니다.", "-1")
+            return;
+        }
+
+        int IM0 = 0;
+        int IM1 = 0;
+
+        if ("jpeg,jpg,gif,png,swf".Contains(_System.getExt(file).ToLower()))
+        {
+            FileInfo fi = new FileInfo(pwd + file);
+            Image Img = Image.FromFile(pwd + file);
+
+            filesize = fi.Length;
+
+            IM0 = Img.Width;
+            IM1 = Img.Height;
+        
+
+		<div class="title">
+			<div class="xleft">
+				파일 변경하기
+			</div>
+			<div class="xright">
+				<a href="@g["adm_href"]&pwd=@pwd">목록</a>
+			</div>
+		</div>
+
+		<div class="notice">
+			파일을 업로드할 경우 업로드된 파일로 변경됩니다.<br />
+			파일명은 기존 파일명(@file)으로 고정됩니다.
+		</div>
+		
+    	<form action="@g["s"]/" method="post" enctype="multipart/form-data" target="@frame_name" onsubmit="return imgModifyCheck(this);">
+		<input type="hidden" name="r" value="@r" />            
+		<input type="hidden" name="m" value="@module" />		    
+        <input type="hidden" name="a" value="upfile_modify" />  
+		<input type="hidden" name="folder" value="@pwd" />
+        <input type="hidden" name="oldfile" value="@file" />
+        <input type="hidden" name="fileext" value="@_System.getExt(file)" />
+		<input type="hidden" name="iframe" value="@iframe" />
+
+		<table>
+			<tr>
+				<td class="td1">파일선택</td>
+				<td class="td2 b">
+					<input type="file" name="upfile" class="upfile" />
+					<input type="submit" class="btnblue" value=" 확인 " />
+				</td>
+			</tr>
+			<tr>
+				<td class="td1"></td>
+				<td class="td2">
+
+				</td>
+			</tr>
+		</table>
+
+            @if (_System.getExt(file) == "swf")
+            {
+		        <div id="hBox">(@(IM0)*@(IM1)px / @_System.getSizeFormat(filesize))
+		        <div style="text-align:center;"><embed src="@g["url_root"]/@url_pwd.Replace("./", "")@file"></embed></div></div>		    
+            }
+            else
+            {
+                <div id="hBox" style="cursor:hand;background:url('@g["url_root"]/@url_pwd.Replace("./", "")@file') center center no-repeat;" onclick="imgOrignWin('@g["url_root"]/@url_pwd.Replace("./", "")@file');">(@(IM0)*@(IM1)px / @_System.getSizeFormat(filesize))</div>
+            }
+
+		</form>
+        }
+
+        else
+        {
+ 		    <div class="title">
+			    <div class="xleft">
+				    파일편집
+			    </div>
+			    <div class="xright">
+				    <a href="@g["adm_href"]&pwd=@pwd">목록</a>
+			    </div>
+		    </div>
+
+		    <div class="notice">
+			    파일을 편집한 후 확인버튼을 클릭하면 실시간으로 사용자페이지에 적용됩니다.<br />
+			    편집전에는 가급적 백업해 주세요.
+			    <span>
+			    (<input type="checkbox" id="backupcheck" value="1" />백업하기 - 
+                @if (File.Exists(g["path_root_ps"] + g["path_tmp"] + "backup\\" + (pwd.Replace("\\", "") + file + ".bak")))
+                {
+                    FileInfo fileinfo = new FileInfo(g["path_root_ps"] + g["path_tmp"] + "backup\\" + (pwd.Replace("\\", "") + file + ".bak"));
+                    
+                    @:최근백업 : <script type="text/javascript">getDateFormat('@fileinfo.LastWriteTime.ToString("yyyyMMddHHmmss")', 'xxxx.xx.xx xx:xx');</script>
+			        <a href="#." onclick="getBackCode();">복원</a>
+			        <a href="@g["s"]/?r=@r&m=@module&iframe=@iframe&a=backup_delete&folder=@pwd&oldfile=@file" target="@frame_name" onclick="return confirm('최근백업본을 삭제하시겠습니까?');">삭제</a>
+                }
+                else
+                {
+                    @:백업하시면 소스복원이 가능합니다
+                }
+			    </span>
+		    </div>
+		
+		    <div id="editform">
+		    <form action="@g["s"]/" method="post" target="@frame_name" onsubmit="return fileEditCheck(this);">
+		    <input type="hidden" name="r" value="@r" />
+		    <input type="hidden" name="m" value="@module" />
+		    <input type="hidden" name="a" value="file_edit" />
+		    <input type="hidden" name="folder" value="@pwd" />
+		    <input type="hidden" name="oldfile" value="@file" />
+		    <input type="hidden" name="backup" value="" />
+		    <input type="hidden" name="iframe" value="@iframe" />
+
+		    <table>
+			    <tr>
+				    <td class="td1">파일위치</td>
+				    <td class="td2 b">
+					    @pwd
+				    </td>
+			    </tr>
+			    <tr>
+				    <td class="td1">파일이름</td>
+				    <td class="td2">
+					    <input type="text" name="newfile" class="input" value="@file" />
+					    <input type="submit" class="btnblue" value=" 수 정 " />
+
+					    <select onchange="backChange(this.value);">
+					    <option value="">배경</option>
+					    <option value="1">흰색</option>
+					    <option value="2">검정</option>
+					    <option value="3">파랑</option>
+					    </select>
+					    <img src="@g["img_module_admin"]/btn_full.gif" alt="전체화면으로 편집" id="fullimg" class="resizeimg hand" onclick="editBoxcontrol(this);" />
+				    </td>
+			    </tr>
+		    </table>
+
+		    <div id="editbox" class="editdiv">
+			    <textarea id="editboxarea" name="content">
+                @using (StreamReader sr = new StreamReader(pwd + file, System.Text.Encoding.UTF8, true))
+                { @Html.Raw(sr.ReadToEnd()) }</textarea>
+		    </div>
+
+
+		    </form>
+		    </div>
+
+		    <form name="srcForm" action="@g["s"]/" method="post" target="@frame_name">
+		    <input type="hidden" name="r" value="@r" />
+		    <input type="hidden" name="m" value="@module" />
+		    <input type="hidden" name="a" value="file_resque" />
+		    <input type="hidden" name="folder" value="@pwd" />
+		    <input type="hidden" name="oldfile" value="@file" />
+		    <input type="hidden" name="iframe" value="@iframe" />
+		    </form>
+			
+		    <script type="text/javascript">
+		    //<![CDATA[
+		        function setStart() {
+		            backChange(getCookie('EditBackColor'));
+		            if (getId('fullimg').src.indexOf('btn_full') != -1) {
+		                var ofs = getOfs(getId('catinfo'));
+		                getId('editboxarea').style.width = (parseInt(ofs.width) - 50) + 'px';
+		            }
+		        }
+
+		        setStart();
+		        window.onresize = setStart;
+		    //]]>
+		    </script>       
+        }
+    }
+    else
+    {   
+		<div class="listtop">
+			<div class="l">
+				<a href="@g["adm_href"]"><img src="@g["img_module_admin"]/pre_dir.gif" alt="처음으로" /></a>
+				<span>@pwd</span>
+			</div>
+			<div class="r">
+				<a href="@g["s"]/?r=@r&m=@module&iframe=@iframe&a=folder_delete&folder=@pwd" onclick="return confirm('사용중인 관련폴더나 파일을 삭제할 경우 심각한 문제가 발생할 수 있습니다.\n\n그래도 현재폴더와 하위파일들을 모두 삭제하시겠습니까?');"><img src="@g["img_module_admin"]/mk_del.gif" alt="폴더삭제" /></a>
+				<a href="@g["adm_href"]&folderadd=Y&pwd=@pwd"><img src="@g["img_module_admin"]/mk_dir.gif" alt="새폴더" /></a>
+				<a href="@g["adm_href"]&fileadd=Y&pwd=@pwd"><img src="@g["img_module_admin"]/mk_file.gif" alt="새파일" /></a>
+				<a href="@g["adm_href"]&fileupload=Y&pwd=@pwd"><img src="@g["img_module_admin"]/mk_up.gif" alt="파일첨부" /></a>
+			</div>
+		</div>
+
+		<form name="listForm" action="@g["s"]/" method="post" target="@frame_name">
+		<input type="hidden" name="r" value="@r" />
+		<input type="hidden" name="m" value="@module" />
+		<input type="hidden" name="a" value="" />
+		<input type="hidden" name="folder" value="@pwd" />
+		<input type="hidden" name="iframe" value="@iframe" />
+
+
+		<table class="ftable">
+			<tr class="sbj">
+				<td width="20"><img src="@g["img_core"]/_public/ico_check_01.gif" alt="선택/반전" class="hand" onclick="chkFlag('members');" /></td>
+				<td width="40">번호</td>
+				<td>파일명</td>
+				<td width="70">용량</td>
+				<td width="70">크기(px)</td>
+				<td width="55">&nbsp;</td>
+			</tr>
+            @{
+        string[] files1 = new String[Directory.GetFiles(pwd).Length];
+
+        i = 0;
+
+        foreach (string tpl in Directory.GetFiles(pwd))
+        {
+            string file_name = tpl.Substring(pwd.Length, tpl.Length - pwd.Length);
+
+            if (!File.Exists(tpl))
+            {
+                continue;
+            }
+
+            files1[i++] = file_name;
+        }
+
+        int recnum = 25;
+        int filenum = i;
+        int TPG = ((filenum) / recnum) + 1;
+        int j = 0;
+
+        for (i = (Convert.ToInt32(p) - 1) * recnum; i <= (Convert.ToInt32(p) - 1) * recnum + recnum - 1; i++)
+        {
+            if (files1.Length > i && files1[i] != "")
+            {
+                j++;
+            }
+            else
+            {
+                continue;
+            }
+
+            string file_ext = _System.getExt(files1[i]).ToLower();
+
+            if (file_ext.Length >= 5)
+            {
+                file_ext = "txt";
+            }
+
+            int IM0 = 0;
+            int IM1 = 0;
+            FileInfo fInfo = new FileInfo(g["path_root_ps"] + tdir + files1[i]);
+
+            if ("jpeg,jpg,gif,png,swf".Contains(file_ext.ToLower()))
+            {
+                Image Img = Image.FromFile(g["path_root_ps"] + tdir + files1[i]);
+
+                IM0 = Img.Width;
+                IM1 = Img.Height;
+            }
+    
+                <tr class="loop">
+                    <td><input type="checkbox" name="members" value="@files1[i]" /></td>
+                    <td>@(filenum - i)</td>
+                    <td class="code">
+                        <img src="@g["img_core"]/file/small/@Html.Raw(_System.isEqual(File.Exists(g["path_root_ps"] + g["path_core"] + "image\\file\\small\\" + file_ext + ".gif"), true, file_ext, "unknown") + ".gif")" alt="@file_ext" />
+                        @if ("jpeg,jpg,gif,png,swf".Contains(file_ext))
+                        {
+                            <a href="@g["adm_href"]&editmode=Y&pwd=@pwd&file=@files1[i]" onmouseover="imgShow('@tdir',this,@IM0,event);" onmouseout="imgHide();" title="@files1[i]">@files1[i]</a>
+                        }
+                        else
+                        {
+                            <a href="@g["adm_href"]&editmode=Y&pwd=@pwd&file=@files1[i]" title="@files1[i]">@files1[i]</a>
+                        }
+                        
+                    </td>
+                    <td>@_System.getSizeFormat(fInfo.Length)</td>
+                    <td>@Html.Raw(_System.isEqual(IM0, 0, "&nbsp;", IM0.ToString() + "*" + IM1.ToString()))</td>
+                    <td>
+    
+                    @if ("cshtml,css,js,txt,cache".Contains(file_ext))
+                    {
+                        <span class="btn02"><a href="@g["adm_href"]&editmode=Y&pwd=@pwd&file=@files1[i]">편집</a></span>
+                    }
+                    else if ("jpeg,jpg,gif,png".Contains(file_ext))
+                    {
+                        <span class="btn01"><a href="#." onclick="imgOrignWin('@Html.Raw(g["url_root_host"] + "/" + tdir + files1[i])');">보기</a></span>
+                    }
+                    else if ("swf".Contains(file_ext))
+                    {
+                    <span class="btn01"><a href="#." onclick="window.open('@g["url_root"]/@tdir@(files1[i])','','width=@(IM0)px,height=@(IM1)px,left=0,top=0,status=yes,scrolling=no,resizable=yes');">보기</a></span>
+                    }
+                    else
+                    {
+                        @:&nbsp;
+                    }
+    
+                    </td>
+                </tr>                  
+                        
+        }
+        if (j == 0)
+        {
+                <tr class="none">
+                    <td colspan="6">선택된 폴더내에 파일이 없습니다.</td>
+                </tr>                    
+        }  
+            
+                }
+		</table>
+		
+		<div class="page">
+			<div class="pagebox01">
+			<script type="text/javascript">getPageLink(10, @p, @TPG, "@g["img_core"]/page/default");</script>
+			</div>
+		</div>
+		<div class="prebox">
+			<input type="button" class="btngray" value="선택/해제" onclick="chkFlag('members');" /> 
+			<input type="button" class="btnblue" value="삭제" onclick="actQue('files_delete');" /> 
+		</div>
+
+		</form>
+    }
+    
+	</div>
+	<div class="clear"></div>
+</div>
+
+
+<div id="hImg"></div>
+
+
+
+@if (iframe == "Y")
+{
+<script type="text/javascript">
+//<![CDATA[
+    function windowSetting() {
+        document.title = '킴스큐-Rx 파일메니져';
+        getId('catebody').style.padding = '10px';
+        top.resizeTo(950, 700);
+    }
+    window.onload = windowSetting;
+//]]>
+</script>    
+}

@@ -1,0 +1,61 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var pw = Request["pw"];
+    var uid = Request["uid"];
+
+    if (pw == null || pw == "") 
+    {
+        @_System.getLink("", "", "비밀번호를 입력해 주세요.", "")
+        return;
+	}
+
+    int R_num = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "uid="+uid);
+
+    if(R_num == 0) {
+        @_System.getLink("reload", "parent.", "존재하지 않거나 삭제된 글입니다.", "")
+        return;        
+	}
+    else 
+    {
+        dynamic R = _DB.GetDbData_M(AppState["table_bbsdata"].ToString(), "uid="+uid); 
+        
+        if (FormsAuthentication.HashPasswordForStoringInConfigFile(pw, "SHA1").ToString() != R["pw"]) 
+        {
+            @_System.getLink("reload", "parent.", "비밀번호가 일치하지 않습니다.", "")
+            return;                    
+		}
+    
+        Session["module_" + m + "_pwcheck"] = Session["module_" + m + "_pwcheck"] + "[" + R["uid"] + "]";
+        @_System.getLink("reload", "parent.", "", "")
+        return;
+	}
+}
+

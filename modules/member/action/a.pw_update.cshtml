@@ -1,0 +1,63 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    string pw = Request["pw"];
+    string pw1 = Request["pw1"];
+    string pw2 = Request["pw2"];
+    
+    string pw_sha1 = FormsAuthentication.HashPasswordForStoringInConfigFile(pw1, "SHA1");
+
+    if(my["uid"] == 0) 
+    {
+	    @_System.getLink("", "", "정상적인 접근이 아닙니다.", "");
+        return;
+    }
+    if(pw == "" || pw == null || pw1 == "" || pw1 == null || pw2 == "" || pw2 == null) 
+    {
+	    @_System.getLink("", "", "정상적인 접근이 아닙니다.", "");
+        return;
+    }
+    if(pw == pw1) 
+    {
+	    @_System.getLink("", "", "현재 패스워드와 변경할 패스워드가 같습니다.", "");
+        return;
+    }
+
+    string UPDATE_MBRID_SQL = "UPDATE "+AppState["table_s_mbrid"]+" SET pw='"+pw_sha1+"' WHERE uid="+my["uid"];
+    string UPDATE_MBRDATA_SQL = "UPDATE "+AppState["table_s_mbrdata"]+" SET last_pw=getdate() where memberuid="+my["uid"];
+
+    @_DB.Execute(UPDATE_MBRID_SQL);
+    @_DB.Execute(UPDATE_MBRDATA_SQL);
+
+    Session["mbr_pw"] = pw_sha1;
+    
+    @_System.getLink("reload", "parent.", "변경되었습니다.", "")
+    return;
+}

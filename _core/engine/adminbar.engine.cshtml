@@ -1,0 +1,197 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];    
+    var r = PageData[1];    
+    var system = PageData[2];
+    var _HM = PageData[3];
+    var _HP = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var ADM_ARR = PageData[7];
+    var LANG_ARR = PageData[8];
+}
+
+<div id="adminControl">
+<div class="abox">
+<div class="aleft">
+<ul>
+<li><a href="http://rx.kimsq.com/" target="_blank"><img src="@g["img_core"]/_public/ico_rx.png" class="rx" alt="RX" title="kimsQ-RX @ADM_ARR["version"]" /></a></li>
+<li><a href="@g["s"]/?r=@r">@LANG_ARR["home"]</a></li>
+<li><a href="@_System.RW("m=admin", g["r"], _HS)">@LANG_ARR["admin"]</a> <a href="@g["s"]/?r=@r&m=admin&type=editmode"><img src="@g["img_core"]/_public/btn_add_01.gif" alt="" title="@LANG_ARR["desk"]" class="deskedit" /></a></li>
+<li><a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.all&amp;type=site','',800,500,'',false,'r');">@LANG_ARR["site"]</a> <a href="@g["s"]/?r=@r&amp;m=admin&amp;module=home&amp;type=makesite"><img src="@g["img_core"]/_public/btn_add_01.gif" alt="" title="@LANG_ARR["newsite"]" /></a></li>
+<li><a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.all&amp;type=menu','',800,500,'',false,'r');">@LANG_ARR["menu"]</a> <a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.all&amp;type=menu&amp;makemenu=Y','',800,500,'',false,'r');"><img src="@g["img_core"]/_public/btn_add_01.gif" alt="" title="@LANG_ARR["newmenu"]" /></a></li>
+<li><a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.all&amp;type=page','',800,500,'',false,'r');">@LANG_ARR["page"]</a> <a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.all&amp;type=pageadd','',800,500,'',false,'r');"><img src="@g["img_core"]/_public/btn_add_01.gif" alt="" title="@LANG_ARR["newpage"]" /></a></li>
+
+@if (system == null || system == "")
+{
+    if (_HM["uid"] > 0)
+    {
+        <li><a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.menu&amp;_menu=@_HM["uid"]','',800,500,'',false,'r');" class="editpage" title="MENUKEY:@_HM["uid"]">@LANG_ARR["edit"]</a> <a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.all&amp;type=menu&amp;cat=@_HM["uid"]','',800,500,'',false,'r');" title="@LANG_ARR["property"]"><img src="@g["img_core"]/_public/btn_add_01.gif" alt="" /></a></li>
+    }
+     else if (_HP["uid"] > 0)
+     {
+        <li><a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.page&amp;_page=@_HP["uid"]','',800,500,'',false,'r');" class="editpage">@LANG_ARR["edit"]</a> <a href="#" onclick="__getLayerBox('@g["s"]/?r=@r&amp;system=edit.all&amp;type=pageadd&amp;uid=@_HP["uid"]','',800,500,'',false,'r');" title="@LANG_ARR["property"]"><img src="@g["img_core"]/_public/btn_add_01.gif" alt="" /></a></li>
+     }
+}
+else
+{
+    <li>@LANG_ARR["edit"]</li>
+}
+
+<li>
+<a title="Editor" class="hand b" onclick="OpenWindow('@g["s"]/?r=@r&system=edit.editor&iframe=Y');" />E</a>ㆍ<a title="Widget" class="hand b" onclick="OpenWindow('@g["s"]/?r=@r&system=popup.widget&iframe=Y&isWcode=Y');" />W</a>
+</li>
+<li class="noline"></li>
+</ul>
+</div>
+
+@{
+    string master_nametype = "";
+    string master_admin = "";
+
+    if (_HS["nametype"] == "nic")
+    {
+        master_nametype = my["nic"];
+    }
+    else if (_HS["nametype"] == "name")
+    {
+        master_nametype = my["name"];
+    }
+    
+    if(my["id"] == "admin")
+    {
+        master_admin = LANG_ARR["admin1"];
+    }
+    else
+    {
+        master_admin = LANG_ARR["admin2"];        
+    }
+}
+
+<div class="aright">
+<div id="_adminBox_" class="amenu">
+<div class="amenubox adminbox">
+<ol>
+<li class="tx nx tline">@master_nametype</li>
+<li class="tx nx uline">@Html.Raw(my["id"] + "(" + master_admin + ")")</li>
+<li class="tx nx"><i>@LANG_ARR["logtime"]</i></li>
+<li class="tx nx uline"><i>@my["last_log"].ToString("yyyy.MM.dd HH:mm")</i></li>
+<li class="tx nx"><a href="@g["s"]/?r=@r&amp;a=logout">@LANG_ARR["logout"]</a></li>
+</ol>
+</div>
+</div>            
+
+<div id="_amenuBox_" class="amenu">
+<div class="amenubox">
+<ol>
+<li class="tx">@LANG_ARR["shorttitle"]</li>
+<li>ㆍ<a href="@g["s"]/?r=@r&amp;m=admin&amp;module=bbs">@LANG_ARR["shortboard"]</a></li>
+<li>ㆍ<a href="@g["s"]/?r=@r&amp;m=admin&amp;module=member">@LANG_ARR["shortmember"]</a></li>
+<li>ㆍ<a href="@g["s"]/?r=@r&amp;m=admin&amp;module=counter">@LANG_ARR["shortcounter"]</a></li>
+<li class="tx">@LANG_ARR["mybook"]<a href="@g["s"]/?r=@r&amp;m=admin&amp;front=bookmark"><img src="@g["img_core"]/_public/btn_add.gif" alt="" /></a></li>
+    
+@{
+    string _ADM_SQL = "SELECT * FROM " + AppState["table_s_admpage"] + " WHERE memberuid=" + my["uid"] + " ORDER BY gid ASC";
+    int _ADM_CNT = _DB.GetDbData_Count(AppState["table_s_admpage"].ToString(), "memberuid=" + my["uid"]);
+    
+    foreach (var _R in _DB.Query(_ADM_SQL))
+    {
+        <li>ㆍ<a href="@_R["url"]">@_R["name"]</a></li>
+    }
+    
+    if(_ADM_CNT == 0) {
+        <li>@Html.Raw("ㆍ" + LANG_ARR["none"])</li>
+    }
+}
+</ol>
+</div>
+</div>
+
+@{
+    string photo_path = g["img_core"] + "/_public/ico_user.gif";
+    
+    if(my["photo"] != "") {
+        photo_path = "./_var/simbol/" + my["photo"];
+    }
+}
+<ul>
+<li class="symbol"><img src="@photo_path" width="18" height="18" alt="" /></li>
+<li class="adminname"><a class="hand" onclick="toolCheck0();">@Html.Raw(my[_HS["nametype"]] + LANG_ARR["adminname"])</a></li>
+<li class="arrow"><img src="@g["img_core"]/_public/ico_under_01.gif" id="_arr_icon_" width="5" height="3" alt="" /></li>
+<li class="tool"><img src="@g["img_core"]/_public/ico_admintool.gif" id="_tool_icon_" width="17" height="18" alt="" onclick="toolCheck1(this);" /></li>
+</ul>
+</div>
+<div class="clear"></div>
+</div>
+</div>    
+
+<script type="text/javascript">
+//<![CDATA[
+function __getLayerBox(url,title,w,h,e,ar,direction)
+{
+	@if(ADM_ARR["pannellink"] != "")
+    {
+        @Html.Raw("getLayerBox(url+'&amp;iframe=Y',title,w,h,e,ar,direction);\n");
+    }
+    else
+    {
+        @Html.Raw("goHref(url);\n");
+    }
+}
+
+function toolCheck0()
+{
+
+	if(getId('_adminBox_').style.display == 'block')
+	{
+		getId('_adminBox_').style.display = 'none';
+		getId('_arr_icon_').src = rooturl+'/_core/image/_public/ico_under_01.gif';
+		getId('_arr_icon_').style.background = 'transparent';
+	}
+	else
+	{
+		getId('_adminBox_').style.display = 'block';
+		getId('_arr_icon_').src = rooturl+'/_core/image/_public/ico_under.gif';
+		getId('_arr_icon_').style.background = '#ffffff';
+	}
+	if(getId('_tool_icon_').src.indexOf('_on.')!=-1)
+	{
+		getId('_tool_icon_').src=getId('_tool_icon_').src.replace('_on.','.');
+		getId('_tool_icon_').style.background = 'transparent';
+		getId('_amenuBox_').style.display = 'none';
+	}
+}
+
+function toolCheck1(obj)
+{
+
+	if(obj.src.indexOf('_on.')!=-1)
+	{
+		obj.src=obj.src.replace('_on.','.');
+		obj.style.background = 'transparent';
+		getId('_amenuBox_').style.display = 'none';
+	}
+	else
+	{
+		obj.src=obj.src.replace('.','_on.');
+		obj.style.background = '#ffffff';
+		getId('_amenuBox_').style.display = 'block';
+	}
+	if(getId('_adminBox_').style.display == 'block')
+	{
+		getId('_adminBox_').style.display = 'none';
+		getId('_arr_icon_').src = rooturl+'/_core/image/_public/ico_under_01.gif';
+		getId('_arr_icon_').style.background = 'transparent';
+	}
+}
+
+document.body.style.backgroundPosition = 'left 30px';
+//]]>
+</script>

@@ -1,0 +1,81 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uid = Request["uid"];
+    var tmpcode = Request["tmpcode"];
+    var name = Request["name"];
+    var caption = Request["caption"];
+    
+    if (uid == null || uid == "" || uid == "0" || tmpcode == null || tmpcode == "")
+    {
+        @_System.getLink("", "", "잘못된 접근입니다.", "")
+        return;
+    }
+
+    dynamic R = _DB.Get_module_data(AppState["table_s_upload"], "uid", uid);
+        
+    if (R["uid"] == 0)
+    {        
+        @_System.getLink("", "", "없는 파일입니다", "")
+        return;
+    }
+    
+    if (my["admin"] != "1" && R["tmpcode"] != tmpcode && my["uid"] != R["mbruid"])
+    {
+        @_System.getLink("", "", "권한이 없습니다.", "")
+        return;
+    }
+    
+    if (name != null && name.Trim() != "")
+    {
+        name = name.Trim();        
+        name = name.Replace("." + R["ext"], "") + "." + R["ext"];
+    }
+    else
+    {
+        name = R["name"];
+    }
+    
+    name = _System.Strip_tags(name);
+    
+    if (my["admin"] == "1")
+    {
+        caption = caption.Trim();
+    }
+    else
+    {
+        caption = _System.Strip_tags(caption.Trim());
+    }
+    
+    string UPDATE_UP_SQL = "UPDATE " + AppState["table_s_upload"] + " SET name='" + name + "',caption='" + caption + "',d_update='" + date["insert"] + "' WHERE uid='" + R["uid"] + "'";
+    @_DB.Execute(UPDATE_UP_SQL);
+
+    @_System.getLink("reload", "parent.", "반영되었습니다.", "")
+    return;
+}

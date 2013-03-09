@@ -1,0 +1,33 @@
+
+
+#catebody {margin:0 0 30px 0;padding:0 0 30px 0;}
+#category {float:left;width:220px;padding:0 0 0 0;}
+#category .title {height:19px;background:url('../../../../../_core/image/tree/default/top.gif') left no-repeat #dfdfdf;background-position:4px 3px;padding:6px 0 0 23px;font-weight:bold;}
+
+#category .tree {margin:0;padding:10px 0 10px 0;}
+#category .tree ul {margin:0;padding:0;}
+#category .tree li {list-style-type:none;background:url('../../../../../_core/image/_public/ico_f4.png') left no-repeat;background-position:3px 1px;padding:5px 0 5px 26px;}
+#category .tree .name {position:relative;top:0px;color:#111;padding:2px 0 0 0;}
+#category .tree .name:hover {color:#AECD63;}
+#category .tree .on {background:#AECD63;color:#ffffff;padding:2px;}
+#category .tree .on:hover {color:#ffffff;}
+#category .tree .id {font:normal 11px arial;color:#999;padding:0 0 0 2px;}
+#category .tree .id:hover {color:#ff0000;}
+
+#catinfo {margin-left:220px;padding:0 0 0 20px;}
+#catinfo .title {background:#dfdfdf;height:25px;}
+#catinfo .title .xleft {float:left;padding:6px 0 0 23px;font-weight:bold;}
+#catinfo .title .xright {float:right;padding:7px 7px 0 0;}
+#catinfo .title .xright a {font:normal 11px dotum;color:#888;}
+
+#catinfo .xwrap {width:99.6%;}
+
+#catinfo .iconbox {border-left:#e0e0e0 solid 1px;border-top:#e0e0e0 solid 1px;border-right:#e0e0e0 solid 1px;background:#f9f9f9;padding:6px 0 8px 7px;margin:10px 0 0 0;}
+#catinfo .iconbox a {padding:0 3px 0 3px;font-size:11px;font-family:dotum;color:#333;}
+#catinfo .iconbox a:hover {color:#7899C7;}
+#catinfo .iconbox a img {position:relative;top:2px;left:-2px;margin-right:3px;}
+#catinfo .iconbox .split {padding:0 2px 0 2px;margin-bottom:-1px;}
+
+#catinfo .notice {padding:20px 0 20px 0;font-size:11px;font-family:dotum;color:#02B6D6;line-height:150%;}
+
+#catinfo .submitbox {padding:20px 0 20px 0;}

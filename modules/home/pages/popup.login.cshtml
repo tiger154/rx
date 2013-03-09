@@ -1,0 +1,163 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    
+
+    var p = PageData[4];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+    var _m = PageData[1];
+    var m = PageData[3];
+    
+    dynamic g = PageData[0];   
+    dynamic _HS = PageData[5];
+
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+    Cookie_svshop = Request.Cookies["id_save_Cookie"];
+
+    string cookie_id = "";
+    string cookie_pw = "";
+
+    if (Cookie_svshop != null && Cookie_svshop.Value != null)
+    {
+        if (Cookie_svshop.Value.Contains("|"))
+        {
+            cookie_id = Cookie_svshop.Value.Split('|')[0];
+            cookie_pw = Cookie_svshop.Value.Split('|')[1];
+        }
+        else
+        {
+            cookie_id = Cookie_svshop.Value;
+        }
+    }
+
+    string r = Request["r"];
+    string referer = Request["referer"];
+
+    dynamic d_member = _DB.Get_code("member");
+
+    var frame_name = "_action_frame_" + m;
+
+    if (referer == null || referer == "")
+    {
+        referer = Request["HTTP_REFERER"];
+
+        if (referer == null || referer == "")
+        {
+            string referer_slash = "";
+
+            if (!Request["QUERY_STRING"].IsEmpty())
+            {
+                referer_slash = "?";
+            }
+            referer = g["url_root"] + referer_slash + Request["QUERY_STRING"];
+        }
+    }
+
+    string idType = "아이디를";
+    if (d_member["login_emailid"] == "1")        
+    {
+        idType = "이메일을";
+    }
+        
+        
+}
+
+<div id="loginbox">
+
+
+<form name="loginform" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return loginCheck(this);">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="a" value="login" />
+<input type="hidden" name="drop" value="Y" />
+<input type="hidden" name="referer" value="@referer" />
+<input type="hidden" name="usessl" value="@d_member["login_ssl"]" />
+<div class="xdiv"><input type="text" name="id" class="input xinput" title="@idType" value="@cookie_id" /></div>
+<div class="xdiv"><input type="password" name="pw" class="input xinput"  title="패스워드" value="@cookie_id" /></div>
+<div class="submitbtn"><input type="submit" value=" 로그인 " class="btnblue xsubmit" /></div>
+<div class="shift xfont">
+
+<input type="checkbox" name="idpwsave" value="checked" onclick="remember_idpw(this)" @_System.getChkStr(Cookie_svshop != null && Cookie_svshop.Value != null, true) />@idType/비밀번호 기억
+@if (d_member["login_ssl"] == "1")
+{
+    <br /><input type="checkbox" name="ssl" value="checked" />
+    @:보안로그인(SSL)    
+}
+</div>
+
+
+</form>
+
+
+<form name="SSLLoginForm" action="@g["url_root_ssl"]" method="post" target="@frame_name">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="a" value="login" />
+<input type="hidden" name="drop" value="Y" />
+<input type="hidden" name="referer" value="@referer" />
+<input type="hidden" name="id" value="" />
+<input type="hidden" name="pw" value="" />
+<input type="hidden" name="idpwsave" value="" />
+</form>
+
+
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function loginCheck(f)
+{
+	if (f.id.value == '')
+	{
+		alert('@idType 입력해 주세요.');
+		f.id.focus();
+		return false;
+	}
+	if (f.pw.value == '')
+	{
+		alert('비밀번호를 입력해 주세요.');
+		f.pw.focus();
+		return false;
+	}
+	if (f.usessl.value == '1')
+	{
+		if (f.ssl.checked == true)
+		{
+			var fs = document.SSLLoginForm;
+			fs.id.value = f.id.value;
+			fs.pw.value = f.pw.value;
+			if(f.idpwsave.checked == true) fs.idpwsave.value
+			fs.submit();
+			return false;
+		}
+	}
+}
+function remember_idpw(ths)
+{
+	if (ths.checked == true)
+	{
+		if (!confirm('\n\n패스워드정보를 저장할 경우 다음접속시 \n\n패스워드를 입력하지 않으셔도 됩니다.\n\n그러나, 개인PC가 아닐 경우 타인이 로그인할 수 있습니다.     \n\nPC를 여러사람이 사용하는 공공장소에서는 체크하지 마세요.\n\n정말로 패스워드를 기억시키겠습니까?\n\n'))
+		{
+			ths.checked = false;
+		}
+	}
+}
+window.onload = function()
+{
+	document.title = '로그인';
+	var ofs = getOfs(getId('loginbox')); 
+	top.resizeTo(ofs.width+10,ofs.height+70);
+	document.loginform.id.focus();
+}
+//]]>
+</script>
+
+
+
+

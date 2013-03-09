@@ -1,0 +1,317 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var r = PageData[1];
+    var d_layout = PageData[2];
+    
+    string _themeConfig = Request["_themeConfig"];
+    string m_layout = "";
+    string m_rb = "";
+    
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);    
+    
+    if(LAYOUT_ARR["mainType_layout"] == "1")
+    {
+        m_layout = "checked='checked'";
+    }    
+    if(LAYOUT_ARR["mainType_rb"] == "1")
+    {
+        m_rb = "checked='checked'";
+    }    
+}
+
+<div class="guide">
+<span class="b">메인화면을 꾸미는 방법은 2가지가 있습니다.</span><br /><br />
+첫번째 - 이 레이아웃에서 제공하는 최적화된 메인화면 사용하기<br />
+두번재 - 킴스큐 자체에서 제공하는 꾸미기 기능을 이용하여 나만의 메인화면 만들기<br />
+첫번째,두번째중 원핫시는 것을 선택해 주세요. 두가지 모두 선택할 수 있습니다.<br />
+</div>
+
+<form name="themeForm" method="post" action="@g["s"]/" onsubmit="return configCheck(this);">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="_layoutAction" value="config" />
+<input type="hidden" name="nowLayout" value="@d_layout["dir"]" />
+<input type="hidden" name="changeType" value="@_themeConfig" />
+
+<table>
+<tr>
+<td class="t1">메인화면을 무엇으로 꾸미시겠습니까?</td>
+<td class="t2">:</td>
+<td class="t3 shift">
+	<div class="shift">
+	<label><input type="checkbox" name="mainType_layout" value="1" @Html.Raw(m_layout) />이 레이아웃에서 제공하는 메인화면(게시판 생성 필요)</label><br />
+	<label><input type="checkbox" name="mainType_rb" value="1" @Html.Raw(m_rb) />킴스큐 자체에서 꾸미는 메인화면(직접꾸미기,위젯꾸미기,모듈콘텐츠 연결)</label><br />
+	</div>
+</td>
+</tr>
+    
+@{
+    if(LAYOUT_ARR["mainType_layout"] == "1")
+    {
+        string bbs_list = "SELECT * FROM " + AppState["table_bbslist"] + " ORDER BY gid ASC";
+        string bbs1_sel = "";
+        string bbs2_sel = "";
+        string bbs3_sel = "";
+        string bbs4_sel = "";
+        string sort1_sel1 = "";
+        string sort1_sel2 = "";
+        string sort1_sel3 = "";
+        string sort1_sel4 = "";
+        string sort1_sel5 = "";
+        string sort2_sel1 = "";
+        string sort2_sel2 = "";
+        string sort2_sel3 = "";
+        string sort2_sel4 = "";
+        string sort2_sel5 = "";
+        string sort3_sel1 = "";
+        string sort3_sel2 = "";
+        string sort3_sel3 = "";
+        string sort3_sel4 = "";
+        string sort3_sel5 = "";
+        string sort4_sel1 = "";
+        string sort4_sel2 = "";
+        string sort4_sel3 = "";
+        string sort4_sel4 = "";
+        string sort4_sel5 = "";
+        
+        if(LAYOUT_ARR["bbs1"] != "1")
+        {
+            bbs1_sel = "selected='selected'";
+        }
+        if(LAYOUT_ARR["bbs2"] != "1")
+        {
+            bbs2_sel = "selected='selected'";
+        }
+        if(LAYOUT_ARR["bbs3"] != "1")
+        {
+            bbs3_sel = "selected='selected'";
+        }
+
+        if(LAYOUT_ARR["sort1"] == "gid,asc")
+        {
+            sort1_sel1 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort1"] == "hit,desc")
+        {
+            sort1_sel2 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort1"] == "score1,desc")
+        {
+            sort1_sel3 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort1"] == "comment,desc")
+        {
+            sort1_sel3 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort1"] == "down,desc")
+        {
+            sort1_sel3 = "selected='selected'";
+        }
+
+        if(LAYOUT_ARR["sort2"] == "gid,asc")
+        {
+            sort2_sel1 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort2"] == "hit,desc")
+        {
+            sort2_sel2 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort2"] == "score1,desc")
+        {
+            sort2_sel3 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort2"] == "comment,desc")
+        {
+            sort2_sel4 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort2"] == "down,desc")
+        {
+            sort2_sel5 = "selected='selected'";
+        }
+
+        if(LAYOUT_ARR["sort3"] == "gid,asc")
+        {
+            sort3_sel1 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort3"] == "hit,desc")
+        {
+            sort3_sel2 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort3"] == "score1,desc")
+        {
+            sort3_sel3 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort3"] == "comment,desc")
+        {
+            sort3_sel4 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort3"] == "down,desc")
+        {
+            sort3_sel5 = "selected='selected'";
+        }
+        
+        if(LAYOUT_ARR["sort4"] == "gid,asc")
+        {
+            sort4_sel1 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort4"] == "hit,desc")
+        {
+            sort4_sel2 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort4"] == "score1,desc")
+        {
+            sort4_sel3 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort4"] == "comment,desc")
+        {
+            sort4_sel4 = "selected='selected'";
+        }
+        else if(LAYOUT_ARR["sort4"] == "down,desc")
+        {
+            sort4_sel5 = "selected='selected'";
+        }
+        
+        <tr>
+        <td class="t1">상단출력 대상물</td>
+        <td class="t2">:</td>
+        <td class="t3">
+            <select name="bbs1" class="select1">
+            <option value="0" @bbs1_sel>ㆍ출력안함</option>
+
+            @foreach (var _B in _DB.Query(bbs_list))
+            {
+                string bbs1_sel1 = "";
+                
+                if(LAYOUT_ARR["bbs1"] == _B["uid"].ToString())
+                {
+                    bbs1_sel1 = "selected='selected'";
+                }
+                <option value="@_B["uid"]" @bbs1_sel1>@Html.Raw("ㆍ" + _B["name"] + "(" + _B["id"] + ")")</option>
+            }
+            
+            </select>
+            <select name="sort1">
+            <option value="gid,asc" @Html.Raw(sort1_sel1)>등록순</option>
+            <option value="hit,desc" @Html.Raw(sort1_sel2)>조회순</option>
+            <option value="score1,desc" @Html.Raw(sort1_sel3)>추천순</option>
+            <option value="comment,desc" @Html.Raw(sort1_sel4)>댓글순</option>
+            <option value="down,desc" @Html.Raw(sort1_sel5)>다운순</option>
+            </select>
+            <input type="text" name="bbs1_day" value="@LAYOUT_ARR["bbs1_day"]" class="input sf" />일내
+            <input type="text" name="bbs1_num" value="@LAYOUT_ARR["bbs1_num"]" class="input sf" />개
+        </td>
+        </tr>
+        <tr>
+        <td class="t1">중단1 대상물</td>
+        <td class="t2">:</td>
+        <td class="t3">
+            <select name="bbs2" class="select1">
+            <option value="0" @bbs2_sel>ㆍ출력안함</option>
+                
+            @foreach (var _B in _DB.Query(bbs_list))
+            {
+                string bbs2_sel1 = "";
+                
+                if(LAYOUT_ARR["bbs2"] == _B["uid"].ToString())
+                {
+                    bbs2_sel1 = "selected='selected'";
+                }
+                <option value="@_B["uid"]" @bbs2_sel1>@Html.Raw("ㆍ" + _B["name"] + "(" + _B["id"] + ")")</option>
+            }
+
+            </select>
+            <select name="sort2">
+            <option value="gid,asc" @Html.Raw(sort2_sel1)>등록순</option>
+            <option value="hit,desc" @Html.Raw(sort2_sel2)>조회순</option>
+            <option value="score1,desc" @Html.Raw(sort2_sel3)>추천순</option>
+            <option value="comment,desc" @Html.Raw(sort2_sel4)>댓글순</option>
+            <option value="down,desc" @Html.Raw(sort2_sel5)>다운순</option>
+            </select>
+            <input type="text" name="bbs2_day" value="@LAYOUT_ARR["bbs2_day"]" class="input sf" />일내
+            <input type="text" name="bbs2_num" value="@LAYOUT_ARR["bbs2_num"]" class="input sf" />개
+        </td>
+        </tr>
+        <tr>
+        <td class="t1">중단2 대상물</td>
+        <td class="t2">:</td>
+        <td class="t3">
+            <select name="bbs3" class="select1">
+            <option value="0" @bbs3_sel>ㆍ출력안함</option>
+                
+            @foreach (var _B in _DB.Query(bbs_list))
+            {
+                string bbs3_sel1 = "";
+                
+                if(LAYOUT_ARR["bbs3"] == _B["uid"].ToString())
+                {
+                    bbs3_sel1 = "selected='selected'";
+                }
+                <option value="@_B["uid"]" @bbs3_sel1>@Html.Raw("ㆍ" + _B["name"] + "(" + _B["id"] + ")")</option>
+            }
+            
+            </select>
+            <select name="sort3">
+            <option value="gid,asc" @Html.Raw(sort3_sel1)>등록순</option>
+            <option value="hit,desc" @Html.Raw(sort3_sel2)>조회순</option>
+            <option value="score1,desc" @Html.Raw(sort3_sel3)>추천순</option>
+            <option value="comment,desc" @Html.Raw(sort3_sel4)>댓글순</option>
+            <option value="down,desc" @Html.Raw(sort3_sel5)>다운순</option>
+            </select>
+            <input type="text" name="bbs3_day" value="@LAYOUT_ARR["bbs3_day"]" class="input sf" />일내
+            <input type="text" name="bbs3_num" value="@LAYOUT_ARR["bbs3_num"]" class="input sf" />개
+        </td>
+        </tr>
+        <tr>
+        <td class="t1">포토갤러리 대상물</td>
+        <td class="t2">:</td>
+        <td class="t3">
+            <select name="bbs4" class="select1">
+            <option value="0" @bbs4_sel>ㆍ출력안함</option>
+                
+            @foreach (var _B in _DB.Query(bbs_list))
+            {
+                string bbs4_sel1 = "";
+                
+                if(LAYOUT_ARR["bbs4"] == _B["uid"].ToString())
+                {
+                    bbs4_sel1 = "selected='selected'";
+                }
+                <option value="@_B["uid"]" @bbs4_sel1>@Html.Raw("ㆍ" + _B["name"] + "(" + _B["id"] + ")")</option>
+            }
+            
+            </select>
+            <select name="sort4">
+            <option value="gid,asc" @Html.Raw(sort4_sel1)>등록순</option>
+            <option value="hit,desc" @Html.Raw(sort4_sel2)>조회순</option>
+            <option value="score1,desc" @Html.Raw(sort4_sel3)>추천순</option>
+            <option value="comment,desc" @Html.Raw(sort4_sel4)>댓글순</option>
+            <option value="down,desc" @Html.Raw(sort4_sel5)>다운순</option>
+            </select>
+            <input type="text" name="bbs4_day" value="@LAYOUT_ARR["bbs4_day"]" class="input sf" />일내
+            <input type="text" name="bbs4_num" value="@LAYOUT_ARR["bbs4_num"]" class="input sf" />개
+        </td>
+        </tr>
+    }
+}
+
+<tr>
+<td></td>
+<td></td>
+<td><br /><br /><input type="submit" value=" 변경하기 " class="btnblue" /></td>
+</tr>
+</table>
+
+</form>
+
+<div class="more">
+원하시는 메인화면 형식이 아닌가요?<br />
+메인화면을 직접 꾸미고 싶다면 위젯을 이용하시거나 소스코드 직접꾸미기 또는 원하시는 형식의 콘텐츠 모듈을 연결해 주세요.<br />
+HTML소스코드로 메인화면을 직접 꾸미기 위해서는 적어도 HTML / CSS 에 대한 기본지식이 필요합니다.<br />
+</div>    

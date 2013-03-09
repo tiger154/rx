@@ -1,0 +1,282 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var typeset = new Dictionary<string, string>();
+
+    var g = PageData[0];
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    var p = PageData[4];
+
+    var keyword = Request["keyword"];
+    var ikeyword = Request["ikeyword"];
+
+    dynamic d_search = _DB.Get_code("search");
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    dynamic B = null;
+
+    string _link = "";
+    string _searchsql = "";
+    string RCD_sql = "";
+    
+    int NUM = 0;
+   
+    @RenderPage("_menu.cshtml", g, m, _HS)
+ 
+    string recnum = d_search["s_num1"];
+    int list_start = (p - 1) * Convert.ToInt32(recnum);
+    bool result = false;
+
+    DateTime now_date2 = date["totime"];
+    int now_date = Convert.ToInt32(now_date2.ToString("yyMMdd"));
+    int d_search_date = Convert.ToInt32(now_date2.AddMonths(-Convert.ToInt32(d_search["s_term"])).ToString("yyMMdd"));
+}
+
+
+@if (d_search["s_bbs"] != "")
+{
+    _searchsql = _System.getSearchSql("subject|tag|content", keyword, ikeyword, "OR");
+
+    RCD_sql = _System.GetQuery(AppState["table_bbsdata"].ToString(), "", "site='" + s + "' AND display=1" + _searchsql, "gid", "asc", list_start, recnum);    
+    NUM = _DB.GetDbData_Count(AppState["table_bbsdata"].ToString(), "site='" + s + "' AND display=1" + _searchsql);
+
+    if (NUM != 0)
+    {
+        <div id="s_post">
+
+	    <div class="subtitle">
+		    <div class="xleft">게시판(검색결과 @string.Format("{0:#,0}", Convert.ToInt32(NUM))개)</div>
+		    <div class="xright">
+            @if (NUM > Convert.ToInt32(recnum)) 
+            { 
+                <a href="@g["url_reset"]upload">more</a> 
+            } 
+            </div>
+		    <div class="clear"></div>
+	    </div>
+
+
+	    <div class="postbox">
+
+        @foreach (var R in _DB.Query(RCD_sql))
+        {
+            B = _DB.GetDbData_M(AppState["table_bbslist"].ToString(), "uid=" + R["bbs"]);
+            _link = _System.getPostLink(s, R, g["r"], _HS);
+	        <div class="sbjbox">
+		        <a href="@_link" class="subject">@R["subject"]</a>
+		        <a href="@_link" target="_blank"><img src="@g["img_core"]/_public/ico_blank.gif" alt="" title="새창으로보기" /></a>
+
+                @if(R["content"].Contains("jpg")) {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+                }
+                @if(R["upload"] != "") {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+                }
+                @if(R["comment"] != 0) {
+                    <span class="comment">[@R["comment"]
+                    @if(R["oneline"] != 0) {
+                        @Html.Raw("+" + R["oneline"])
+                    }
+                    ]</span>
+                }
+                    
+		        <span class="info">
+			        @R["d_regis"].ToString("yyyy.MM.dd") | 
+			        @R[_HS["nametype"]] |
+			        <a href="@_System.RW("m=bbs&bid=" + R["bbsid"], g["r"], _HS)" target="_blank">@B["name"]</a>
+		        </span>
+	        </div>
+	        <div class="shotcont">@_System.getStrCut(_System.Strip_tags(R["content"]), 150, "...")</div>
+        }
+
+        </div>
+        </div>
+    }
+}
+
+
+@if (d_search["s_comment"] != "")
+{
+    _searchsql = _System.getSearchSql("subject|content", keyword, ikeyword, "OR");
+
+    RCD_sql = _System.GetQuery(AppState["table_s_comment"].ToString(), "", "site='" + s + "' AND display=1" + _searchsql, "uid", "asc", list_start, recnum);
+    NUM = _DB.GetDbData_Count(AppState["table_s_comment"].ToString(), "site='" + s + "' AND display=1" + _searchsql);
+
+    if (NUM != 0)
+    {
+        result = true;
+        <div id="s_comment">
+
+	        <div class="subtitle">
+		        <div class="xleft">댓글(검색결과 @string.Format("{0:#,0}", Convert.ToInt32(NUM))개)</div>
+		        <div class="xright"> @if (NUM > Convert.ToInt32(recnum))
+                                { <a href="@g["url_reset"]comment">more</a> } </div>
+		        <div class="clear"></div>
+	        </div>
+
+
+	        <div class="postbox">
+
+
+        @foreach (var R in _DB.Query(RCD_sql))
+        {                
+            _link = _System.getCyncURL(R["cync"] + ",CMT:" + R["uid"], g, _HS);            
+	        <div class="sbjbox">
+		        <a href="@_link#CMT" class="subject">@R["subject"]</a>
+		        <a href="@_link#CMT" target="_blank"><img src="@g["img_core"]/_public/ico_blank.gif" alt="" title="새창으로보기" /></a>
+                
+                @if(R["content"].Contains("jpg")) 
+                {
+                    <img src="@g["img_core"]/_public/ico_pic.gif" class="imgpos" alt="사진" title="사진" />
+                }
+                
+                @if(R["upload"] != "") 
+                {
+                    <img src="@g["img_core"]/_public/ico_file.gif" class="imgpos" alt="첨부파일" title="첨부파일" />
+                }
+
+                @if(R["oneline"] != 0) 
+                {
+                    <span class="comment">[@R["oneline"]]</span>
+                }
+                    
+		        <span class="info">
+			        @R["d_regis"].ToString("yyyy.MM.dd") | 
+			        @R[_HS["nametype"]]
+		        </span>
+	        </div>
+	        <div class="shotcont">@_System.getStrCut(_System.Strip_tags(R["content"]), 150, "...")</div>
+        }
+	        </div>
+
+        </div>         
+    }
+}
+
+@if (d_search["s_image"] != "")
+{
+    _searchsql = _System.getSearchSql("name|caption", keyword, ikeyword, "OR");
+    RCD_sql = _System.GetQuery(AppState["table_s_upload"].ToString(), "", "site='" + s + "' AND type=2 and ext='jpg'" + _searchsql, "gid", "asc", list_start, recnum);
+    NUM = _DB.GetDbData_Count(AppState["table_s_upload"].ToString(), "site='" + s + "' AND type=2 AND ext='jpg'" + _searchsql);
+    
+    if (NUM != 0)
+    {
+        result = true;
+            
+        <div id="s_image">
+
+	        <div class="subtitle">
+		        <div class="xleft">이미지(검색결과 @string.Format("{0:#,0}", Convert.ToInt32(NUM))개)</div>
+		        <div class="xright"> @if (NUM > Convert.ToInt32(recnum))
+                                { <a href="@g["url_reset"]image">more</a> } </div>
+		        <div class="clear"></div>
+	        </div>
+
+
+	        <div class="imgbox">
+                
+            @foreach (var R in _DB.Query(RCD_sql))
+            {
+                string capStr = R["name"];
+                    
+                if(R["caption"]!="") {
+                    capStr = R["caption"];
+                }
+                        
+                        
+                _link = _System.getCyncURL(R["cync"], 6, '[', ',', ':');   
+
+		        <div class="pic">
+		        <div class="photo">
+		        <a href="@_link" target="_blank"><img src="@R["url"]@R["folder"]/@R["thumbname"]" alt="" title="@capStr" /></a>
+		        </div>
+		        <div class="info"><a href="@_link" target="_blank">@capStr</a></div>
+		        <div class="date">@R["d_regis"].ToString("yyyy.MM.dd")</div>
+		        </div>
+            }
+		        <div class="clear"></div>
+	        </div>
+
+        </div>       
+    }
+}
+
+
+@if (d_search["s_upload"] != "")
+{
+    _searchsql = _System.getSearchSql("name|caption", keyword, ikeyword, "OR");
+
+
+    RCD_sql = _System.GetQuery(AppState["table_s_upload"].ToString(), "", "site='" + s + "' AND type<>2 AND hidden=0" + _searchsql, "gid", "asc", list_start, recnum);
+    NUM = _DB.GetDbData_Count(AppState["table_s_upload"].ToString(), "site='" + s + "' AND type<>2 AND hidden=0" + _searchsql);        
+
+    if (NUM != 0)
+    {
+        result = true;    
+            
+        <div id="s_upload">
+
+	        <div class="subtitle">
+		        <div class="xleft">첨부파일(검색결과 @string.Format("{0:#,0}", Convert.ToInt32(NUM))개)</div>
+		        <div class="xright"> 
+                @if (NUM > Convert.ToInt32(recnum)) 
+                { 
+                    <a href="@g["url_reset"]upload">more</a> 
+                } 
+                </div>
+		        <div class="clear"></div>
+	        </div>
+
+	        <table summary="접속기록 리스트입니다.">
+	        <caption>접속기록</caption> 
+	        <colgroup> 
+	        <col> 
+	        <col width="70"> 
+	        <col width="60"> 
+	        <col width="80"> 
+	        </colgroup> 
+	        <thead>
+	        <tr>
+	        <th scope="col" class="side1">파일명</th>
+	        <th scope="col">사이즈</th>
+	        <th scope="col">다운로드</th>
+	        <th scope="col" class="side2">등록일</th>
+	        </tr>
+	        </thead>
+	        <tbody>
+
+            @foreach (var R in _DB.Query(RCD_sql)) 
+            {
+ 	        <tr>
+	        <td class="name"><a href="@g["s"]/?r=@r&m=upload&a=download&uid=@R["uid"]" title="@R["caption"]">@R["name"]</a></td>
+	        <td>@R["size"]</td>
+	        <td>@R["down"]</td>
+	        <td>@R["d_regis"].ToString("yyyy.MM.dd")</td>
+	        </tr>                    
+            }
+	        </tbody>
+	        </table>
+
+        </div>
+    }
+}
+
+@if (result == false)
+{
+    <div id="s_result">
+    <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+    검색결과가 없습니다.
+    </div>        
+}

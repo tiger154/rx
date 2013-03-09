@@ -1,0 +1,17 @@
+#configbox {}
+#configbox table {margin:0 0 20px 0;}
+#configbox td {padding:5px 0 5px 0;}
+#configbox .title {font-weight:bold;padding:10px 0 15px 0;margin:0 0 20px 0;border-bottom:#efefef solid 1px;}
+#configbox .td1 {padding:10px 0 5px 15px;width:100px;vertical-align:top;}
+#configbox .td2 {padding:10px 0 5px 0;color:#666666;}
+#configbox .td2 textarea {overflow:auto;border:#EFEFEF solid 1px;padding:6px 0 6px 10px;line-height:150%;width:350px;height:100px;color:#ffffff;}
+#configbox .td2 .guide {padding:10px 0 0 0;line-height:150%;font-family:dotum;font-size:11px;color:#888888;}
+#configbox .td2 .select1 {width:180px;letter-spacing:-1px;}
+#configbox .td2 .sname {width:174px;}
+#configbox .td2 .sname1 {width:307px;}
+#configbox .td2 .sname2 {width:82px;}
+#configbox .td2 .guide {font-size:11px;font-family:dotum;color:#555;line-height:150%;padding:10px 0 0 0;}
+
+#configbox .m {font-size:11px;font-family:dotum;color:#888;letter-spacing:-1px;}
+
+#configbox .submitbox {margin:20px 0 20px 0;padding:15px 0 0 115px;}

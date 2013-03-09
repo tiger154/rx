@@ -1,0 +1,57 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var cplayout = Request["cplayout"];
+    var type = Request["type"];
+    var layout = Request["layout"];
+    var name = Request["name"];
+    var codeName = Request["codeName"];
+    var imgfile = Request["imgfile"];
+    var killlayout = Request["killlayout"];
+    var sublayout = Request["sublayout"];
+    
+    @_System.checkAdmin(my["admin"], 0)    // admin check
+                                           
+    if(imgfile!=null && imgfile!="") {
+        File.Delete(g["path_root_ps"] + g["path_layout"] + layout + "\\image\\" + imgfile);
+        @_System.getLink("?r=" + r + "&m=admin&module=" + m + "&front=main", "parent.", "", "")        
+    }
+    else if(killlayout!=null && killlayout!="") {
+        _System.delAllDir(g["path_root_ps"] + g["path_layout"] + killlayout);
+        Directory.Delete(g["path_root_ps"] + g["path_layout"] + killlayout);
+        @_System.getLink("?r=" + r + "&m=admin&module=" + m + "&front=main","parent.","","")
+    }
+    else {
+        if(sublayout != "main.cshtml") {
+            File.Delete(g["path_root_ps"] + g["path_layout"] + layout + "\\" +sublayout);
+            File.Delete(g["path_root_ps"] + g["path_layout"] + layout + "\\widget\\" + sublayout);
+        }
+        @_System.getLink("?r=" + r + "&m=admin&module=" + m + "&front=main", "parent.", "", "")
+    }
+}

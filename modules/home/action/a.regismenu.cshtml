@@ -1,0 +1,365 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var uploadedFile = Request.Files;
+    var cat = Request["cat"];
+    var subcopy = Request["subcopy"];
+    var joint = Request["joint"];
+    var addinfo = Request["addinfo"];
+    var name = Request["name"].Replace("'", "''");
+    var redirect = Request["redirect"];
+    var vtype = Request["vtype"];
+    var depth = Request["depth"];
+    var parent = Request["parent"];
+    var account = Request["account"];
+    var mobile = Request["mobile"];
+    var hidden = Request["hidden"];
+    var reject = Request["reject"];
+    var id = Request["id"];
+    var perm_g = Request["perm_g"];
+    var perm_l = Request["perm_l"];
+    var layout = Request["layout"];
+    var puthead = Request["puthead"];
+    var putfoot = Request["putfoot"];
+    var target = Request["target"];
+    var backc = Request["backc"];
+    var codhead = Request.Unvalidated("codhead");
+    var codfoot = Request.Unvalidated("codfoot");
+    var menutype = Request["menutype"];
+    var cachetime = Request["cachetime"];
+        
+    @_System.checkAdmin(my["admin"], 0)        // admin check
+                                               
+    dynamic ISMCODE = null;
+    dynamic R = null;
+
+    if (depth == "" || depth == null) {
+       depth = "0";
+    }
+    if(perm_l == "" || perm_l == null) {
+       perm_l = "0";
+    }
+    if(mobile == "" || mobile == null) {
+        mobile = "0";
+    }
+    if(hidden == "" || hidden == null) {
+        hidden = "0";
+    }
+    if(reject == "" || reject == null) {
+        reject = "0";
+    }
+    if(redirect == "" || redirect == null) {
+        redirect = "0";
+    }
+    if(puthead == "" || puthead == null) {
+        puthead = "0";
+    }
+    if(putfoot == "" || putfoot == null) {
+        putfoot = "0";
+    }
+    
+    joint = joint.Replace("&amp", "&").Trim();
+
+    if(redirect == "0") {
+        if (joint.Contains("&c=") || joint.Contains("?c=")) {
+            @_System.getLink("", "", "연결주소에 사용할 수 없는 파라미터가 있습니다.", "")
+            return;
+        }
+    }
+        
+    if (vtype != "sub" && cat != null && cat.Trim() != "" && cat !="0") {
+        R = _DB.GetDbData_M(AppState["table_s_menu"].ToString(), "uid=" + cat);
+            
+        if(R==null) 
+        {
+            @_System.getLink("", "", "존재하지 않는 메뉴입니다.", "")
+            return;
+        }
+
+        string[] imgset = { "head", "foot" };
+        string[] userimgSet = { R["imghead"], R["imgfoot"] };
+        
+        string imghead = "";
+        string imgfoot = "";
+
+        if (id == null || id.Trim() == "")
+        {
+            id = R["uid"].ToString();
+        }
+
+        if (id != R["id"])
+        {
+            ISMCODE = _DB.GetDbData_M(AppState["table_s_menu"].ToString(), "id='" + id + "' AND site='" + s + "'");
+            if (ISMCODE != null)
+            {
+                @_System.getLink("", "", "메뉴코드 [" + ISMCODE["id"] + "]는 다른메뉴 [" + ISMCODE["name"] + "] 에서 사용중입니다.", "")
+                return;
+            }
+        }
+
+        for (int i = 0; i < 2; i++)
+        {
+            if(uploadedFile[i] == null || uploadedFile[i].ContentLength == 0) {
+                continue;
+            }
+            //string tmpname = uploadedFile[i].FileName;
+            string realname = Path.GetFileName(uploadedFile[i].FileName);
+
+            string fileExt = _System.getExt(realname).ToLower(); 
+                
+            if(fileExt == "jpeg") {
+                fileExt = "jpg";                        
+            }
+
+
+            userimgSet[i] = String.Format("{0:00000}", Convert.ToInt32(R["uid"])) + "_" + imgset[i] + "." + fileExt;
+            string saveFile = g["path_root_ps"] + g["path_var"] + "menu\\" + userimgSet[i];                
+            
+            if(!("[gif][jpg][png][swf]".Contains(fileExt))) {
+                @_System.getLink("","","헤더/풋터파일은 gif/jpg/png/swf 파일만 등록할 수 있습니다.","")
+                return;
+            }
+
+            uploadedFile[i].SaveAs(saveFile);
+                            
+        }
+        imghead = userimgSet[0];
+        imgfoot = userimgSet[1];
+
+
+        if (redirect == "0" && menutype == "1")
+        {
+            if (joint.Contains("cync=Y"))
+            {
+                @_Menu.getMenuCodeToPath(AppState["table_s_menu"].ToString(), R["uid"], 0)
+
+                string[] strArray = Session["arr_uid"].ToString().Split('|');
+                string catcode = "";
+                int ctnum = strArray.Count() - 1;
+
+                foreach (string val in strArray)
+                {
+                    if (val.Split(',').Length < 4)
+                    {
+                        continue;
+                    }
+                    catcode += val.Split(',')[4];
+                }
+
+                c = catcode.Substring(0, catcode.Length - 1);
+                joint = joint.Replace("cync=y", "cync=[" + m + "][c" + R["uid"] + "][,,,][][][c:" + c + "]" + joint);
+
+            }
+        }
+        
+        string UPDATE_MENU_SQL = "UPDATE " + AppState["table_s_menu"] + " SET menutype='" + menutype + "',mobile='" + mobile + "',hidden='" + hidden + "',name='" + name + "',target='" + target + "',";
+        UPDATE_MENU_SQL = UPDATE_MENU_SQL + "redirect='" + redirect + "',joint='" + joint + "',perm_g='" + perm_g + "',perm_l='" + perm_l + "', layout='" + layout + "',imghead='" + imghead + "',imgfoot='" + imgfoot + "'";
+        UPDATE_MENU_SQL = UPDATE_MENU_SQL + ",puthead='" + puthead + "',putfoot='" + putfoot + "',addinfo='',id='" + id + "',reject='" + reject + "' WHERE uid=" + cat;
+
+        @_DB.Execute(UPDATE_MENU_SQL);
+
+        string vfile = g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", Convert.ToInt32(cat));
+
+        if (codhead != null && codhead.Trim() != "")
+        {
+            File.WriteAllText(vfile + ".header.cshtml", _System.stripslashes(codhead).Trim(), System.Text.Encoding.UTF8);
+        }
+        else {
+            if(File.Exists(vfile + ".header.cshtml")) {                
+                File.Delete(vfile + ".header.cshtml");
+            }
+        }
+        
+        if(codfoot != null && codfoot.Trim() != "") {
+            File.WriteAllText(vfile + ".footer.cshtml", _System.stripslashes(codfoot).Trim(), System.Text.Encoding.UTF8);
+        }
+        else {
+            if(File.Exists(vfile + ".footer.cshtml")) {
+                File.Delete(vfile + ".footer.cshtml");
+            }
+            
+        }
+
+        /*
+            if(cachetime!=null && cachetime!="") {
+            }
+            else {
+            }
+         */        
+       
+        if(subcopy == "1") 
+        {            
+            if (R["isson"] != "0")
+            {   
+                string sub_uid_sql = "SELECT uid FROM " + AppState["table_s_menu"] + " WHERE parent=" + R["uid"];
+                foreach (var sub in _DB.Query(sub_uid_sql))
+                {
+                    string UPDATE_SUB_SQL = "UPDATE " + AppState["table_s_menu"] + " SET hidden='" + hidden + "',reject='" + reject + "',perm_g='" + perm_g + "',perm_l='" + perm_l + "', layout='" + layout + "' WHERE uid=" + sub["uid"];
+                    @_DB.Execute(UPDATE_SUB_SQL);    
+                }
+                
+            }
+        }
+        
+        @_System.getLink("reload", "parent.", "", "")
+        return;        
+    }
+    else
+    {      // add to default
+        int add_depth = Convert.ToInt32(depth) + 1;
+
+
+        string MAXC = _DB.GetDbData_S(AppState["table_s_menu"].ToString(), "depth=" + add_depth + " AND parent=" + parent, "max(gid)").ToString();
+        if (MAXC == null || MAXC == "")
+        {
+            MAXC = "0";
+        }
+
+        string[] sarr = name.Split(',');
+        string xname = "";
+        
+
+        int slen = sarr.Count();
+        int gid = 0;
+        int xdepth = 0;
+
+        for (int i = 0; i < slen; i++)
+        {
+            string xnarr = "";
+            
+            if (sarr[i] == "")
+            {
+                continue;
+            }
+
+            gid = Convert.ToInt32(MAXC) + 1 + i;
+            xdepth = Convert.ToInt32(depth) + 1;
+            xname = sarr[i].Trim();
+            if (xname.Contains("="))
+            {
+                xnarr = xname.Split('=')[1].Trim();
+                xname = xname.Split('=')[0].Trim();
+            }
+            
+            string INSERT_MENU_SQL = "INSERT INTO " + AppState["table_s_menu"] + " (gid,site,isson,parent,depth,menutype,mobile,hidden,name,target,redirect,joint,";
+            INSERT_MENU_SQL = INSERT_MENU_SQL + "perm_g,perm_l,layout,imghead,imgfoot,puthead,putfoot,num,d_last,addinfo,id,reject) ";
+            INSERT_MENU_SQL = INSERT_MENU_SQL + "VALUES (" + gid + "," + account + ",'0'," + parent + "," + xdepth + ",'" + menutype + "','" + mobile + "','" + hidden + "','" + xname + "','" + target + "','" + redirect + "','" + joint + "',";
+            INSERT_MENU_SQL = INSERT_MENU_SQL + "'" + perm_g + "','" + perm_l + "','" + layout + "','','','" + puthead + "','" + putfoot + "',0,'" + date["insert"] + "','','" + xnarr + "','" + reject + "')";
+            
+            @_DB.Execute(INSERT_MENU_SQL);
+
+            string lastmenu = _DB.GetDbData_S(AppState["table_s_menu"].ToString(), "", "max(uid)").ToString();
+
+
+            if (redirect != "1" && menutype == "1" && joint.Contains("cync=Y"))
+            {
+                @_Menu.getMenuCodeToPath(AppState["table_s_menu"].ToString(), R["uid"], 0)
+
+                string[] strArray = Session["arr_uid"].ToString().Split('|');
+                string catcode = "";
+                int ctnum = strArray.Count() - 1;
+
+                foreach (string val in strArray)
+                {
+                    if (val.Split(',').Length < 4)
+                    {
+                        continue;
+                    }
+                    catcode += val.Split(',')[4];
+                }
+
+                c = catcode.Substring(0, catcode.Length - 1);
+                joint = joint.Replace("cync=y", "cync=[" + m + "][c" + R["uid"] + "][,,,][][][c:" + c + "]" + joint);
+            }
+
+            if (xnarr == "")
+            {
+                string UPDATE_ID_SQL = "UPDATE " + AppState["table_s_menu"].ToString() + " SET id='" + lastmenu + "',joint='" + joint + "' WHERE uid=" + lastmenu;
+                @_DB.Execute(UPDATE_ID_SQL);
+            }
+            else
+            {
+                ISMCODE = _DB.GetDbData_M(AppState["table_s_menu"].ToString(), "uid<> " + lastmenu + " and id='" + xnarr + "' AND site='" + s + "'");
+                if (ISMCODE != null)
+                {
+                    string UPDATE_ID_SQL = "UPDATE " + AppState["table_s_menu"].ToString() + " SET id='" + lastmenu + "',joint='" + joint + "' WHERE uid=" + lastmenu;
+                    @_DB.Execute(UPDATE_ID_SQL);
+                }
+            }
+
+            string mfile = g["path_root_ps"] + g["path_page"] + "menu\\" + String.Format("{0:00000}", Convert.ToInt32(lastmenu));
+
+
+            File.WriteAllText(mfile + ".cshtml", "", System.Text.Encoding.UTF8);
+            File.WriteAllText(mfile + ".widget.cshtml", "", System.Text.Encoding.UTF8);
+            File.WriteAllText(mfile + ".header.cshtml", codhead, System.Text.Encoding.UTF8);
+            File.WriteAllText(mfile + ".footer.cshtml", codfoot, System.Text.Encoding.UTF8);
+
+
+            /*if(cachetime!=null && cachetime!="") {
+             }
+             else {
+             }
+            */
+        }
+
+        if (Convert.ToInt32(parent) > 0)
+        {
+            string UPDATE_MENU_SQL = "UPDATE " + AppState["table_s_menu"] + " SET isson=1 WHERE uid=" + parent;
+
+            @_DB.Execute(UPDATE_MENU_SQL);
+        }
+
+        // move back
+        string back_link1 = "";
+        string back_link2 = "";
+        string back_link_add = "";
+
+        if (parent != "0")
+        {
+            back_link_add = "&cat=" + parent;
+        }
+
+        if (backc == "user")
+        {
+            back_link1 = "?r=" + r + "&system=edit.all&type=menu";
+            
+            @_System.getLink(back_link1 + back_link_add, "parent.", "", "")
+            return;
+        }
+        else
+        {
+            back_link2 = "?r=" + r + "&m=admin&module=" + m + "&front=menu" + back_link_add + "&account=" + account;
+            
+            @_System.getLink(back_link2, "parent.", "", "")
+            return;                                        
+        }
+    }
+
+}

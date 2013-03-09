@@ -1,0 +1,94 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+    var typeset = new Dictionary<string, string>();
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+
+    var where = Request["where"];
+    var _keyword = Request["keyword"];
+    
+    dynamic d_search = _DB.Get_code("search");
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    
+    var searchset = g["path_root_ps"] + g["path_var"] + "search.list.txt";
+    
+    Array userData = File.ReadAllLines(searchset);    
+
+    typeset.Add("main", "통합");
+    typeset.Add("post", "게시판");
+    typeset.Add("comment", "댓글");
+    typeset.Add("image", "이미지");
+    typeset.Add("upload", "첨부파일");
+
+    if (where == null || where.Trim() == "")
+    {
+        where = "main";
+    }
+    
+    DateTime d_search_date = Convert.ToDateTime(date["totime"]).AddMonths(-Convert.ToInt32(d_search["s_term"]));
+}
+
+<div id="pages_top">
+
+	<div class="title">
+		<div class="xl"><h2><a href="@g["url_reset"]main">통합검색</a></h2></div>
+		<div class="xr">
+		
+			<ul>
+			<li class="leftside"></li>
+            @if (d_search["s_bbs"] != "")
+            {
+                <li @Html.Raw(_System.isEqual(where, "post", "class=\" selected\"", ""))><a href="@g["url_reset"]post">게시판</a></li>
+            }
+            @if (d_search["s_comment"] != "")
+            {
+                <li @Html.Raw(_System.isEqual(where, "comment", "class=\" selected\"", ""))><a href="@g["url_reset"]comment">댓글</a></li>
+            }
+            @if (d_search["s_image"] != "")
+            {
+                <li @Html.Raw(_System.isEqual(where, "image", "class=\" selected\"", ""))><a href="@g["url_reset"]image">이미지</a></li>
+            }
+            @if (d_search["s_upload"] != "")
+            {
+                <li @Html.Raw(_System.isEqual(where, "upload", "class=\" selected\"", ""))><a href="@g["url_reset"]upload">첨부파일</a></li>
+            }
+            @if (d_search["s_search"] != "")
+            {            
+                <li>
+			
+				<div id="morebox" class="morebox">
+					<ul>
+
+                    @foreach (string _val in userData) 
+                    {
+                        string[] _key = _val.Trim().Split(',');
+                         
+                        <li><a href="@_key[1].Replace("http://search.", "http://m.search.")@_System.isEqual(_keyword != null && _keyword != "", true, HttpUtility.UrlEncode(_keyword), "")" target="_blank" onclick="morebox('morebox');">@_key[0]</a></li>
+                    }                    
+
+					</ul>
+				</div>
+				<a onclick="morebox('morebox');">외부검색 <img src="@g["img_core"]/_public/ico_arr_01.gif" alt="" /></a>
+				
+			</li>    
+            }
+			</ul>
+
+		</div>
+		<div class="clear"></div>
+	</div>
+	
+</div>
+
+<div id="s_msg">
+	<span class="quot">&quot;</span>
+	<span class="keyword">@_keyword</span>
+	<span class="quot">&quot;</span>
+	에 대한 <span class="b">@typeset[where]</span> 검색결과입니다 
+</div>    
+    

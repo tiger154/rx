@@ -1,0 +1,272 @@
+﻿@helper initDB()
+{
+    @dropTable("all")
+    @createTable()
+    @insertCodeLang()
+    @insertCodeModule()
+}
+
+@helper dropTable(string tableName)
+{
+    if (tableName == "")
+    {
+        @_System.getLink("", "", "선택된 테이블이 없습니다.", "")
+        return;
+    }
+    else if (tableName.ToLower() == "all")
+    {
+        string allTable = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
+
+
+        try
+        {
+            foreach (var table in _DB.Query(allTable))
+            {   
+                @_DB.Execute("DROP TABLE " + table["TABLE_NAME"].ToString())
+            }
+            @_System.getLink("", "", "테이블이 모두 삭제되었습니다.", "")
+        }
+        catch
+        {
+                @_System.getLink("", "", "테이블을 삭제할 수 없습니다.", "")                
+        }
+        return;
+    }
+    else if (_DB.Query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME like '" + tableName + "'").Count == 0)
+    {
+        @_System.getLink("", "", "존재하지 않는 테이블 입니다.", "")     
+        return;
+    }
+    else
+    {
+        try
+        {
+            @_DB.Execute("DROP TABLE " + tableName)
+            @_System.getLink("", "", tableName + "이(가) 삭제되었습니다.", "")
+        }
+        catch
+        {
+            @_System.getLink("", "", "삭제할 수 없는 테이블 입니다.", "")
+        }
+        return;
+    }   
+}
+
+@helper createTable()
+{
+    try
+    {
+        foreach (var dir in Directory.GetDirectories(Request.PhysicalApplicationPath + "modules"))
+        {   
+            if (Directory.GetDirectories(dir).Contains(dir + "\\_setting"))
+            {
+                try
+                {
+                    foreach (var file in Directory.GetFiles(dir + "\\_setting"))
+                    {                    
+                        @_DB.Execute(File.ReadAllText(file, System.Text.Encoding.UTF8))
+                    }
+                }
+                catch (System.Data.SqlServerCe.SqlCeException ex)
+                {
+                    @_System.getLink("", "", ex.ToString(), "")
+
+                }                
+            }
+        }
+        @_System.getLink("", "", "테이블이 모두 생성 되었습니다.", "")
+    }
+    catch
+    {
+        @_System.getLink("", "", "테이블을 생성할 수 없습니다.", "")
+    }
+    return;
+}
+
+
+@helper insertCodeModule()
+{
+    // insert data in rx_code_d_module    
+    string[] InsertModuleSqls =
+    {
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (0,'1','0','1','홈페이지','home','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (1,'1','0','1','레이아웃','layout','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (2,'1','0','1','모듈','module','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (3,'1','0','1','마켓','market','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (4,'1','0','1','시스템','admin','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (5,'1','0','1','회원관리','member','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (6,'1','0','1','게시판','bbs','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (7,'1','0','1','댓글','comment','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (8,'1','0','1','첨부파일','upload','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (9,'1','0','1','팝업','popup','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (10,'1','0','1','파일메니져','filemanager','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (11,'1','1','1','DB메니져','dbmanager','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (12,'1','0','1','모바일','mobile','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (13,'1','0','1','도메인','domain','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (14,'0','0','1','접속통계','counter','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (15,'1','0','1','통합검색','search','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (16,'0','0','1','위젯','widget','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (17,'0','0','1','태그','tag','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (18,'1','0','1','트랙백','trackback','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (19,'1','0','1','편집기','editor','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (20,'0','1','1','URLrewrite','rewrite','0',getdate());",
+        "INSERT INTO rx_s_module (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES (21,'1','1','1','우편번호검색','zipsearch','0',getdate());"
+    };    
+    
+    foreach (var line in InsertModuleSqls)
+    {
+        @_DB.Execute(line)
+    }
+}
+
+@helper insertCodeLang()
+{   
+    // insert data in rx_code_g_lang
+    string cpath = Request.PhysicalApplicationPath + "\\_var\\language\\";
+
+    foreach (string dirs in Directory.GetDirectories(cpath))
+    {
+        string dirs_name = dirs.Substring(cpath.Length, dirs.Length - cpath.Length);
+        foreach (string files in Directory.GetFiles(dirs))
+        {
+            string file_name = files.Substring(dirs.Length + 1, files.Length - dirs.Length - 1);
+
+            if (file_name == "name.txt")
+            {
+                continue;
+            }
+
+            Array dataRows = File.ReadAllLines(files);
+
+            foreach (string data in dataRows)
+            {
+                if (data.Trim() == "")
+                {
+                    continue;
+                }
+
+                string[] item = _System.getArrayString(data);
+
+                string INSERT_CODE_SQL = "INSERT INTO " + AppState["table_code_g_lang"] + " (nation,id,id_value,type) VALUES ('" + dirs_name + "','" + item[1] + "','" + item[2] + "','" + item[0] + "');";                
+            @_DB.Execute(INSERT_CODE_SQL)
+            }
+        }
+    }
+}
+
+@helper moduleSet()
+    {
+        // rx_s_module 초기화
+        var db = Database.Open(@AppState["DB_Name"].ToString());
+
+        // table 비우기
+        string DELETE_TABLE_SQL = "DELETE FROM " + AppState["table_s_module"];
+    @_DB.Execute(DELETE_TABLE_SQL)
+
+                                  // insert data
+                                  string cpath = Request.PhysicalApplicationPath + "\\_var\\module_data\\module_data.cshtml";
+
+                                  foreach (string data in File.ReadAllLines(cpath))
+                                  {
+                                      if (data.Trim() == "")
+                                      {
+                                          continue;
+                                      }
+
+                                      string[] item = _System.getArrayString(data);
+
+                                      string INSERT_CODE_SQL = "INSERT INTO " + AppState["table_s_module"] + " (gid,system,hidden,mobile,name,id,tblnum,d_regis) VALUES ("
+                                          + item[0] + ",'" + item[1] + "','" + item[2] + "','" + item[3] + "','" + item[4] + "','" + item[5] + "','" + item[6] + "',getdate());";                
+        @_DB.Execute(INSERT_CODE_SQL);
+
+                                      //File.AppendAllText(Request.PhysicalApplicationPath + "sql_query\\insert_module.txt", INSERT_CODE_SQL + ("\n"), System.Text.Encoding.UTF8);
+                                  }
+}
+
+@helper insertBbstheme()
+    {
+        // rx_code_d_bbstheme 초기화
+        var db = Database.Open(@AppState["DB_Name"].ToString());
+
+        // table 비우기
+        string DELETE_TABLE_SQL = "DELETE FROM " + AppState["table_code_d_bbstheme"];
+    @_DB.Execute(DELETE_TABLE_SQL);
+
+                                  // insert data
+                                  string cpath = Request.PhysicalApplicationPath + "\\_var\\d_bbstheme\\";
+
+                                  foreach (string dirs in Directory.GetDirectories(cpath))
+                                  {
+                                      string dirs_name = dirs.Substring(cpath.Length, dirs.Length - cpath.Length);
+                                      foreach (string files in Directory.GetFiles(dirs))
+                                      {
+                                          string file_name = files.Substring(dirs.Length + 1, files.Length - dirs.Length - 1);
+
+                                          if (file_name == "name.txt")
+                                          {
+                                              continue;
+                                          }
+
+                                          Array dataRows = File.ReadAllLines(files);
+
+                                          foreach (string data in dataRows)
+                                          {
+                                              string KEY = "theme,use_rss,show_catnum,picwidth,picheight,pagenum,search,use_singo,use_print,use_scrap,";
+                                              KEY += "use_font,use_comment,use_trackback,use_reply,use_autoresize,show_tag,show_upfile,";
+                                              KEY += "show_image,show_list,edit_height,show_edittool2,perm_upload,";
+                                              KEY += "perm_photo,show_wtag,show_trackback,use_hidden,show_score1,show_score2,snsping,edit_html,num_upload,num_photo";
+
+                                              string VAL = data.Trim();
+
+                                              string INSERT_THEME_SQL = "INSERT INTO " + AppState["table_code_d_bbstheme"] + " (" + KEY + " ) VALUES (" + VAL + ")";
+                @_DB.Execute(INSERT_THEME_SQL);
+                                          }
+                                      }
+                                  }
+    
+}
+
+
+@functions {
+    //AppState변수 셋팅
+    public static object setApp()
+    {
+        var db = Database.Open(@AppState["DB_Name"].ToString());
+        var data_set = new Dictionary<string, string>();
+
+        //string dataFile = Request.PhysicalApplicationPath + "\\_var\\dbinfo\\";
+
+        string getTableName = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
+        string table_name = "";
+
+        foreach (var Tbl in _DB.Query(getTableName))
+        {
+            table_name = Tbl["TABLE_NAME"];
+
+            if (table_name == "rx_bbs_index")
+            {   //추후 테이블 수정
+                data_set.Add("table_bbsidx", "rx_bbs_index");
+            }
+            else if (table_name == "rx_s_adminpage")
+            {   //추후 테이블 수정
+                data_set.Add("table_s_admpage", "rx_s_adminpage");
+            }
+            else if (table_name.Contains("rx_bbs_"))
+            {
+                data_set.Add(table_name.Replace("rx_bbs_", "table_bbs"), table_name);
+            }
+            else if (table_name.Contains("rx_"))
+            {
+                data_set.Add(table_name.Replace("rx_", "table_"), table_name);
+            }
+
+            /*
+            else
+            {           
+                data_set.Add(table_name, table_name);
+            }*/
+        }
+
+        return data_set;
+    }
+}

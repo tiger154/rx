@@ -1,0 +1,720 @@
+﻿@using System.Web.WebPages.Scope;
+@using TwitterApi;
+
+@functions {
+    private const string InitializedExceptionMessage = "The Twitter Helper has not been initialized. You should call the Initialize method.";
+
+    private static readonly object _consumerKey = new object();
+    private static readonly object _consumerSecretKey = new object();
+    private static readonly object _initializedKey = new object();
+
+    public static string ConsumerKey {
+        get {
+            if (!Initialized) {
+                throw new InvalidOperationException(InitializedExceptionMessage);
+            }
+
+            return (string)(ScopeStorage.CurrentScope[_consumerKey] ?? "");
+        }
+
+        private set {
+            if (value == null) {
+                throw new ArgumentNullException("ConsumerKey");
+            }
+
+            ScopeStorage.CurrentScope[_consumerKey] = value;
+        }
+    }
+
+    public static string ConsumerSecret {
+        get {
+            if (!Initialized) {
+                throw new InvalidOperationException(InitializedExceptionMessage);
+            }
+
+            return (string)(ScopeStorage.CurrentScope[_consumerSecretKey] ?? "");
+        }
+
+        private set {
+            if (value == null) {
+                throw new ArgumentNullException("ConsumerSecret");
+            }
+
+            ScopeStorage.CurrentScope[_consumerSecretKey] = value;
+        }
+    }
+
+    private static bool Initialized {
+        get {
+            return (bool)(ScopeStorage.CurrentScope[_initializedKey] ?? false);
+        }
+        set {
+            ScopeStorage.CurrentScope[_initializedKey] = value;
+        }
+    }
+
+    public static void Initialize(string consumerKey, string consumerSecret) {                        
+        ConsumerKey = consumerKey;
+        ConsumerSecret = consumerSecret;
+
+        Initialized = true;
+    }
+
+    /// <summary>
+    /// Returns the Access Token. This method should be called in the page corresponding to the callback url.
+    /// </summary>
+    /// 
+
+   public static OAuthToken GetAccessToken()
+   {
+       var requestToken = new OAuthToken()
+       {
+           Token = Request["oauth_token"],
+           Secret = (string)Session["requestSecret"]
+       };
+
+       var requestVerifier = Request["oauth_verifier"];
+
+        var accessToken = Proxy.GetAccessToken(ConsumerKey, ConsumerSecret, requestToken, requestVerifier);
+        return accessToken;
+   }
+    
+    /// <summary>
+    /// Returns the most recent statuses, including retweets if they exist, from non-protected users.
+    /// </summary>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>
+    public static IList<dynamic> GetPublicTimeline(bool trimUser = false, bool includeEntities = false) {       
+        return Proxy.GetPublicTimeline(trimUser, includeEntities);
+    }
+
+    /// <summary>
+    /// Returns the most recent statuses, including retweets if they exist, posted by the authenticating user and the user's they follow.
+    /// This is the same timeline seen by a user when they login to twitter.com.
+    /// </summary>
+    /// <param name="token">The access token of the authenticating user.</param>
+    /// <param name="secret">The access token secret of the authenticating user.</param>
+    /// <param name="sinceId">Returns results with an ID greater than (that is, more recent than) the specified ID.</param>
+    /// <param name="maxId">Returns results with an ID less than (that is, older than) or equal to the specified ID.</param>
+    /// <param name="count">Specifies the number of records to retrieve. Must be less than or equal to 200.</param>
+    /// <param name="page">Specifies the page of results to retrieve.</param>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>    
+    public static IList<dynamic> GetHomeTimeline(
+                                            string token,
+                                            string secret,
+                                            long sinceId = 0,
+                                            long maxId = 0,
+                                            int count = 0,
+                                            int page = 0,
+                                            bool trimUser = false,
+                                            bool includeEntities = false) {
+        var accessToken = new OAuthToken {
+            Token = token,
+            Secret = secret
+		};
+        
+        return Proxy.GetHomeTimeline(ConsumerKey, ConsumerSecret, accessToken, sinceId, maxId, count, page, trimUser, includeEntities);
+    }
+    
+    /// <summary>
+    /// Returns the most recent statuses posted by the authenticating user and the user's they follow.
+    /// This method is identical to GetHomeTimeline(), except that this method will only include retweets if the includeRetweets parameter is set.
+    /// </summary>
+    /// <param name="token">The access token of the authenticating user.</param>
+    /// <param name="secret">The access token secret of the authenticating user.</param>
+    /// <param name="sinceId">Returns results with an ID greater than (that is, more recent than) the specified ID.</param>
+    /// <param name="maxId">Returns results with an ID less than (that is, older than) or equal to the specified ID.</param>
+    /// <param name="count">Specifies the number of records to retrieve. Must be less than or equal to 200.</param>
+    /// <param name="page">Specifies the page of results to retrieve.</param>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>
+    /// <param name="includeRetweets">When set to true the timeline will contain native retweets (if they exist) in addition to the standard stream of tweets.</param>
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>    
+    public static IList<dynamic> GetFriendsTimeline(
+                                            string token,
+                                            string secret,
+                                            long sinceId = 0,
+                                            long maxId = 0,
+                                            int count = 0,
+                                            int page = 0,
+                                            bool trimUser = false,
+                                            bool includeRetweets = false,
+                                            bool includeEntities = false) {
+        var accessToken = new OAuthToken {
+            Token = token,
+            Secret = secret
+		};
+        
+        return Proxy.GetFriendsTimeline(ConsumerKey, ConsumerSecret, accessToken, sinceId, maxId, count, page, trimUser, includeRetweets, includeEntities);
+    }
+                                            
+    /// <summary>
+    /// Returns the most recent statuses posted by the authenticating user. It is also possible to request another user's timeline by using the screen_name or user_id parameter. 
+    /// The other users timeline will only be visible if they are not protected, or if the authenticating user's follow request was accepted by the protected user.
+    /// </summary>
+    /// <param name="token">The access token of the authenticating user.</param>
+    /// <param name="secret">The access token secret of the authenticating user.</param>
+    /// <param name="userId">The ID of the user for whom to return results for. Helpful for disambiguating when a valid user ID is also a valid screen name.</param>
+    /// <param name="screenName">The screen name of the user for whom to return results for. Helpful for disambiguating when a valid screen name is also a user ID.</param>/// 
+    /// <param name="sinceId">Returns results with an ID greater than (that is, more recent than) the specified ID.</param>
+    /// <param name="maxId">Returns results with an ID less than (that is, older than) or equal to the specified ID.</param>
+    /// <param name="count">Specifies the number of records to retrieve. Must be less than or equal to 200.</param>
+    /// <param name="page">Specifies the page of results to retrieve.</param>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>
+    /// <param name="includeRetweets">When set to true the timeline will contain native retweets (if they exist) in addition to the standard stream of tweets.</param>
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>    
+    public static IList<dynamic> GetUserTimeline(
+                                            string token,                                            
+                                            string secret,
+                                            long userId = 0,
+                                            string screenName = "",
+                                            long sinceId = 0, 
+                                            long maxId = 0, 
+                                            int count = 0, 
+                                            int page = 0,
+                                            bool trimUser = false, 
+                                            bool includeRetweets = false,
+                                            bool includeEntities = false) {       
+        var accessToken = new OAuthToken() {
+                    Secret = secret, 
+                    Token = token
+        };
+
+        return Proxy.GetUserTimeline(ConsumerKey, ConsumerSecret, accessToken, userId, screenName, sinceId, maxId, count, page, trimUser, includeRetweets, includeEntities);
+    }
+
+    /// <summary>
+    /// Returns the timeline of the specified user. The user's timeline will only be visible if they are not protected.
+    /// </summary>
+    /// <param name="userId">The ID of the user for whom to return results for. Helpful for disambiguating when a valid user ID is also a valid screen name.</param>
+    /// <param name="screenName">The screen name of the user for whom to return results for. Helpful for disambiguating when a valid screen name is also a user ID.</param>/// 
+    /// <param name="sinceId">Returns results with an ID greater than (that is, more recent than) the specified ID.</param>
+    /// <param name="maxId">Returns results with an ID less than (that is, older than) or equal to the specified ID.</param>
+    /// <param name="count">Specifies the number of records to retrieve. Must be less than or equal to 200.</param>
+    /// <param name="page">Specifies the page of results to retrieve.</param>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>
+    /// <param name="includeRetweets">When set to true the timeline will contain native retweets (if they exist) in addition to the standard stream of tweets.</param>
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>    
+    public static IList<dynamic> GetUserTimeline(
+                                            long userId = 0,
+                                            string screenName = "",
+                                            long sinceId = 0, 
+                                            long maxId = 0, 
+                                            int count = 0, 
+                                            int page = 0,
+                                            bool trimUser = false, 
+                                            bool includeRetweets = false,
+                                            bool includeEntities = false) {       
+        return Proxy.GetUserTimeline(userId, screenName, sinceId, maxId, count, page, trimUser, includeRetweets, includeEntities);
+    }
+    
+    /// <summary>
+    /// Returns the most recent mentions (status containing @username) for the authenticating user. 
+    /// The timeline returned is the equivalent of the one seen when you view your mentions on twitter.com.
+    /// </summary>
+    /// <param name="token">The access token of the authenticating user.</param>
+    /// <param name="secret">The access token secret of the authenticating user.</param>
+    /// <param name="sinceId">Returns results with an ID greater than (that is, more recent than) the specified ID.</param>
+    /// <param name="maxId">Returns results with an ID less than (that is, older than) or equal to the specified ID.</param>
+    /// <param name="count">Specifies the number of records to retrieve. Must be less than or equal to 200.</param>
+    /// <param name="page">Specifies the page of results to retrieve.</param>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>
+    /// <param name="includeRetweets">When set to true the timeline will contain native retweets (if they exist) in addition to the standard stream of tweets.</param>
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>    
+    public static IList<dynamic> GetMentions(
+                                            string token,
+                                            string secret,
+                                            long sinceId = 0, 
+                                            long maxId = 0, 
+                                            int count = 0, 
+                                            int page = 0,
+                                            bool trimUser = false, 
+                                            bool includeRetweets = false,
+                                            bool includeEntities = false) {       
+        var accessToken = new OAuthToken() {
+                    Secret = secret, 
+                    Token = token
+        };
+
+        return Proxy.GetMentions(ConsumerKey, ConsumerSecret, accessToken, sinceId, maxId, count, page, trimUser, includeRetweets, includeEntities);
+    }
+    
+    /// <summary>
+    /// Returns the most recent retweets posted by the authenticating user. 
+    /// </summary>
+    /// <param name="token">The access token of the authenticating user.</param>
+    /// <param name="secret">The access token secret of the authenticating user.</param>
+    /// <param name="sinceId">Returns results with an ID greater than (that is, more recent than) the specified ID.</param>
+    /// <param name="maxId">Returns results with an ID less than (that is, older than) or equal to the specified ID.</param>
+    /// <param name="count">Specifies the number of records to retrieve. Must be less than or equal to 200.</param>
+    /// <param name="page">Specifies the page of results to retrieve.</param>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>    
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>    
+    public static IList<dynamic> GetRetweetedByMe(
+                                            string token,
+                                            string secret,
+                                            long sinceId = 0, 
+                                            long maxId = 0, 
+                                            int count = 0, 
+                                            int page = 0,
+                                            bool trimUser = false,                                             
+                                            bool includeEntities = false) {       
+        var accessToken = new OAuthToken() {
+                    Secret = secret, 
+                    Token = token
+        };
+
+        return Proxy.GetRetweetedByMe(ConsumerKey, ConsumerSecret, accessToken, sinceId, maxId, count, page, trimUser, includeEntities);
+    }   
+                                            
+    /// <summary>
+    /// Returns the most recent retweets posted by users the authenticating user follow.
+    /// </summary>
+    /// <param name="token">The access token of the authenticating user.</param>
+    /// <param name="secret">The access token secret of the authenticating user.</param>
+    /// <param name="sinceId">Returns results with an ID greater than (that is, more recent than) the specified ID.</param>
+    /// <param name="maxId">Returns results with an ID less than (that is, older than) or equal to the specified ID.</param>
+    /// <param name="count">Specifies the number of records to retrieve. Must be less than or equal to 200.</param>
+    /// <param name="page">Specifies the page of results to retrieve.</param>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>    
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>    
+    public static IList<dynamic> GetRetweetedToMe(
+                                            string token,
+                                            string secret,
+                                            long sinceId = 0, 
+                                            long maxId = 0, 
+                                            int count = 0, 
+                                            int page = 0,
+                                            bool trimUser = false,                                             
+                                            bool includeEntities = false) {       
+        var accessToken = new OAuthToken() {
+                    Secret = secret, 
+                    Token = token
+        };
+
+        return Proxy.GetRetweetedToMe(ConsumerKey, ConsumerSecret, accessToken, sinceId, maxId, count, page, trimUser, includeEntities);
+    }                                        
+    
+    /// <summary>
+    /// Returns the most recent tweets of the authenticated user that have been retweeted by others.
+    /// </summary>
+    /// <param name="token">The access token of the authenticating user.</param>
+    /// <param name="secret">The access token secret of the authenticating user.</param>
+    /// <param name="sinceId">Returns results with an ID greater than (that is, more recent than) the specified ID.</param>
+    /// <param name="maxId">Returns results with an ID less than (that is, older than) or equal to the specified ID.</param>
+    /// <param name="count">Specifies the number of records to retrieve. Must be less than or equal to 200.</param>
+    /// <param name="page">Specifies the page of results to retrieve.</param>
+    /// <param name="trimUser">When set to true, each tweet returned in a timeline will include a user object including only the status authors numerical ID. Omit this parameter to receive the complete user object.</param>    
+    /// <param name="includeEntities">When set to either true, each tweet will include a node called "entities,". This node offers a variety of metadata about the tweet in a discreet structure, including: user_mentions, urls, and hashtags. While entities are opt-in on timelines at present, they will be made a default component of output in the future.</param>    
+    public static IList<dynamic> GetRetweetsOfMe(
+                                            string token,
+                                            string secret,
+                                            long sinceId = 0, 
+                                            long maxId = 0, 
+                                            int count = 0, 
+                                            int page = 0,
+                                            bool trimUser = false,                                             
+                                            bool includeEntities = false) {       
+        var accessToken = new OAuthToken() {
+                    Secret = secret, 
+                    Token = token
+        };
+
+        return Proxy.GetRetweetsOfMe(ConsumerKey, ConsumerSecret, accessToken, sinceId, maxId, count, page, trimUser, includeEntities);
+    }                                              
+                                            
+    /// <summary>
+    /// Converts a datetime string from Twitter to a DateTime object.
+    /// </summary>
+    /// <param name="date">The datetime string to convert.</param>
+    public static DateTime ParseDateTime(string date) {
+        string dayOfWeek = date.Substring(0, 3).Trim();
+        string month = date.Substring(4, 3).Trim();
+        string dayInMonth = date.Substring(8, 2).Trim();
+        string time = date.Substring(11, 9).Trim();
+        string offset = date.Substring(20, 5).Trim();
+        string year = date.Substring(25, 5).Trim();
+        string dateTime = string.Format("{0}-{1}-{2} {3}", dayInMonth, month, year, time);
+        DateTime ret = DateTime.Parse(dateTime);
+        return ret;
+    }
+    
+    public enum DataCount {
+        Vertical,
+        Horizontal,
+        None
+    }
+    
+    public enum Languages {
+        English,
+        French,
+        German,
+        Spanish,
+        Japanese
+    }
+    
+    public static string GetLanguageCode(Languages language) {
+        switch (language) {
+            case Languages.French:
+                return "fr";
+            case Languages.German:
+                return "de";
+            case Languages.Spanish:
+                return "es";
+            case Languages.Japanese:
+                return "ja";
+            default:
+                return "";
+        }
+    }
+    
+    public enum FollowStyles {
+        Text,
+        Bird,
+        Twitter,
+        LogoBig,
+        LogoMedium,
+        LogoSmall
+    }
+    
+    public enum FollowColors {
+        Blue,
+        Silver,
+        Black
+    }
+    
+    public static string GetFollowButtonImageUrl(FollowStyles followStyle, FollowColors followColor) {
+        var fileName = "";
+        
+        switch (followStyle) {
+            case FollowStyles.Text:
+                fileName = "follow_me-";
+                break;
+            case FollowStyles.Bird:
+                fileName = "follow_bird-";
+                break;
+            case FollowStyles.Twitter:
+                fileName = "twitter-";
+                break;
+            case FollowStyles.LogoBig:
+                fileName = "t_logo-";
+                break;
+            case FollowStyles.LogoMedium:
+                fileName = "t_small-";
+                break;
+            case FollowStyles.LogoSmall:
+                fileName = "t_mini-";
+                break;
+        }
+        switch (followColor) {
+            case FollowColors.Blue:
+                fileName += "a";
+                break;
+            case FollowColors.Silver:
+                fileName += "b";
+                break;
+            case FollowColors.Black:
+                fileName += "c";
+                break;
+        }
+        
+        return fileName;
+    }
+    
+    public enum WidgetBehaviors {
+        Default,
+        All
+    }
+}
+
+@*
+Summary:
+    Shows the Twitter login button.
+
+Parameter: callbackUrl
+    The url where the user is redirected to after authentication is completed.
+Parameter: buttonStyle
+    The style of the login button. Possible values are: "dark" and "light".
+parameter: buttonSize
+    The size of the login button. Posiible values are: "normal" and "small".
+*@
+@helper LoginButton(
+            string callbackUrl = "",
+            string buttonStyle = "dark",
+            string buttonSize = "normal") {    
+    var requestToken = Proxy.GetRequestToken(ConsumerKey, ConsumerSecret, callbackUrl);
+    
+    Session["TokenSecret"] = requestToken.Secret;
+
+    var buttonFileName = string.Format("sign-in-button-{0}-{1}.png", buttonStyle, buttonSize);    
+    
+    <a href="http://twitter.com/oauth/authenticate?oauth_token=@requestToken.Token"><img alt="Login with Twitter" style="border: none;" src="@Href("~/Twitter/Images/" + buttonFileName)" /></a>   
+}
+
+@*
+Summary:
+    Shows the Tweet button.
+*@    
+@helper TweetButton(
+            DataCount dataCount = DataCount.Vertical,
+            string tweetText = "",
+            string url = "",
+            Languages language = Languages.English,
+            string username = "",
+            string relatedUsername = "",
+            string relatedUserDescription = "") {
+    var tweetTextAttribute = new HtmlString(!tweetText.IsEmpty() ? string.Format(" data-text=\"{0}\"", tweetText) : "");
+    var urlAttribute = new HtmlString(!url.IsEmpty() ? string.Format(" data-url=\"{0}\"", url) : "");
+    var languageAttribute = new HtmlString(!GetLanguageCode(language).IsEmpty() ? string.Format(" data-lang=\"{0}\"", GetLanguageCode(language)) : "");
+    var usernameAttribute = new HtmlString(!username.IsEmpty() ? string.Format(" data-via=\"{0}\"", username) : "");
+    var relatedAttribute = new HtmlString(!relatedUsername.IsEmpty() ? string.Format(" data-related=\"{0}{1}\"", relatedUsername, !relatedUserDescription.IsEmpty() ? ":" + relatedUserDescription : "") : "");
+<a href="http://twitter.com/share" class="twitter-share-button"@tweetTextAttribute@urlAttribute@languageAttribute@usernameAttribute@relatedAttribute data-count="@dataCount.ToString().ToLower()">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+}
+
+@*
+Summary:
+    Shows the Follow button.
+*@ 
+@helper FollowButton(
+            string username,
+            FollowStyles followStyle = FollowStyles.Text,
+            FollowColors followColor = FollowColors.Blue) {
+<a href="http://www.twitter.com/@username"><img src="http://twitter-badges.s3.amazonaws.com/@(GetFollowButtonImageUrl(followStyle, followColor)).png" alt="Follow @username on Twitter"/></a>
+}
+
+@*
+Summary:
+    Shows the Twitter Profile widget.
+*@ 
+@helper Profile(
+            string username,
+            int width = 250,
+            int height = 300,
+            string backgroundShellColor = "#333333",
+            string shellColor = "#ffffff",
+            string tweetsBackgroundColor = "#000000",
+            string tweetsColor = "#ffffff",
+            string tweetsLinksColor = "#4aed05",
+            int numberOfTweets = 4,
+            bool scrollBar = false,
+            bool loop = false,
+            bool live = false,
+            bool hashTags = true,
+            bool timestamp = true,
+            bool avatars = false,
+            WidgetBehaviors behavior = WidgetBehaviors.All,
+            int interval = 6) {
+<script src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'profile',
+  rpp: @(numberOfTweets < 1 ? 1 : (numberOfTweets > 30 ? 30 : numberOfTweets)),
+  interval: @(interval < 2 ? 2000 : (interval > 20 ? 20000 : (interval * 1000))),
+  width: @(new HtmlString(width <= 0 ? "'auto'" : width.ToString())),
+  height: @(height < 0 ? "0" : height.ToString()),
+  theme: {
+    shell: {
+      background: '@(backgroundShellColor.IsEmpty() ? "#333333" : backgroundShellColor)',
+      color: '@(shellColor.IsEmpty() ? "#ffffff" : shellColor)'
+    },
+    tweets: {
+      background: '@(tweetsBackgroundColor.IsEmpty() ? "#000000" : tweetsBackgroundColor)',
+      color: '@(tweetsColor.IsEmpty() ? "#ffffff" : tweetsColor)',
+      links: '@(tweetsLinksColor.IsEmpty() ? "#4aed05" : tweetsLinksColor)'
+    }
+  },
+  features: {
+    scrollbar: @scrollBar.ToString().ToLower(),
+    loop: @loop.ToString().ToLower(),
+    live: @live.ToString().ToLower(),
+    hashtags: @hashTags.ToString().ToLower(),
+    timestamp: @timestamp.ToString().ToLower(),
+    avatars: @avatars.ToString().ToLower(),
+    behavior: '@behavior.ToString().ToLower()'
+  }
+}).render().setUser('@username').start();
+</script>
+}
+
+@*
+Summary:
+    Shows the Twitter Search widget.    
+    For Advanced queries, see http://search.twitter.com/operators
+*@ 
+@helper Search(
+            string searchQuery,
+            int width = 250,
+            int height = 300,
+            string title = null,
+            string caption = null,
+            string backgroundShellColor = "#8ec1da",
+            string shellColor = "#ffffff",
+            string tweetsBackgroundColor = "#ffffff",
+            string tweetsColor = "#444444",
+            string tweetsLinksColor = "#1985b5",
+            bool scrollBar = false,
+            bool loop = true,
+            bool live = true,
+            bool hashTags = true,
+            bool timestamp = true,
+            bool avatars = true,
+            bool topTweets = true,
+            WidgetBehaviors behavior = WidgetBehaviors.All,
+            int interval = 6) {
+<script src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'search',
+  search: '@searchQuery',
+  interval: @(interval < 2 ? 2000 : (interval > 20 ? 20000 : (interval * 1000))),
+  title: '@title',
+  subject: '@caption',
+  width: @(new HtmlString(width <= 0 ? "'auto'" : width.ToString())),
+  height: @(height < 0 ? "0" : height.ToString()),
+  theme: {
+    shell: {
+      background: '@(backgroundShellColor.IsEmpty() ? "#8ec1da" : backgroundShellColor)',
+      color: '@(shellColor.IsEmpty() ? "#ffffff" : shellColor)'
+    },
+    tweets: {
+      background: '@(tweetsBackgroundColor.IsEmpty() ? "#ffffff" : tweetsBackgroundColor)',
+      color: '@(tweetsColor.IsEmpty() ? "#444444" : tweetsColor)',
+      links: '@(tweetsLinksColor.IsEmpty() ? "#1985b5" : tweetsLinksColor)'
+    }
+  },
+  features: {
+    scrollbar: @scrollBar.ToString().ToLower(),
+    loop: @loop.ToString().ToLower(),
+    live: @live.ToString().ToLower(),
+    hashtags: @hashTags.ToString().ToLower(),
+    timestamp: @timestamp.ToString().ToLower(),
+    avatars: @avatars.ToString().ToLower(),
+    toptweets: @topTweets.ToString().ToLower(),
+    behavior: '@behavior.ToString().ToLower()'
+  }
+}).render().start();
+</script>
+}
+
+@*
+Summary:
+    Shows the Twitter Faves widget.    
+*@
+@helper Faves(
+            string username,
+            int width = 250,
+            int height = 300,
+            string title = null,
+            string caption = null,
+            string backgroundShellColor = "#43c43f",
+            string shellColor = "#ffffff",
+            string tweetsBackgroundColor = "#ffffff",
+            string tweetsColor = "#444444",
+            string tweetsLinksColor = "#43c43f",
+            int numberOfTweets = 10,
+            bool scrollBar = true,
+            bool loop = false,
+            bool live = true,
+            bool hashTags = true,
+            bool timestamp = true,
+            bool avatars = true,
+            bool topTweets = true,
+            WidgetBehaviors behavior = WidgetBehaviors.All,
+            int interval = 6) {
+<script src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'faves',
+  rpp: @(numberOfTweets < 1 ? 1 : (numberOfTweets > 20 ? 20 : numberOfTweets)),
+  interval: @(interval < 2 ? 2000 : (interval > 20 ? 20000 : (interval * 1000))),
+  title: '@title',
+  subject: '@caption',
+  width: @(new HtmlString(width <= 0 ? "'auto'" : width.ToString())),
+  height: @(height < 0 ? "0" : height.ToString()),
+  theme: {
+    shell: {
+      background: '@(backgroundShellColor.IsEmpty() ? "#43c43f" : backgroundShellColor)',
+      color: '@(shellColor.IsEmpty() ? "#ffffff" : shellColor)'
+    },
+    tweets: {
+      background: '@(tweetsBackgroundColor.IsEmpty() ? "#ffffff" : tweetsBackgroundColor)',
+      color: '@(tweetsColor.IsEmpty() ? "#444444" : tweetsColor)',
+      links: '@(tweetsLinksColor.IsEmpty() ? "#43c43f" : tweetsLinksColor)'
+    }
+  },
+  features: {
+    scrollbar: @scrollBar.ToString().ToLower(),
+    loop: @loop.ToString().ToLower(),
+    live: @live.ToString().ToLower(),
+    hashtags: @hashTags.ToString().ToLower(),
+    timestamp: @timestamp.ToString().ToLower(),
+    avatars: @avatars.ToString().ToLower(),
+    behavior: '@behavior.ToString().ToLower()'
+  }
+}).render().setUser('@username').start();
+</script>
+}
+
+@*
+Summary:
+    Shows the Twitter List widget.    
+*@
+@helper List(
+            string username,
+            string list,
+            int width = 250,
+            int height = 300,
+            string title = null,
+            string caption = null,
+            string backgroundShellColor = "#ff96e7",
+            string shellColor = "#ffffff",
+            string tweetsBackgroundColor = "#ffffff",
+            string tweetsColor = "#444444",
+            string tweetsLinksColor = "#b740c2",
+            int numberOfTweets = 30,
+            bool scrollBar = true,
+            bool loop = false,
+            bool live = true,
+            bool hashTags = true,
+            bool timestamp = true,
+            bool avatars = true,
+            bool topTweets = true,
+            WidgetBehaviors behavior = WidgetBehaviors.All,
+            int interval = 6) {
+<script src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'list',
+  rpp: @(numberOfTweets < 1 ? 1 : (numberOfTweets > 100 ? 100 : numberOfTweets)),
+  interval: @(interval < 2 ? 2000 : (interval > 20 ? 20000 : (interval * 1000))),
+  title: '@title',
+  subject: '@caption',
+  width: @(new HtmlString(width <= 0 ? "'auto'" : width.ToString())),
+  height: @(height < 0 ? "0" : height.ToString()),
+  theme: {
+    shell: {
+      background: '@(backgroundShellColor.IsEmpty() ? "#ff96e7" : backgroundShellColor)',
+      color: '@(shellColor.IsEmpty() ? "#ffffff" : shellColor)'
+    },
+    tweets: {
+      background: '@(tweetsBackgroundColor.IsEmpty() ? "#ffffff" : tweetsBackgroundColor)',
+      color: '@(tweetsColor.IsEmpty() ? "#444444" : tweetsColor)',
+      links: '@(tweetsLinksColor.IsEmpty() ? "#b740c2" : tweetsLinksColor)'
+    }
+  },
+  features: {
+    scrollbar: @scrollBar.ToString().ToLower(),
+    loop: @loop.ToString().ToLower(),
+    live: @live.ToString().ToLower(),
+    hashtags: @hashTags.ToString().ToLower(),
+    timestamp: @timestamp.ToString().ToLower(),
+    avatars: @avatars.ToString().ToLower(),
+    behavior: '@behavior.ToString().ToLower()'
+  }
+}).render().setList('@username', '@list').start();
+</script>
+}

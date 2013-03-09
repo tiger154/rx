@@ -1,0 +1,11 @@
+﻿CREATE TABLE rx_s_module ( 
+uid  int  identity(1,1)  NOT NULL , 
+gid  int   NOT NULL , 
+system  nvarchar(2)   NOT NULL , 
+hidden  nvarchar(2)   NOT NULL , 
+mobile  nvarchar(2)   NOT NULL , 
+name  nvarchar(200)   NOT NULL , 
+id  nvarchar(30)   NOT NULL , 
+tblnum  int   NOT NULL , 
+d_regis  datetime   ,
+PRIMARY KEY (uid));

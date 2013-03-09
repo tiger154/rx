@@ -1,0 +1,11 @@
+#m_loginbox {width:85%;margin:25px auto 15px auto;border:#dfdfdf solid 5px;padding:15px;}
+#m_loginbox .xdiv {padding:4px 0 4px 0;}
+#m_loginbox .xinput {width:98%;height:25px;font:bold 18px arial;color:#888888;}
+
+#m_loginbox .xl {float:left;position:relative;left:-5px;}
+#m_loginbox .xfont {color:#999999;}
+#m_loginbox .xfont input {position:relative;top:2px;}
+
+#m_loginbox .xr {float:right;}
+#m_loginbox .xr .xsubmit1 {width:60px;height:25px;margin:5px 2px 0 0;}
+#m_loginbox .xr .xsubmit2 {width:60px;height:25px;margin:5px 2px 0 0;}

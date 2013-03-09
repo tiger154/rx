@@ -1,0 +1,55 @@
+
+#content .mainbox {border:#C7C8DD solid 1px;padding:20px 20px 5px 20px;margin-bottom:30px;border-radius:10px 10px 10px 10px;}
+#content .mainbox .posttop {border-bottom:#E7E7E9 solid 1px;padding:0 0 13px 0;margin:0 0 17px 0;}
+#content .mainbox .posttop .p1 {float:left;width:40px;}
+#content .mainbox .posttop .p1 i {font-style:normal;font-weight:bold;font-family:arial;font-size:14px;color:#3E5895;text-align:center;display:block;width:40px;height:15px;border:#dfdfdf solid 1px;background:#f9f9f9;border-radius:3px 3px 3px 3px;position:relative;top:1px;}
+#content .mainbox .posttop .p2 {float:left;width:440px;padding-left:17px;}
+#content .mainbox .posttop .p2 .title {display:block;font-size:18px;font-family:dotum;font-weight:bold;color:#323232;height:18px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+#content .mainbox .posttop .p2 p {font-family:dotum;color:#656565;height:32px;text-overflow:ellipsis;overflow:hidden;line-height:140%;margin:10px 0 10px 0;}
+#content .mainbox .posttop .p2 .info {font-family:dotum;font-size:11px;color:#8D8D8D;}
+#content .mainbox .posttop .p2 a {font-family:dotum;color:#363636;}
+#content .mainbox .posttop .nothumb {width:550px;}
+#content .mainbox .posttop .p3 {float:right;width:110px;text-align:right;}
+#content .mainbox .posttop .p3 .picbox {width:110px;height:72px;background:#efefef;overflow:hidden;}
+#content .mainbox .posttop .p3 .picbox img {width:110px;}
+#content .mainbox .postnone {height:170px;}
+
+#content .mainbox .post {height:18px;margin-bottom:5px;}
+#content .mainbox .post .p1 {float:left;width:40px;}
+#content .mainbox .post .p1 i {font-style:normal;font-weight:bold;font-family:arial;font-size:14px;color:#3E5895;text-align:center;display:block;width:40px;height:15px;border:#dfdfdf solid 1px;background:#f9f9f9;border-radius:3px 3px 3px 3px;position:relative;top:-3px;}
+#content .mainbox .post .p2 {float:left;width:370px;height:12px;padding-left:17px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+#content .mainbox .post .p2 a {font-family:dotum;color:#363636;}
+#content .mainbox .post .p2 i {font-style:normal;font-family:arial;font-size:11px;color:#E75801;padding-left:3px;}
+#content .mainbox .post .p3 {float:left;width:80px;font-family:dotum;font-size:11px;color:#8D8D8D;text-align:right;}
+#content .mainbox .post .p4 {float:right;width:97px;font-family:dotum;font-size:11px;color:#8F8F8F;text-align:right;border-left:#c0c0c0 dotted 1px;}
+#content .mainbox .skip {text-align:right;}
+#content .mainbox .skip img {cursor:pointer;}
+
+#content .topicbox {margin-bottom:30px;}
+#content .topicbox .tl {float:left;width:310px;}
+#content .topicbox .tr {float:right;width:310px;}
+
+#content .topicbox .tt {padding:0 0 8px 0;margin-bottom:15px;border-bottom:#dfdfdf dotted 1px;}
+#content .topicbox .tt .ts {float:left;font-weight:bold;}
+#content .topicbox .tt .tmore {float:right;}
+#content .topicbox .tt .tmore a {font-family:dotum;font-size:11px;color:#c0c0c0;}
+
+#content .topicbox .thumb {border:#BCBCBC solid 1px;height:130px;overflow:hidden;padding:1px;margin-bottom:20px;}
+#content .topicbox .thumb img {width:310px;background:#efefef;margin-top:-50px;}
+#content .topicbox .tsubject {line-height:140%;}
+#content .topicbox .tsubject a {font-weight:bold;color:#323232;}
+#content .topicbox .tdate {font-size:11px;font-family:dotum;color:#9B9B9B;padding-top:12px;}
+#content .topicbox .tcont {color:#9B9B9B;line-height:140%;padding:10px 0 10px 0;border-bottom:#dfdfdf dotted 1px;margin-bottom:15px;}
+#content .topicbox .tpost {line-height:140%;padding-bottom:8px;margin-bottom:8px;border-bottom:#dfdfdf dotted 1px;}
+#content .topicbox .tpost a {color:#363636;}
+#content .topicbox .tpost i {font-style:normal;font-family:arial;font-size:11px;color:#E75801;padding-left:3px;}
+#content .topicbox .none {height:130px;margin-bottom:20px;background:#efefef;}
+
+#content .photobox {margin-bottom:30px;}
+#content .photobox .tt {height:15px;padding:0 0 8px 0;margin-bottom:25px;border-bottom:#dfdfdf dotted 1px;}
+#content .photobox .tt .ts {float:left;font-weight:bold;}
+#content .photobox .tt .tmore {float:right;}
+#content .photobox .tt .tmore a {font-family:dotum;font-size:11px;color:#c0c0c0;}
+#content .photobox .picwrap {}
+#content .photobox .picwrap .pic {float:left;width:91px;height:60px;border:#9C9C9C solid 1px;padding:1px;margin:0 15px 15px 0;overflow:hidden;}
+#content .photobox .picwrap .pic img {width:91px;background:#D8D8D8;}

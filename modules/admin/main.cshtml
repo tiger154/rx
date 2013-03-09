@@ -1,0 +1,158 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var my = PageData[1];
+    var _HM = PageData[2];
+    var _HP = PageData[3];
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var _HS = PageData[11];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    var front = PageData[16];
+    var _m = PageData[17];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var mod = Request["mod"];
+    var module = Request["module"];
+    var iframe = Request["iframe"];
+
+    string frame_name = "_action_frame_" + m;
+        
+    dynamic d_admin = _DB.Get_code("admin");
+    dynamic d_amenu = _DB.Get_amenu(module);
+
+    string g_main;
+
+    // Install Mode
+    if (_System.Admin_Account() == false)
+    {
+        mod = "install";
+
+        g["browtitle"] = "kimsQ-Rx Installer";
+        g["s"] = ".";
+        g["img_core"] = g["s"] + "/_core/image";
+        g["img_install"] = g["s"] + "/modules/" + m + "/_install/image";
+        g["dir_module"] = g["path_module"] + m + "\\";
+        g["url_module"] = g["s"] + "/modules/" + m;
+        g["dir_module_mode"] = g["dir_module"] + "_install\\main";
+        g["url_module_mode"] = g["url_module"] + "/_install/main";
+        g["main"] = g["dir_module"] + "_install/main.cshtml";
+
+        g_main = g["main"];
+    }
+    else
+    {
+        if (my["admin"] != "1")
+        {
+            g["browtitle"] = "kimsQ-Rx Administration Login";
+            mod = "login";
+        }
+
+        if (mod.IsEmpty() || mod == "")
+        {
+            mod = "front";
+        }
+
+        if (module.IsEmpty() || module == "")
+        {
+            module = "admin";
+        }
+
+        if (front == null || front == "")
+        {
+            front = "main";
+        }
+
+        dynamic MD = _DB.getDbData(AppState["table_s_module"], "id='" + module + "'", "*");
+
+        if (MD["id"] == "")
+        {
+            @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=module", "", "등록되지 않는 모듈입니다.", "")
+            return;
+        }
+
+        if (MD["id"] != "admin" && ("_" + my["adm_view"]).Contains("[" + MD["id"] + "]"))
+        {
+            @_System.getLink(g["s"] + "/?r=" + r + "&m=admin&module=module", "", "접근 권한이 없습니다.", "")
+            return;
+        }
+
+
+        // global variables   
+        
+        if (g["mobile"] != "" && Session["pcmode"] != "Y")
+        {
+            g["dir_module_skin"] = g["dir_module"] + "theme\\_mobile\\" + d_admin["themepc"] + "\\";
+            g["url_module_skin"] = g["url_module"] + "/theme/_mobile/" + d_admin["themepc"];
+
+            g["dir_module_admin"] = g["path_module"] + module + "\\admin\\_mobile\\" + front;
+            g["url_module_admin"] = g["url_root"] + "/modules/" + module + "/admin/_mobile/" + front;
+            g["img_module_admin"] = g["url_root"] + "/modules/" + module + "/admin/_mobile/image";
+            g["adm_module_varmenu"] = g["path_module"] + module + "/admin/_mobile/var/var.menu.cshtml";                    
+        }
+        else
+        {
+            g["dir_module_skin"] = g["dir_module"] + "theme\\_pc\\" + d_admin["themepc"] + "\\";
+            g["url_module_skin"] = g["url_module"] + "/theme/_pc/" + d_admin["themepc"];
+
+            g["dir_module_admin"] = g["path_module"] + module + "\\admin\\_pc\\" + front;
+            g["url_module_admin"] = g["url_root"] + "/modules/" + module + "/admin/_pc/" + front;
+            g["img_module_admin"] = g["url_root"] + "/modules/" + module + "/admin/_pc/image";
+            g["adm_module_varmenu"] = g["path_module"] + module + "/admin/_pc/var/var.menu.cshtml";            
+        }
+        
+        g["adm_module"] = g["path_module"] + module + "\\admin\\_pc\\" + front + ".cshtml";
+        //g["adm_module"] = g["path_module"] + module + "\\admin.cshtml";
+        g["img_module_skin"] = g["url_module_skin"] + "/image";
+        g["dir_module_mode"] = g["dir_module_skin"] + mod;
+        g["url_module_mode"] = g["url_module_skin"] + "/" + mod;
+
+        g["browtitle"] = "kimsQ-Rx Administration Mode";
+        g["adm_href"] = g["s"] + "/?r=" + r + "&m=" + m + "&module=" + module + "&front=" + front;
+
+        g["module"] = module;
+        g["front"] = front;
+        g["p"] = p.ToString();
+
+        g["MD_name"] = MD["name"];
+        g["MD_id"] = MD["id"];
+        g["MD_tblnum"] = MD["tblnum"];
+        g["MD_d_regis"] = MD["d_regis"];
+        g["hidepannel"] = d_admin["hidepannel"];
+
+        // module main
+        if (iframe == "Y")
+        {
+            g_main = g["adm_module"];
+        }
+        else
+        {
+            g_main = g["dir_module_mode"] + ".cshtml";
+        }
+    }
+
+    Session["g"] = g;
+    Session["g_main"] = g_main;
+}

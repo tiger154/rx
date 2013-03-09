@@ -1,0 +1,5 @@
+﻿네이버,http://search.naver.com/search.naver?query=
+네이트,http://search.nate.com/search/all.html?q=
+다음,http://search.daum.net/search?q=
+야후,http://kr.search.yahoo.com/search?p=
+구글,http://www.google.com/search?q=

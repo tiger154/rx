@@ -1,0 +1,983 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/
+
+    var qa_p_conf = "";
+    var job_p_conf = "";
+    var marr_p_conf = "";
+
+    var _HS = PageData[5];
+    
+    dynamic g = Session["g"];
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    dynamic d_member = _DB.Get_code("member");
+    
+    string r = Request["r"];
+    string m = Request["m_ori"];
+    string regis_jumin1 = Request["regis_jumin1"];
+    string regis_jumin2 = Request["regis_jumin2"];
+    string comp = Request["comp"];
+    string regis_name = Request["regis_name"];        
+    
+    string frame_name = "_action_frame_"+Request["m_ori"];
+    
+    int now_year = Convert.ToInt32(date["year"]);
+    int now_month = Convert.ToInt32(date["month"]);
+    int now_day = Convert.ToInt32(date["day"]);    
+}
+<div id="pages_join">
+
+	<form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return saveCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="c" value="@Request["c"]" />
+	<input type="hidden" name="m" value="@Request["m_ori"]" />
+	<input type="hidden" name="front" value="@Request["front"]" />  
+	<input type="hidden" name="a" value="join" />
+	<input type="hidden" name="check_id" value="0" />
+	<input type="hidden" name="check_nic" value="0" />
+	<input type="hidden" name="check_email" value="0" />
+	<input type="hidden" name="comp" value="@comp" />
+
+	<h2>회원가입</h2>
+
+	<div class="msg">
+		<span>(*)</span> 표시가 있는 항목은 반드시 입력해야 합니다.<br />
+		허위로 작성된 정보일 경우 승인이 보류되거나 임의로 삭제처리될 수 있으니 주의해 주세요.
+	</div>
+
+
+	<table summary="회원가입 기본정보를 입력받는 표입니다.">
+	<caption>회원가입 기본정보</caption> 
+	<colgroup> 
+	<col width="100"> 
+	<col> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col"></th>
+	<th scope="col"></th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+	<td class="key">이름(실명)<span>*</span></td>
+	<td>
+		<input type="text" name="name" value="@regis_name" maxlength="10" class="input" />
+	</td>
+	</tr>
+    @if(d_member["form_nic"]=="1") {
+	    <tr>
+        @if(d_member["form_nic_p"]=="1") {
+            <td class="key">닉네임<span>*</span></td>    
+        }
+        else
+        {
+            <td class="key">닉네임</td>
+        }
+	    
+	    <td>
+		    <input type="text" name="nic" value="" maxlength="20" class="input" />
+		    <input type="button" value="중복확인" class="btngray" onclick="sameCheck(this.form.nic,'hLayernic');" />
+		    <div class="hmsg" id="hLayernic"></div>
+		    <div>닉네임은 자신을 표현할 수 있는 단어로 20자까지 자유롭게 사용할 수 있습니다.</div>
+	    </td>
+	    </tr>        
+    }
+    
+    @if(d_member["form_birth"] == "1") {
+ 	    <tr>
+        @if(d_member["form_nic_p"]=="1") {
+            <td class="key">생년월일<span>*</span></td>    
+        }
+        else
+        {
+            <td class="key">생년월일</td>
+        }
+	    <td>
+		    <select name="birth_1">
+		    <option value="">년도</option>
+
+ 		@{            
+            for(var i = now_year; i > 1930; i--) {
+                var year_selected = "";
+                var tmp_i = i.ToString();
+                
+                if(regis_jumin1 != null) {
+                    if(regis_jumin1.Substring(0, 2) == tmp_i.Substring(2, 2)) {
+                        year_selected = "selected='selected'";
+					}
+				}
+                <option value="@i" @Html.Raw(year_selected)>@i</option>
+			}
+		}
+
+		    </select>
+		    <select name="birth_2">
+            <option value="">월</option>
+		@{
+            for(var i = 1; i < 13; i++) {
+                var month_selected = "";
+                var tmp_i = i.ToString();
+                
+                if(tmp_i.Length == 1) {
+                    tmp_i = "0"+tmp_i;
+				}
+
+                if(regis_jumin1 != null) {
+                    if(regis_jumin1.Substring(2, 2) == tmp_i) {
+                        month_selected = "selected='selected'";
+					}
+				}                
+        		<option value="@i" @Html.Raw(month_selected)>@i</option>
+            }            
+		}
+		    </select>
+		    <select name="birth_3">
+		    <option value="">일</option>
+		@{
+            for(var i = 1; i < 32; i++) {
+                var day_selected = "";
+                var tmp_i = i.ToString();
+                
+                if(tmp_i.Length == 1) {
+                    tmp_i = "0"+tmp_i;
+				}
+
+                if(regis_jumin1 != null) {
+                    if(regis_jumin1.Substring(4, 2) == tmp_i) {
+                        day_selected = "selected='selected'";
+					}
+				}                
+        		<option value="@i" @Html.Raw(day_selected)>@i</option>
+            }            
+		}
+		    </select>
+		    <input type="checkbox" name="birthtype" value="1" />음력
+	    </td>
+	    </tr>       
+    }
+
+    @if(d_member["form_sex"] == "1") {
+  	    <tr>
+        @if(d_member["form_sex_p"] == "1") {
+            <td class="key">성별<span>*</span></td>
+        }
+        else {
+            <td class="key">성별</td>
+        }
+	    
+	    <td class="shift">
+		    <div class="shift">
+        @{
+            var sex_m_checked = "";
+            var sex_w_checked = "";
+            
+            if(regis_jumin1 != null) {
+                int tmp_sex = Convert.ToInt32(regis_jumin2.Substring(0, 1));
+                
+                if((tmp_sex % 2) == 1) {
+                    sex_m_checked = "checked='checked'";
+				}
+                else {
+                    sex_w_checked = "checked='checked'";                   
+				}
+            }
+		}
+		<input type="radio" name="sex" value="1" @Html.Raw(sex_m_checked) />남성
+		<input type="radio" name="sex" value="2" @Html.Raw(sex_w_checked) />여성
+		    </div>
+	    </td>
+	    </tr>      
+    }
+
+
+	<tr>
+	<td class="key">아이디<span>*</span></td>
+	<td>
+		<input type="text" name="id" value="" maxlength="12" class="input" />
+		<input type="button" value="중복확인" class="btngray" onclick="sameCheck(this.form.id,'hLayerid');" />
+		<div class="hmsg" id="hLayerid"></div>
+		<div>4~12자의 영문(소문자)과 숫자만 사용할 수 있습니다.</div>
+	</td>
+	</tr>
+
+	<tr>
+	<td class="key">비밀번호<span>*</span></td>
+	<td>
+		<input type="password" name="pw1" value="" maxlength="20" class="input" />
+		<div>4~12자의 영문과 숫자만 사용할 수 있습니다.</div>
+	</td>
+	</tr>
+
+	<tr>
+	<td class="key">비번확인<span>*</span></td>
+	<td>
+		<input type="password" name="pw2" value="" maxlength="20" class="input" />
+		<div>비밀번호를 한번 더 입력하세요. 비밀번호는 잊지 않도록 주의하시기 바랍니다.</div>
+	</td>
+	</tr>
+	
+    @if(d_member["form_qa"] == "1") {
+        if(d_member["form_qa_p"] == "1") {
+            qa_p_conf = "<span>*</span>";
+		}
+            
+        string dataFile = g["path_root_ps"]+g["dir_module"] + "\\var\\pw_question.txt";
+        Array userData = null;
+        userData = File.ReadAllLines(dataFile);
+
+	    <tr>
+	    <td class="key">비번찾기 질문 @Html.Raw(qa_p_conf)</td>
+	    <td>
+		    <select name="_pw_q" class="lsize" onchange="this.form.pw_q.value=this.value;this.value='';this.form.pw_a.focus();">
+		    <option value="">&nbsp;+ 선택하십시오.</option>
+		    <option value="">-----------------------------------------------------------------------------</option>
+        
+            @foreach (string dataLine in userData) {             
+                <option value="@dataLine">ㆍ @dataLine</option>             
+            }
+            
+            </select><br />
+		    <div><input type="text" name="pw_q" value="" class="input lsize" /></div>
+	    </td>
+	    </tr>            
+
+	    <tr>
+	    <td class="key">비번찾기 답변 @Html.Raw(qa_p_conf)</td>
+	    <td>
+		    <input type="text" name="pw_a" value="" class="input" />
+		    <div>
+		    비밀번호찾기 질문에 대한 답변을 혼자만 알 수 있는 단어나 기호로 입력해 주세요.<br />
+		    비밀번호를 찾을 때 필요하므로 반드시 기억해 주세요.
+		    </div>
+	    </td>
+	    </tr>
+    }
+
+	<tr>
+	<td class="key">이메일<span>*</span></td>
+	<td>
+		<input type="email" name="email" value="" class="input" />
+		<input type="button" value="중복확인" class="btngray" onclick="sameCheck(this.form.email,'hLayeremail');" />
+		<div class="hmsg" id="hLayeremail"></div>
+        @if (d_member["join_auth"] == "2")
+        {
+            <div>가입후 입력하신 이메일로 인증메일이 발송되며 인증을 거쳐야만 가입승인이 이루어집니다.</div>
+        }
+		<div class="remail shift"><div class="shift"><input type="checkbox" name="remail" value="1" checked="checked" />뉴스레터/공지이메일을 수신받겠습니다.</div></div>
+	</td>
+	</tr>
+
+
+    @if(d_member["form_home"] == "1") {
+	    <tr>
+        @if(d_member["form_home_p"]=="1") {
+            <td class="key">홈페이지<span>*</span></td>    
+        }
+        else {
+            <td class="key">홈페이지</td>                
+        }	    
+	    <td>
+		    <input type="url" name="home" value="" class="input lsize" />
+	    </td>
+	    </tr>        
+    }
+    
+
+    @if(d_member["form_tel2"] == "1") {
+	    <tr>
+        @if(d_member["form_tel2_p"]=="1") {
+            <td class="key">휴대전화<span>*</span></td>    
+        }
+        else {
+            <td class="key">휴대전화</td>                
+        }	
+	    <td>
+		    <input type="number" name="tel2_1" value="" maxlength="3" size="4" class="input" />-
+		    <input type="number" name="tel2_2" value="" maxlength="4" size="4" class="input" />-
+		    <input type="number" name="tel2_3" value="" maxlength="4" size="4" class="input" />
+		    <div class="remail shift"><div class="shift"><input type="checkbox" name="sms" value="1" checked="checked" />알림문자를 받겠습니다.</div></div>
+	    </td>
+	    </tr>
+    }
+    
+    @if(d_member["form_tel1"] == "1") {
+	    <tr>
+        @if(d_member["form_tel1_p"]=="1") {
+            <td class="key">전화번호<span>*</span></td>    
+        }
+        else {
+            <td class="key">전화번호</td>                
+        }	
+	    <td>
+		    <input type="number" name="tel1_1" value="" maxlength="4" size="4" class="input" />-
+		    <input type="number" name="tel1_2" value="" maxlength="4" size="4" class="input" />-
+		    <input type="number" name="tel1_3" value="" maxlength="4" size="4" class="input" />
+	    </td>
+	    </tr>
+    }    
+
+    @if (d_member["form_addr"] == "1") {
+	    <tr>
+        @if (d_member["form_addr_p"] == "1")
+        {
+            <td class="key">주소<span>*</span></td>    
+        }
+        else {
+            <td class="key">주소</td>                
+        }	
+	    <td>
+		    <div id="addrbox">
+		    <div><input type="text" name="addr2" id="addr2" value="" class="input lsize" /></div>
+		    </div>
+            @if(d_member["form_foreign"] == "1") {
+		        <div class="remail shift">
+		        <div class="shift"><input type="checkbox" name="foreign" value="1" onclick="foreignChk(this);" /><span id="foreign_ment">해외거주자일 경우 체크해 주세요.</span></div>
+		        </div>
+            }
+	    </td>
+	    </tr>
+    }    
+
+    @if (d_member["form_job"] == "1") {
+        string dataFile = g["path_root_ps"] + g["dir_module"] + "\\var\\job.txt";
+        Array userData = null;
+        userData = File.ReadAllLines(dataFile);
+        
+	    <tr>
+        @if (d_member["form_job_p"] == "1")
+        {
+            <td class="key">직업<span>*</span></td>    
+        }
+        else {
+            <td class="key">직업</td>                
+        }	
+	    <td>
+		    <select name="job">
+		    <option value="">&nbsp;+ 선택하세요</option>
+		    <option value="">------------------</option>
+
+            @foreach (string dataLine in userData) {             
+                <option value="@dataLine">ㆍ @dataLine</option>             
+            }
+		    </select>
+	    </td>
+	    </tr>
+    }    
+
+    @if(d_member["form_marr"] == "1") {
+	    <tr>
+        @if(d_member["form_marr_p"]=="1") {
+            <td class="key">결혼기념일<span>*</span></td>    
+        }
+        else {
+            <td class="key">결혼기념일</td>                
+        }	
+	    <td>
+		    <select name="marr_1">
+		    <option value="">년도</option>
+		@{
+            for(var i = now_year; i > 1930; i--) {
+                var tmp_i = i.ToString();
+
+                <option value="@i">@i</option>
+			}
+		}
+		    </select>
+		    <select name="marr_2">
+		    <option value="">월</option>
+		@{
+            for(var i = 1; i < 13; i++) {
+        		<option value="@i">@i</option>
+            }            
+		}
+		    </select>
+		    <select name="marr_3">
+		    <option value="">일</option>
+		@{
+            for(var i = 1; i < 32; i++) {
+        		<option value="@i">@i</option>
+            }            
+		}
+		    </select>
+	    </td>
+	    </tr>
+    } 
+
+    @{
+        string[] SNSSET = {"트위터", "페이스북", "미투데이", "요즘"};
+        
+        for(int i=0; i<SNSSET.Length; i++) {
+            if (!!d_member.ContainsKey("form_sns_" + (i +1)) || d_member["form_sns_" + (i +1)] != "")
+            {
+                continue;
+            }
+	        <tr>
+	        <td class="key">@SNSSET[i] ID</td>
+	        <td>
+		        <input type="text" name="@Html.Raw("sns_"+i)" value="" class="input" />
+	        </td>
+	        </tr>            
+        }
+
+        string _dataFile = g["path_root_ps"] + g["dir_module"] + "\\var\\add_field.txt";
+        Array _add = null;
+        _add = File.ReadAllLines(_dataFile);
+        
+        
+        foreach(string _key in _add) {
+            string[] _val = _key.Trim().Split('|');
+            
+            if(_val[6]=="") {
+                continue;
+            }
+	        <tr>
+
+            @if(_val[5]!="") {
+                <td class="key">@_val[1]<span>*</span></td>
+            }
+            else {
+                <td class="key">@_val[1]</td>
+            }
+	        <td>
+
+            @if(_val[2] == "text") {
+                <input type="text" name="@Html.Raw("add_"+_val[0])" class="input" style="width:@_val[4]px;" value="@_val[3]" />
+            }
+            @if(_val[2] == "password") {
+                <input type="password" name="@Html.Raw("add_"+_val[0])" class="input" style="width:@_val[4]px;" value="@_val[3]" />
+            }
+            @if(_val[2] == "select") {
+                string[] _skey = _val[3].Split(',');
+                                
+                <select name="@Html.Raw("add_"+_val[0])" style="width:@_val[4]px;">
+	            <option value="">&nbsp;+ 선택하세요</option>
+
+                @foreach(string _sval in _skey) {
+                    <option value="@_sval.Trim()">ㆍ @_sval.Trim()</option>    
+                }
+	            </select>                
+            }
+            
+            @if(_val[2] == "radio") {
+                string[] _skey = _val[3].Split(',');                 
+	            <div class="shift">
+	            <div class="shift">
+                @foreach(string _sval in _skey) {
+                    <input type="radio" name="@Html.Raw("add_"+_val[0])" value="@_sval.Trim()" />@_sval.Trim()  
+                }
+	            </div>
+	            </div>               
+            }
+            
+            @if(_val[2] == "checkbox") {
+                string[] _skey = _val[3].Split(',');   
+	            <div class="shift">
+	            <div class="shift">
+                @foreach(string _sval in _skey) {
+                    <input type="checkbox" name="@Html.Raw("add_"+_val[0]+"[]")" value="@_sval.Trim()" />@_sval.Trim()
+                }
+	            </div>
+	            </div>                                
+            }
+            
+            @if (_val[2] == "textarea")
+            {
+ 	            <textarea name="@Html.Raw("add_"+_val[0])" rows="5" style="width:@_val[4]px;">@_val[3]</textarea>               
+            }
+            </tr>
+
+
+            }
+        }
+
+    	</tbody>
+        
+	</table>
+
+
+    @if(d_member["form_comp"]=="1" && comp=="1") {
+	    <h3>기업정보</h3>
+
+	    <table summary="회원가입 기업정보를 입력받는 표입니다.">
+	    <caption>회원가입 기업정보</caption> 
+	    <colgroup> 
+	    <col width="100"> 
+	    <col> 
+	    </colgroup> 
+	    <thead>
+	    <tr>
+	    <th scope="col"></th>
+	    <th scope="col"></th>
+	    </tr>
+	    </thead>
+	    <tbody>
+	    <tr>
+	    <td class="key">사업자번호<span>*</span></td>
+	    <td>
+		    <input type="number" name="comp_num_1" size="4" maxlength="3" class="input" /> -
+		    <input type="number" name="comp_num_2" size="3" maxlength="2" class="input" /> -
+		    <input type="number" name="comp_num_3" size="5" maxlength="5" class="input" />
+		    <div class="remail shift">
+		    <div class="shift">
+		    <input type="radio" name="comp_type" value="1" checked="checked" />개인
+		    <input type="radio" name="comp_type" value="2" />법인
+		    </div>
+		    </div>
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">회사명<span>*</span></td>
+	    <td>
+		    <input type="text" name="comp_name" class="input" />
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">대표자명<span>*</span></td>
+	    <td>
+		    <input type="text" name="comp_ceo" class="input" />
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">업태<span>*</span></td>
+	    <td>
+		    <input type="text" name="comp_upte" class="input" />
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">종목<span>*</span></td>
+	    <td>
+		    <input type="text" name="comp_jongmok" class="input" />
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">대표전화<span>*</span></td>
+	    <td>
+		    <input type="number" name="comp_tel_1" value="" maxlength="4" size="4" class="input" />-
+		    <input type="number" name="comp_tel_2" value="" maxlength="4" size="4" class="input" />-
+		    <input type="number" name="comp_tel_3" value="" maxlength="4" size="4" class="input" />
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">팩스</td>
+	    <td>
+		    <input type="number" name="comp_fax_1" value="" maxlength="4" size="4" class="input" />-
+		    <input type="number" name="comp_fax_2" value="" maxlength="4" size="4" class="input" />-
+		    <input type="number" name="comp_fax_3" value="" maxlength="4" size="4" class="input" />
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">소속부서</td>
+	    <td>
+		    <input type="text" name="comp_part" class="input" />
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">직책</td>
+	    <td>
+		    <input type="text" name="comp_level" class="input" />
+	    </td>
+	    </tr>
+	    <tr>
+	    <td class="key">사업장주소<span>*</span></td>
+	    <td>
+		    <div>
+		    <div><input type="text" name="comp_addr2" id="comp_addr2" value="" class="input lsize" /></div>
+		    </div>
+	    </td>
+	    </tr>
+	    </tbody>
+	    </table>        
+    }
+
+	
+	<div class="submitbox">
+		<input type="button" value="가입취소" class="btngray" onclick="goHref('./');" />
+		<input type="submit" value="회원가입" class="btnblue" />
+	</div>
+
+	</form>
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function foreignChk(obj)
+{
+	if (obj.checked == true)
+	{
+		getId('addrbox').style.display = 'none';
+		getId('foreign_ment').innerHTML= '해외거주자 입니다.';
+	}
+	else {
+		getId('addrbox').style.display = 'block';
+		getId('foreign_ment').innerHTML= '해외거주자일 경우 체크해 주세요.';
+	}
+}
+function sameCheck(obj,layer)
+{
+
+	if (!obj.value)
+	{
+		eval('obj.form.check_'+obj.name).value = '0';
+		getId(layer).innerHTML = '';
+		alert('값을 입력한 후 중복확인버튼을 터치해 주세요.   ');
+		obj.focus();
+		return false;
+	}
+	else
+	{
+		if (obj.name == 'id')
+		{
+			if (obj.value.length < 4 || obj.value.length > 12 || !chkIdValue(obj.value))
+			{
+				obj.form.check_id.value = '0';
+				obj.focus();
+				getId(layer).innerHTML = '사용할 수 없는 아이디입니다.';
+				return false;
+			}
+		}
+		if (obj.name == 'email')
+		{
+			if (!chkEmailAddr(obj.value))
+			{
+				obj.form.check_email.value = '0';
+				obj.focus();
+				getId(layer).innerHTML = '이메일형식이 아닙니다.';
+				return false;
+			}
+		}
+
+		frames.@(frame_name).location.href = '?r=@r&m=@m&a=same_check&fname=' + obj.name + '&fvalue=' + obj.value + '&flayer=' + layer;
+	}
+}
+function saveCheck(f)
+{
+	if (f.name.value == '')
+	{
+		alert('이름을 입력해 주세요.');
+		f.name.focus();
+		return false;
+	}
+
+
+    @if(d_member["form_nic_p"] == "1") {
+	@:if (f.check_nic.value == '0')
+	@:{
+    @:	alert('닉네임을 확인해 주세요.');
+	@:	f.nic.focus();
+    @:	return false;
+    @:}
+    }
+
+    @if(d_member["form_birth"] == "1" && d_member["form_birth_p"] == "1") {
+	@:if (f.birth_1.value == '')
+	@:{
+	@:	alert('생년월일을 지정해 주세요.');
+	@:	f.birth_1.focus();
+	@:	return false;
+	@:}
+	@:if (f.birth_2.value == '')
+	@:{
+	@:	alert('생년월일을 지정해 주세요.');
+	@:	f.birth_2.focus();
+	@:	return false;
+	@:}
+	@:if (f.birth_3.value == '')
+	@:{
+	@:	alert('생년월일을 지정해 주세요.');
+	@:	f.birth_3.focus();
+	@:	return false;
+	@:}
+    }
+
+    @if(d_member["form_sex"] == "1" && d_member["form_sex_p"] == "1") {
+	@:if (f.sex[0].checked == false && f.sex[1].checked == false)
+	@:{
+	@:	alert('성별을 선택해 주세요.  ');
+	@:	return false;
+	@:}
+    }
+
+	if (f.check_id.value == '0')
+	{
+		alert('아이디를 확인해 주세요.');
+		f.id.focus();
+		return false;
+	}
+
+	if (f.pw1.value == '')
+	{
+		alert('패스워드를 입력해 주세요.');
+		f.pw1.focus();
+		return false;
+	}
+	if (f.pw2.value == '')
+	{
+		alert('패스워드를 한번더 입력해 주세요.');
+		f.pw2.focus();
+		return false;
+	}
+	if (f.pw1.value != f.pw2.value)
+	{
+		alert('패스워드가 일치하지 않습니다.');
+		f.pw1.focus();
+		return false;
+	}
+
+
+    @{    
+        if(d_member["form_qa"] == "1" && d_member["form_qa_p"] == "1") {
+	        @:if (f.pw_q.value == '')
+	        @:{
+	        @:	alert('비밀번호 찾기 질문을 입력해 주세요.');
+	        @:	f.pw_q.focus();
+	        @:	return false;
+	        @:}
+	        @:if (f.pw_a.value == '')
+	        @:{
+	        @:	alert('비밀번호 찾기 답변을 입력해 주세요.');
+	        @:	f.pw_a.focus();
+	        @:	return false;
+	        @:}
+        }
+    }
+
+
+	if (f.check_email.value == '0')
+	{
+		alert('이메일을 확인해 주세요.');
+		f.email.focus();
+		return false;
+	}
+
+@{
+    if(d_member["form_home"] == "1" && d_member["form_home_p"] == "1") {
+	    @:if (f.home.value == '')
+	    @:{
+		@:   alert('홈페이지 주소를 입력해 주세요.');
+		@:    f.home.focus();
+		@:   return false;
+	    @:}
+    }
+
+    if(d_member["form_tel2"] == "1" && d_member["form_tel2_p"] == "1") {
+	@:if (f.tel2_1.value == '')
+	@:{
+	@:	alert('휴대폰번호를 입력해 주세요.');
+	@:	f.tel2_1.focus();
+	@:	return false;
+	@:}
+	@:if (f.tel2_2.value == '')
+	@:{
+	@:	alert('휴대폰번호를 입력해 주세요.');
+	@:	f.tel2_2.focus();
+	@:	return false;
+	@:}
+	@:if (f.tel2_3.value == '')
+	@:{
+	@:	alert('휴대폰번호를 입력해 주세요.');
+    @:		f.tel2_3.focus();
+    @:		return false;
+    @:}
+    }
+
+    if(d_member["form_tel1"] == "1" && d_member["form_tel1_p"] == "1") {
+	@:if (f.tel1_1.value == '')
+	@:{
+	@:	alert('전화번호를 입력해 주세요.');
+	@:	f.tel1_1.focus();
+	@:	return false;
+	@:}
+	@:if (f.tel1_2.value == '')
+	@:{
+	@:	alert('전화번호를 입력해 주세요.');
+	@:	f.tel1_2.focus();
+	@:	return false;
+	@:}
+	@:if (f.tel1_3.value == '')
+	@:{
+	@:	alert('전화번호를 입력해 주세요.');
+    @:		f.tel1_3.focus();
+    @:		return false;
+    @:}
+    }
+
+
+    if(d_member["form_addr"] == "1" && d_member["form_addr_p"] == "1") {
+	@:if (!f.foreign || f.foreign.checked == false)
+	@:{
+	@:	if (f.addr2.value == '')
+	@:	{
+	@:		alert('주소를 입력해 주세요.');
+	@:		f.addr2.focus();
+	@:		return false;
+	@:	}
+	@:}
+    }
+
+    if(d_member["form_job"] == "1" && d_member["form_job_p"] == "1") {
+	@:if (f.job.value == '')
+	@:{
+	@:	alert('직업을 선택해 주세요.');
+	@:	f.job.focus();
+	@:	return false;
+	@:}
+    }
+
+    
+    if(d_member["form_marr"] == "1" && d_member["form_marr_p"] == "1") {
+	@:if (f.marr_1.value == '')
+	@:{
+	@:	alert('결혼기념일을 지정해 주세요.');
+	@:	f.marr_1.focus();
+	@:	return false;
+	@:}
+    @:if (f.marr_2.value == '')
+    @:{
+    @:	alert('결혼기념일을 지정해 주세요.');
+    @:	f.marr_2.focus();
+    @:	return false;
+    @:}
+    @:if (f.marr_3.value == '')
+    @:{
+    @:	alert('결혼기념일을 지정해 주세요.');
+	@:	f.marr_3.focus();
+	@:	return false;
+	@:}
+    }
+}
+	var radioarray;
+	var checkarray;
+	var i;
+	var j = 0;
+
+@{
+    foreach(string _key in _add) {
+        string[] _val = _key.Split(',');
+        if(_val[5]=="" || _val[6]=="") {
+            continue;
+        }
+
+        if(_val[2]=="text" || _val[2]=="password" || _val[2] == "select" || _val[2]=="textarea") {
+	        @:if (f.add_@(_val[0]).value == '')
+	        @:{
+            if(_val[2]=="select") {
+            @:   alert('@_val[1]이(가) 선택되지 않았습니다.     ');
+            }
+            else {
+            @:   alert('@_val[1]이(가) 입력되지 않았습니다.     ');
+            }
+		    
+            @Html.Raw("f.add_"+_val[0]+".focus();")
+            @:    return false;
+	        @:}
+        }
+
+        if(_val[2] == "radio") {
+	    @:j = 0;
+	    @:radioarray = @Html.Raw("f.add_"+_val[0]);
+	    @:for (i = 0; i < radioarray.length; i++)
+	    @:{
+		@:    if (radioarray[i].checked == true) j++;
+	    @:}
+	    @:if (!j)
+	    @:{
+		@:    alert('@_val[1]이(가) 선택되지 않았습니다.     ');
+		@:    radioarray[0].focus();
+		@:    return false;
+	    @:}
+        }
+
+        if(_val[2] == "radio") {
+	    @:j = 0;
+	    @:checkarray = document.getElementsByName("@Html.Raw("add_"+_val[0]+"[]")");
+	    @:for (i = 0; i < checkarray.length; i++)
+	    @:{
+		@:   if (checkarray[i].checked == true) j++;
+	    @:}
+	    @:if (!j)
+	    @:{
+		@:   alert('@_val[1]이(가) 선택되지 않았습니다.     ');
+		@:  checkarray[0].focus();
+		@:    return false;
+	    @:}
+        }
+    }
+
+    if(d_member["form_comp"] == "1" && comp == "1") {
+	@:if (f.comp_num_1.value == '')
+	@:{
+	@:	alert('사업자등록번호를 입력해 주세요.     ');
+	@:	f.comp_num_1.focus();
+	@:	return false;
+	@:}
+	@:if (f.comp_num_2.value == '')
+	@:{
+	@:	alert('사업자등록번호를 입력해 주세요.     ');
+	@:	f.comp_num_2.focus();
+	@:	return false;
+	@:}
+	@:if (f.comp_num_3.value == '')
+	@:{
+	@:	alert('사업자등록번호를 입력해 주세요.     ');
+	@:	f.comp_num_3.focus();
+	@:	return false;
+	@:}
+
+	@:if (f.comp_name.value == '')
+	@:{
+	@:	alert('회사명을 입력해 주세요.     ');
+	@:	f.comp_name.focus();
+    @:	return false;
+    @:}
+	@:if (f.comp_ceo.value == '')
+	@:{
+	@:  alert('대표자명을 입력해 주세요.     ');
+	@:	f.comp_ceo.focus();
+	@:	return false;
+	@:}
+	@:if (f.comp_upte.value == '')
+	@:{
+	@:	alert('업태를 입력해 주세요.     ');
+	@:	f.comp_upte.focus();
+	@:	return false;
+	@:}
+	@:if (f.comp_jongmok.value == '')
+	@:{
+	@:	alert('종목을 입력해 주세요.     ');
+	@:	f.comp_jongmok.focus();
+	@:  return false;
+	@:}
+	@:if (f.comp_tel_1.value == '')
+	@:{
+	@:	alert('대표전화번호를 입력해 주세요.');
+	@:	f.comp_tel_1.focus();
+	@:	return false;
+	@:}
+	@:if (f.comp_tel_2.value == '')
+	@:{
+	@:	alert('대표전화번호를 입력해 주세요.');
+	@:	f.comp_tel_2.focus();
+	@:	return false;
+	@:}
+
+	@:if (f.comp_addr2.value == '')
+	@:{
+	@:	alert('사업장주소를 입력해 주세요.');
+	@:	f.comp_addr2.focus();
+	@:	return false;
+	@:}
+
+    }
+}
+
+	return confirm('정말로 가입하시겠습니까?       ');
+}
+//]]>
+</script>
+
+

@@ -1,0 +1,244 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var my = PageData[1];
+    var _HM = PageData[2];
+    var _HP = PageData[3];
+    var system = PageData[4];
+    var _page = PageData[5];
+    var m = PageData[6];
+    var bid = PageData[7];
+    var _mod = PageData[8];
+    var referer = PageData[9];
+    var skin = PageData[10];
+    var _HS = PageData[11];
+    var s = PageData[12];
+    var c = PageData[13];
+    var p = PageData[14];
+    var r = PageData[15];
+    var front = PageData[16];
+    var _m = PageData[17];
+    //var _CA = PageData[18];
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var _menu = Request["_menu"];
+    var mod = Request["mod"];
+
+    dynamic _CA = new Dictionary<object, object>();
+
+    _CA.Add(0, "");
+    _CA.Add(1, "");
+    _CA.Add(2, ""); 
+
+    string g_main = "";
+    string _HM_mcode = "";    
+
+    g["m"] = m;
+
+    if (system != "" && system != null)
+    {
+        if ("[edit.page][edit.menu][edit.all][popup.image][popup.joint][popup.widget]".Contains(system))
+        {
+            if (my["admin"] != "1")
+            {
+                system = "nopage";
+            }
+        }
+
+        if (_menu != null && _menu != "" && _menu != "0")
+        {   // Navigation (menu)
+            _HM = _DB.getVar(_HM, AppState["table_s_menu"], "uid='" + _menu + "'");
+            _CA[0] = "id";
+            g["browtitle"] = _HS["name"] + " - " + _HM["name"];
+        }
+
+        if (_page != "0" && _page != "" && _page != null)
+        {   // Navigation (page)            
+            _HP = _DB.getVar(_HP, AppState["table_s_page"], "uid='" + _page + "'");
+            g["location"] = " &gt; <a href='?mod=" + _HP["id"] + "'>" + _HP["name"] + "</a>";
+            g["browtitle"] = _HS["name"] + " - " + _HP["name"];
+        }
+
+        g["dir_module_skin"] = g["dir_module"] + "\\pages\\";
+        g["url_module_skin"] = g["url_module"] + "/pages";
+        g["img_module_skin"] = g["url_module_skin"] + "/image";
+        g["dir_module_mode"] = g["dir_module_skin"] + system;
+        g["url_module_mode"] = g["url_module_skin"] + "/" + system;
+
+        g_main = g["dir_module_mode"] + ".cshtml";
+    }
+    else
+    {
+        if (_HM["uid"] != 0)
+        {
+            _HM_mcode = String.Format("{0:00000}", _HM["uid"]);
+
+            if (my["admin"] == "")
+            {
+                if (_HM["perm_l"] > my["level"] || ("_" + _HM["perm_g"]).Contains("[" + my["sosok"] + "]"))
+                {
+                    @_System.getLink("/?r=" + r + "&system=guide.perm&_menu=" + _HM["uid"], "", "", "")
+                    return;
+                }
+            }
+
+            if (_HM["menutype"] == "1")
+            {   // 모듈연결            
+                if (m == g["sys_module"])
+                {
+                    if (mod.IsEmpty() || mod == null || mod == "")
+                    {
+                        _HP = _DB.getVar(_HP, AppState["table_s_page"], "uid='" + _HS["startpage"] + "'");
+                    }
+                    else
+                    {
+                        _HP = _DB.getVar(_HP, AppState["table_s_page"], "id='" + mod + "'");
+                    }
+                    
+                    if (_HP["uid"] != 0)
+                    {
+                        _HM["layout"] = _HP["layout"];
+                    }
+                }
+                else 
+                {
+                    @_System.getLink("/?r=" + r + "&system=edit.menu&_menu=" + _HM["uid"] + "&notenable=Y", "", "", "")
+                    return;
+                }
+            }
+
+            else if (_HM["menutype"] == "2")
+            {   // 위젯
+                //RenderPage("./../../" + g["path_page"] + "menu\\" + String.Format("{0:00000}", _HM["uid"]) + ".widget.cshtml", g, _HS, _HP, _HM)        // widget 연결
+                g_main = g["path_core"] + "engine/widget.engine.cshtml";
+            }
+            else
+            {   // 소스
+                _HM_mcode = String.Format("{0:00000}", _HM["uid"]);
+
+                g["dir_module_skin"] = g["path_page"] + "menu\\";
+                g["url_module_skin"] = g["path_root"] + "/pages/menu";
+                g["img_module_skin"] = g["path_root"] + "/pages/image";
+                g["dir_module_mode"] = g["dir_module_skin"] + _HM_mcode;
+                g["url_module_mode"] = g["url_module_skin"] + "/" + _HM_mcode;
+
+                g_main = g["path_page"] + "menu\\" + _HM_mcode + ".cshtml";
+
+                if (g["mobile"] != "" && Session["pcmode"] != "Y")
+                {
+                    if (File.Exists(g["path_root_ps"] + g["path_page"] + "menu\\" + _HM_mcode + ".mobile.cshtml"))
+                    {
+                        g_main = g["path_page"] + "menu\\" + _HM_mcode + ".mobile.cshtml";
+                    }
+                }
+            }
+        }        
+
+        if (_HP["uid"] != 0)
+        {
+            if (my["admin"] == "")
+            {
+                if (_HP["perm_l"] > my["level"] || ("_" + _HP["perm_g"]).Contains("[" + my["sosok"] + "]"))
+                {
+                    @_System.getLink("/?r=" + r + "&system=guide.perm&_menu=" + _HP["uid"], "", "", "")
+                    return;
+                }
+            }
+
+            if (_HP["pagetype"] == "1")
+            {   // 모듈연결
+    			@_System.getLink("/?r=" + r + "&system=edit.page&_page=" + _HP["uid"] + "&_make=" + _HP["id"] + "&notenable=Y", "", "", "")
+                return;
+            }
+            else if (_HP["pagetype"] == "2")
+            {   // 위젯
+                //RenderPage("./../../" + g["path_page"] + String.Format("{0:00000}", _HP["id"]) + ".widget.cshtml", g, _HP, _HM)        // widget 연결                               
+                g_main = g["path_core"] + "engine/widget.engine.cshtml";
+            }
+            else
+            {   // 소스
+                
+                g["fileexist_path"] = g["path_root_ps"] + g["path_module"];
+
+                g["dir_module_skin"] = g["path_page"];
+                g["url_module_skin"] = g["path_root"] + "/pages";
+                g["img_module_skin"] = g["url_module_skin"] + "/image";
+                g["dir_module_mode"] = g["dir_module_skin"] + _HP["id"];
+                g["url_module_mode"] = g["url_module_skin"] + "/" + _HP["id"];
+
+                g_main = g["path_page"] + _HP["id"] + ".cshtml";
+
+                if (g["mobile"] != "" && Session["pcmode"] != "Y")
+                {
+                    if (File.Exists(g["path_root_ps"] + g["path_page"] + _HP["id"] + ".mobile.cshtml"))
+                    {
+                        g_main = g["path_page"] + _HP["id"] + ".mobile.cshtml";
+                    }
+                }
+            }
+
+            if (_HP["sosokmenu"] != null && _HP["sosokmenu"] != "")
+            {
+                for (int i = 0; i < _HP["sosokmenu"].Split('/').Length; i++)
+                {
+                    _CA[i + 1] = _HP["sosokmenu"].Split('/')[i];
+                }
+
+                g["loacation"] = "<a href='./'>HOME</a>";
+
+                int _tmp_count = _HP["sosokmenu"].Split('/').Length + 1;
+                string _tmp_split_id = "";
+                dynamic _tmp_location = null;
+
+                for (int _i = 0; _i < _tmp_count; _i++)
+                {
+                    _tmp_location = _DB.Get_module_data(AppState["table_s_menu"], "id", _CA[_i]);
+                    _tmp_split_id = _System.isEqual(_i, 0, "", "/") + _tmp_location["id"];
+                    g["location"] += " &gt; <a href=\"" + _System.RW("c=" + _tmp_split_id, g["r"], _HS) + "\">" + _tmp_location["name"] + "</a>";
+                }
+                g["location"] += " &gt; <a href=\"" + _System.RW("mod=" + _HP["id"], g["r"], _HS) + "\">\"" + _HP["name"] + "</a>";
+            }
+        }
+
+        if (!File.Exists(g["path_root_ps"] + g_main))
+        {
+            if (_HM["uid"] != 0)
+            {
+    			@_System.getLink("/?r=" + r + "&system=edit.menu&_menu=" + _HM["uid"] + "&notenable=Y", "", "", "")
+                return;
+            }
+            else
+            {
+                if (mod == "" || mod == null)
+                {
+                    mod = "main";
+                }                
+                @_System.getLink("/?r=" + r + "&system=edit.page&_page=" + _HP["uid"] + "&_make=" + mod, "", "", "")
+                return;
+            }
+        }
+    }
+
+    // creating session
+    Session["g"] = g;
+    Session["g_main"] = g_main;
+
+    if (system != "popup.window")
+    {
+        Session["referer"] = referer;
+    }
+}

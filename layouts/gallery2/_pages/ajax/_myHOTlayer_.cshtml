@@ -1,0 +1,123 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var g = PageData[0];
+    var my = PageData[1];
+    var s = PageData[2];
+    var r = PageData[3];
+    var _HS = PageData[4];
+    var d_layout = PageData[5];
+
+    var type = Request["type"];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    
+    int _i = 0;
+    
+    DateTime _date = date["totime"].AddDays(-30);    
+
+    Session["r"] = r;
+}
+
+[RESULT:
+
+<ul>
+@{
+    if(type == "1")
+    {
+        string _RCD = "SELECT top 15 * FROM " + AppState["table_bbsdata"] + " WHERE site=" + s + " AND display='1' AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "' ORDER BY hit DESC"  ;
+
+        foreach (var _R in _DB.Query(_RCD))
+        {    
+            _i++;
+    
+            int cmt_one_sum = _R["comment"] + _R["oneline"];
+            string hit_class = "";
+            string cmt_one_prn = "";
+            
+            if(_i < 4)
+            {
+                hit_class = "class='emp'";
+            }
+            
+            if(cmt_one_sum > 0) {
+                if(cmt_one_sum > 0) {
+                    cmt_one_prn = "<span>(" + cmt_one_sum + ")</span>";                          
+                }
+            }
+            
+            <li><i @Html.Raw(hit_class)>@_i</i><a href="@_System.getPostLink(s, _R, g["r"], _HS)">@_R["subject"]</a>@Html.Raw(cmt_one_prn)</li>
+        }        
+    }
+}
+</ul>
+
+<ul>
+@{
+    if(type == "2")
+    {
+        string _RCD = "SELECT top 15 * FROM " + AppState["table_bbsdata"] + " WHERE site=" + s + " AND display='1' AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "' ORDER BY comment DESC"  ;
+
+        foreach (var _R in _DB.Query(_RCD))
+        {    
+            _i++;
+    
+            int cmt_one_sum = _R["comment"] + _R["oneline"];
+            string hit_class = "";
+            string cmt_one_prn = "";
+            
+            if(_i < 4)
+            {
+                hit_class = "class='emp'";
+            }
+            
+            if(cmt_one_sum > 0) {
+                if(cmt_one_sum > 0) {
+                    cmt_one_prn = "<span>(" + cmt_one_sum + ")</span>";                          
+                }
+            }
+            
+            <li><i @Html.Raw(hit_class)>@_i</i><a href="@_System.getPostLink(s, _R, g["r"], _HS)">@_R["subject"]</a>@Html.Raw(cmt_one_prn)</li>
+        }        
+    }
+}
+</ul>
+
+<ul>
+@{
+    if(type == "3")
+    {
+        string _RCD = "SELECT top 15 * FROM " + AppState["table_bbsdata"] + " WHERE site=" + s + " AND display='1' AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "' ORDER BY score1 DESC"  ;
+
+        foreach (var _R in _DB.Query(_RCD))
+        {    
+            _i++;
+    
+            int cmt_one_sum = _R["comment"] + _R["oneline"];
+            string hit_class = "";
+            string cmt_one_prn = "";
+            
+            if(_i < 4)
+            {
+                hit_class = "class='emp'";
+            }
+            
+            if(cmt_one_sum > 0) {
+                if(cmt_one_sum > 0) {
+                    cmt_one_prn = "<span>(" + cmt_one_sum + ")</span>";                          
+                }
+            }
+            
+            <li><i @Html.Raw(hit_class)>@_i</i><a href="@_System.getPostLink(s, _R, g["r"], _HS)">@_R["subject"]</a>@Html.Raw(cmt_one_prn)</li>
+        }        
+    }
+}
+</ul>
+
+:RESULT]

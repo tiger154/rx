@@ -1,0 +1,99 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var oneline_members = Request["oneline_members"];    
+    var uid = Request["uid"];
+    var my_admin = Request["admin"];
+    var skin = Request["skin"];
+    var iframe = Request["iframe"];
+    var p = Request["p"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var pw = Request["pw"];
+     
+    string backUrl = "";
+
+    @_System.checkAdmin(my_admin, 0)
+
+    string[] OL_mem = oneline_members.Split(',');    
+
+    foreach(string val in OL_mem){
+       
+        dynamic R = _DB.GetDbData_M(AppState["table_s_oneline"].ToString(), "uid=" + val);       
+        //if (!R["uid"]) continue;
+        
+        dynamic C =  _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "uid=" + R["parent"]);
+  
+        string DELETE_OL_SQL = "DELETE FROM " + AppState["table_s_oneline"] + " WHERE uid= " + R["uid"];
+        string UPDATE_CM_SQL = "UPDATE " + AppState["table_s_comment"] + " SET oneline=oneline-1 WHERE uid = " + C["uid"];
+        string UPDATE_NUMINFO_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET oneline=oneline-1 WHERE date= '" + R["d_regis"].ToString("yyyyMMdd") + "' AND site="+R["site"];
+              
+        @_DB.Execute(DELETE_OL_SQL);
+        @_DB.Execute(UPDATE_CM_SQL);
+        @_DB.Execute(UPDATE_NUMINFO_SQL);       
+        
+        
+        
+        /* 이부분 미구현
+        if(R["point"] && R["mbruid"])
+        {
+           
+            string cutStr =  getStrCut(str_replace("&amp;", ' ', strip_tags(R["content"])),15,'');
+            
+            string INSERT_PT_SQL = "INSERT INTO " + AppState["talbe_s_point"] + "(my_mbruid,by_mbruid,price,content,d_regis) VALUES(" 
+                + R["mbruid"] + "','0','-" + R["point"]  + ")환원','" + date["totime"] +"'";
+            
+            string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"] + "SET point=point-" + R["point"] 
+                + VALUES(" + memberuid = " + R["mbruid"] + "','한줄의견삭제(" + cutStr + ")";
+            
+            @_DB.Execute(INSERT_PT_SQL);
+            @_DB.Execute(UPDATE_MBR_SQL);
+            
+        }
+        */
+        
+        /* 동기화 - getArrayString함수 미구현
+        string cynArr = getArrayString(C["cync"]);
+        string fdexp = cynArr["date"][2].Split(',');
+        if(fdexp[0] && fdexp[2] && cyncArr["data"][3]){
+            string UPDATE_CYN_SQL = "UPDATE " + cyncArr["data"][3] + " SET fdexp[2] = fdexp[2]-1 WHERE " + fdexp[0] = cyncArr["data"][1];
+            
+            @_DB.Execute(UPDATE_CYN_SQL);            
+        } 
+        */
+
+        
+        @_System.getLink("reload", "parent.", "", "");
+    
+    }
+}
+    

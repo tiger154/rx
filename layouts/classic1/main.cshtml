@@ -1,0 +1,305 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var _HS = PageData[0];
+    var my = PageData[1];
+    var _CA = PageData[2];
+    var s = PageData[3];
+    var d_layout = PageData[4];
+    var g = PageData[5];
+    var keyword = PageData[6];
+    var p = PageData[7];
+    var system = PageData[8];
+    var _m = PageData[9];
+    var c = PageData[10];
+    var m = PageData[11];
+    var _mod = PageData[12];
+    var _keyword = PageData[13];
+    var _HM = PageData[14];
+    var r = PageData[15];
+    var bid = PageData[16];
+    var _HP = PageData[17];
+    var date = PageData[18];
+    var referer = PageData[19];
+
+    var LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);
+    
+    string my_photo_prn = "0.gif";
+    
+    bool rewrite = false;    
+    
+
+    // cookie setting
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+    Cookie_svshop = Request.Cookies["id_save_Cookie"];
+    
+    string cookie_id = "";
+    string cookie_pw = "";
+
+    if (Cookie_svshop != null && Cookie_svshop.Value != null)
+    {
+        if (Cookie_svshop.Value.Contains("|"))
+        {
+            cookie_id = Cookie_svshop.Value.Split('|')[0];
+            cookie_pw = Cookie_svshop.Value.Split('|')[1];
+        }
+        else
+        {
+            cookie_id = Cookie_svshop.Value;
+        }
+    }
+    
+    //////////////////////////////////////////////////////////
+    ///// Top File Rendering
+    //////////////////////////////////////////////////////////
+    @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/top.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR)   
+
+    //////////////////////////////////////////////////////////
+    ///// Header Engine Start
+    //////////////////////////////////////////////////////////
+    @RenderPage("../../" + g["path_core"] + "engine/container_head.engine.cshtml", g, _HM, system, date, referer)
+}
+
+<div id="content">
+@if (d_layout["_is_ownmain"] == "1") {
+    @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/_main.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR)   
+
+    if(LAYOUT_ARR["begin"] == "0" || LAYOUT_ARR["begin"] == "") {
+        @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_cross/_begin.cshtml", g, my, r, s, _HP, _CA, _HS, d_layout, LAYOUT_ARR)           
+    }
+}
+
+@{    
+    if(d_layout["_is_content"] == "1")
+    {
+        //////////////////////////////////////////////////////////
+        ///// Main engine Start
+        //////////////////////////////////////////////////////////
+        @RenderPage("../../" + g["path_core"] + "engine/content.engine.cshtml", g, system, _m, c, m, p, _HS, my, d_layout, s, _keyword, _mod, r, bid, _HP, _HM, date, referer)
+    }
+}
+</div>
+
+<div class="snb">
+	<div class="mybox">
+		@if(my["id"] != "") {        // Member
+		<div class="login">
+			<div class="mbrinfo">
+                @if(my["photo"] != "") {
+                    my_photo_prn = my["photo"];
+                }
+				<div class="symbol"><a href="@g["s"]/?r=@r&mod=mypage&page=simbol"><img src="@g["s"]/_var/simbol/@my_photo_prn" alt="" /></a></div>
+				<div class="info">
+					<div class="name">
+						<div class="namel">@Html.Raw(my[_HS["nametype"]] + "님")</div>
+						<div class="namer">
+							@if(LAYOUT_ARR["sns_hide"] != "") {
+							    <a href="@_System.RW("mod=mypage", g["r"], _HS)"><img src="@g["img_layout"]/btn_config.gif" alt="" /></a>
+							}
+                            else {
+							    <a href="#." onclick="getLayerBox('@g["s"]/?r=@r&m=social&page=account&iframe=Y','소셜계정',600,650,event,true,'l');"><img src="@g["img_layout"]/btn_config1.gif" alt="" /></a>
+							}
+                            
+							<a href="@g["s"]/?r=@r&a=logout"><img src="@g["img_layout"]/btn_logout.gif" alt="" /></a>
+						</div>
+						<div class="clear"></div>
+					</div>
+					<div class="score"><a href="@g["s"]/?r=@r&mod=mypage&page=point">포인트 @Html.Raw(string.Format("{0:#,0}", Convert.ToInt32(my["point"])) + "P")</a> / 가입일 @my["d_regis"].ToString("yyyy.MM.dd")</div>
+				</div>
+				<div class="clear"></div>
+			</div>
+			<div class="tabbox">
+				<div class="tp vline on" onclick="tabCheck_s(1,this,'_myMSGlayer_');">알림</div>
+				<div class="tp vline" onclick="tabCheck_s(2,this,'_myMSGlayer_');">메세지
+                @{
+                    int _MSGNUM = _DB.GetDbData_Count(AppState["table_s_paper"].ToString(), "my_mbruid=" + my["uid"] + " AND d_read=''");
+                    
+                    if(_MSGNUM > 0) {
+                        <i>@Html.Raw("(" + _MSGNUM + ")")</i>
+                    }
+                }
+                </div>
+				<div class="tp" onclick="tabCheck_s(3,this,'_myMSGlayer_');">팔로워</div>
+				<div class="clear"></div>
+			</div>
+
+            <div id="_myMSGlayer_" class="lbody scrollbar01">
+				<ul>
+                @{
+                    DateTime _date = date["totime"].AddDays(-30);
+
+                    string _RCD = _System.GetQuery(AppState["table_bbsdata"].ToString(), "", "mbruid=" + my["uid"] + " AND site=" + s + " AND comment > 0 AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "'", "d_comment", "DESC", 0, "5");
+                    int _i = 0;
+                    
+                    foreach (var _R in _DB.Query(_RCD)) {
+                        _i++;
+                        string oneline_num = "";
+                        
+                        var _C = _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "parent='bbs" + _R["uid"] + "'");                        
+
+                        <li>
+                        <a href="@_System.getPostLink(s, _R, g["r"], _HS)">@_R["subject"]</a>
+                    
+                        @if(_R["comment"] > 0) {
+                            <span class="comment">
+                                
+                            @if(_R["oneline"] > 0) {
+                                oneline_num = "+" + _R["oneline"].ToString();
+                            }
+                            @Html.Raw("(" + _R["comment"] + oneline_num + ")")
+                            
+                           </span>
+                        }
+                        
+                        @if(_System.getNew(_R["d_regis"].ToString(), 24)) {
+                            <span class="new">new</span>
+                        }
+                        
+                        <br />
+                        <span class="reply">ㄴ@(_C[_HS["nametype"]])님이 @_R["d_last"].ToString("yyyy.MM.dd") 일에 남김</span>
+                        </li>
+                    }
+                }
+                </ul>
+
+                @if(_i == 0) {
+                    <div class="none">
+                        <span>내 알림이 없습니다.</span>
+                        <p>내가 작성한 포스트,댓글의<br />반응을 바로바로 알려드려요</p>
+                    </div>                    
+                }
+			</div>
+		</div>
+        
+		}
+        else {      // Guest
+		
+        <div class="logout">
+			<div class="tabbox">
+				@if(LAYOUT_ARR["sns_hide"] != "") {
+                    <div class="np">회원 로그인</div>
+				}
+                else {
+                    <div class="tp vline on" onclick="tabCheck(1,this);">일반 로그인</div>
+                    <div class="tp" onclick="tabCheck(2,this);">소셜 로그인</div>
+                    <div class="clear"></div>
+                }
+			</div>
+			<div id="nlogLayer" class="nlog">
+				<form name="LayoutLogForm" action="@g["s"]/" method="post" onsubmit="return layoutLogCheck(this);">
+				<input type="hidden" name="r" value="@r" />
+				<input type="hidden" name="a" value="login" />
+				<div class="i1">
+				<input type="text" name="id" value="@cookie_id" class="input" title="아이디" />
+				<input type="checkbox" name="idpwsave" value="checked" class="checkbox" onclick="layoutRMBpw(this);" @_System.getChkStr(Cookie_svshop != null && Cookie_svshop.Value != null, true) />아이디/비번 기억
+				<div class="clear"></div>
+				</div>
+				<div class="i1">
+				<input type="password" name="pw" value="@cookie_pw" class="input" title="패스워드" />
+				<input type="image" src="@g["img_layout"]/btn_login.gif" class="submit" />
+				<div class="clear"></div>
+				</div>
+				</form>
+				<div class="rbtm">
+					<a href="@_System.RW("mod=join", g["r"], _HS)" class="b">회원가입</a> <span>|</span>
+					<a href="@g["s"]/?r=@r&mod=login&page=idpwsearch" class="ipc">아이디/패스워드찾기</a>
+				</div>
+			</div>
+			<div id="slogLayer" class="slog hide">
+				<div class="icon">
+				@if(LAYOUT_ARR["sns_t"] != "") {
+                    <img src="@g["img_core"]/_public/sns_t2.gif" alt="" title="트위터" onclick="snsCheck('t','','connect');" />
+                }
+				@if(LAYOUT_ARR["sns_f"] != "") {
+                    <img src="@g["img_core"]/_public/sns_f2.gif" alt="" title="페이스북" onclick="snsCheck('f','','connect');" />
+                }
+				@if(LAYOUT_ARR["sns_m"] != "") {
+                    <img src="@g["img_core"]/_public/sns_m2.gif" alt="" title="미투데이" onclick="snsCheck('m','','connect');" />
+                }
+				@if(LAYOUT_ARR["sns_y"] != "") {
+                    <img src="@g["img_core"]/_public/sns_y2.gif" alt="" title="요즘" onclick="snsCheck('y','','connect');" />
+                }
+				</div>
+				<div class="guide">
+					소셜네트워크 서비스를 통해서 로그인하시면 별도의 로그인 절차없이 회원서비스를 이용하실 수 있습니다.
+				</div>
+			</div>
+		</div>
+        }
+	</div>
+
+	
+	@if(LAYOUT_ARR["adtype"] != "") {
+        <div class="banner">
+        @if(LAYOUT_ARR["adtype"] == "1") {
+            <a href="@LAYOUT_ARR["ad_imglink"]" target="@LAYOUT_ARR["ad_imgtarget"]"><img src="@g["url_layout"]/_var/@LAYOUT_ARR["ad_img"]" width="240" alt="" /></a>
+        }
+        @if(LAYOUT_ARR["adtype"] == "2") {
+            <embed src="@g["url_layout"]/_var/@LAYOUT_ARR["ad_swf"]" width="240"></embed>
+        }
+        @if(LAYOUT_ARR["adtype"] == "3") {
+            @RenderPage("../../" + g["path_layout"] + d_layout["dir"] + "/_var/_ad.cshtml");
+        }
+        </div>
+    }
+    
+	<div class="hotbox">
+		<div class="tabbox">
+			<div class="tp vline on" onclick="tabCheck_s(1,this,'_myHOTlayer_');">많이 본 글</div>
+			<div class="tp vline" onclick="tabCheck_s(2,this,'_myHOTlayer_');">댓글 많은 글</div>
+			<div class="tp" onclick="tabCheck_s(3,this,'_myHOTlayer_');">추천글</div>
+			<div class="clear"></div>
+		</div>
+		<div id="_myHOTlayer_" class="hbody">
+			<ul>
+            @{
+                DateTime _date1 = date["totime"].AddDays(-30);
+
+                string _RCD1 = "SELECT top 15 * FROM " + AppState["table_bbsdata"] + " WHERE site=" + s + " AND display='1' AND d_regis > '" + _date1.ToString("yyyy-MM-dd HH:mm:ss") + "' ORDER BY hit DESC"  ;
+                int _i1 = 0;
+                    
+                foreach (var _R1 in _DB.Query(_RCD1)) {
+                    _i1++;
+                        
+                    int cmt_one_sum = _R1["comment"] + _R1["oneline"];
+                    string hit_class = "";
+                    string cmt_one_prn = "";
+                        
+                    if(_i1 < 4) {
+                        hit_class = "class='emp'";                            
+                    }
+                    if(cmt_one_sum > 0) {
+                        cmt_one_prn = "<span>(" + cmt_one_sum + ")</span>";                          
+                    }
+                      
+                    <li><i @Html.Raw(hit_class)>@_i1</i><a href="@_System.getPostLink(s, _R1, g["r"], _HS)">@_R1["subject"]</a>@Html.Raw(cmt_one_prn)</li>
+                }
+            }                
+			</ul>
+		</div>
+	</div>
+</div>
+
+<div class="clear"></div>
+
+@{
+    //////////////////////////////////////////////////////////
+    ///// Footer engine Start
+    //////////////////////////////////////////////////////////
+    @RenderPage("../../" + g["path_core"] + "engine/container_foot.engine.cshtml", g, _HM, system)
+}
+
+</div>
+
+@{
+    //////////////////////////////////////////////////////////
+    ///// bottom File Rendering
+    //////////////////////////////////////////////////////////
+    @RenderPage("../../layouts/" + d_layout["dir"] + "/_cross/bottom.cshtml", g, r, _HS)
+}

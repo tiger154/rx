@@ -1,0 +1,194 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////    
+    var uid = Request["uid"];
+    var skin = Request["skin"];
+    var iframe = Request["iframe"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var history = Request["history"];
+
+    dynamic d_comment = _DB.Get_code("comment");
+    dynamic d_upload = _DB.Get_code("upload");    
+    
+    if (my["uid"] == 0)
+    {
+        @_System.getLink("", "", "로그인해 주세요.", "")
+        return;
+    }
+
+    dynamic R = _DB.Get_module_data(AppState["table_s_comment"], "uid", uid);
+
+    if (R["uid"] == 0)
+    {
+        @_System.getLink("", "", "존재하지 않는 댓글입니다.", "") 
+        return;
+    }
+
+    if (d_comment["singo_del"] == "1" && d_comment["singo_del_name"] != "" && Convert.ToInt32(d_comment["singo_del_name"]) <= R["singo"])
+    {
+        if (d_comment["singo_del_act"] == "1")
+        {
+            /*
+            //동기화
+            $cyncArr = getArrayString($R['cync']);
+            $fdexp = explode(',',$cyncArr['data'][2]);
+            if ($fdexp[0]&&$fdexp[1]&&$cyncArr['data'][3]) getDbUpdate($cyncArr['data'][3],$fdexp[1].'='.$fdexp[1].'-1',$fdexp[0].'='.$cyncArr['data'][1]);
+            if ($fdexp[0]&&$fdexp[2]&&$cyncArr['data'][3]) getDbUpdate($cyncArr['data'][3],$fdexp[2].'='.$fdexp[2].'-'.$R['oneline'],$fdexp[0].'='.$cyncArr['data'][1]);
+            */
+
+
+            //첨부파일삭제
+            if (R["upload"] != "")
+            {
+                string[] UPFILES = _System.getArrayString(R["upload"]);
+
+                foreach (string _val in UPFILES)
+                {
+                    dynamic U = _DB.Get_module_data(AppState["table_s_upload"], "uid", _val);
+
+                    if (U["uid"] != 0)
+                    {
+                        string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET upload=upload-1 WHERE date='" + date["today"] + "' AND site=" + U["site"];
+                        string DELETE_UP_SQL = "DELETE " + AppState["table_s_upload"] + " WHERE uid=" + U["uid"];
+
+                        @_DB.Execute(UPDATE_NUM_SQL);
+                        @_DB.Execute(DELETE_UP_SQL);
+
+                        /*
+                        if (U["url"] == d_upload["ftp_urlpath"])
+                        {
+                            $FTP_CONNECT = ftp_connect($d['upload']['ftp_host'],$d['upload']['ftp_port']); 
+                            $FTP_CRESULT = ftp_login($FTP_CONNECT,$d['upload']['ftp_user'],$d['upload']['ftp_pass']); 
+                            if (!$FTP_CONNECT) getLink('','','FTP서버 연결에 문제가 발생했습니다.','');
+                            if (!$FTP_CRESULT) getLink('','','FTP서버 아이디나 패스워드가 일치하지 않습니다.','');
+
+                            ftp_delete($FTP_CONNECT,$d['upload']['ftp_folder'].$U['folder'].'/'.$U['tmpname']);
+                            if($U['type']==2) ftp_delete($FTP_CONNECT,$d['upload']['ftp_folder'].$U['folder'].'/'.$U['thumbname']);
+                            ftp_close($FTP_CONNECT);
+                            
+                        }*/
+                        //else 
+                        //{
+                        File.Delete(g["path_root_ps"] + g["path_file"] + U["folder"] + "\\" + U["tmpname"]);
+                        if (U["type"] == 2)
+                        {
+                            File.Delete(g["path_root_ps"] + g["path_file"] + U["folder"] + "\\" + U["thumbname"]);
+                        }
+                        //}    
+                    }
+                }
+            }
+
+
+            //한줄의견삭제            
+            if (R["oneline"] > 0)
+            {
+                string ONELINE_sql = "SELECT * FROM " + AppState["table_s_oneline"] + " WHERE parent=" + R["uid"];
+
+                foreach (var _O in _DB.Query(ONELINE_sql))
+                {
+                    string UPDATE_NUM_SQL = "UPDATE " + AppState["table_s_numinfo"] + " SET oneline=oneline-1 WHERE date='" + date["today"] + "' AND site=" + _O["site"];
+                    @_DB.Execute(UPDATE_NUM_SQL);
+
+                    if (_O["point"] > 0 && _O["mbruid"] != 0)
+                    {                        
+                        string INSERT_PT_SQL = "INSERT INTO " + AppState["table_s_point"] + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES ('" +
+                            _O["mbruid"] + "','0','-" + _O["point"] + "','한줄의견삭제(" + _System.getStrCut(_System.Strip_tags(_O["content"]).Replace("&amp;", " "), 15, "") + ")환원','" + date["insert"] + "'";
+                        string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET point=point-" + _O["point"] + " WHERE memberuid=" + _O["mbruid"];
+
+                        @_DB.Execute(INSERT_PT_SQL);
+                        @_DB.Execute(UPDATE_MBR_SQL);
+                    }
+
+                    string DELETE_OL_SQL = "DELETE " + AppState["table_s_oneline"] + " WHERE parent=" + R["uid"];
+                    @_DB.Execute(DELETE_OL_SQL);
+                }
+            }
+
+            string UPDATE_NUM_SQL2 = "UPDATE " + AppState["table_s_numinfo"] + " SET comment=comment-1 WHERE date='" + date["today"] + "' AND site=" + R["site"];
+            string DELETE_CMT_SQL = "DELETE " + AppState["table_s_comment"] + " WHERE uid=" + R["uid"];
+
+            @_DB.Execute(UPDATE_NUM_SQL2);
+            @_DB.Execute(DELETE_CMT_SQL);
+
+
+            if (R["point"] > 0 && R["mbruid"] != 0)
+            {
+                string INSERT_PT_SQL = "INSERT INTO " + AppState["table_s_point"] + " (my_mbruid,by_mbruid,price,content,d_regis) VALUES ('" +
+                    R["mbruid"] + "','0','-" + R["point"] + "','댓글삭제(" + _System.getStrCut(_System.Strip_tags(R["subject"]).Replace("&amp;", " "), 15, "") + ")환원','" + date["insert"] + "'";
+                string UPDATE_MBR_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET point=point-" + R["point"] + " WHERE memberuid=" + R["mbruid"];
+
+                @_DB.Execute(INSERT_PT_SQL);
+                @_DB.Execute(UPDATE_MBR_SQL);
+            }
+
+            string backUrl = "./?";
+
+            if (_HS["usescode"] != 1)
+            {
+                backUrl += "r=" + r + "&";
+            }
+
+            if (c != null && c != "")
+            {
+                backUrl += "c=" + c;
+            }
+            else
+            {
+                backUrl += "m=" + m;
+            }
+
+            backUrl += _System.getLinkFilter("skin|iframe|sort|orderby|recnum|where|keyword", skin + "|" + iframe + "|" + sort + "|" + orderby + "|" + recnum + "|" + where + "|" + keyword);   
+            
+            @_System.getLink(backUrl, "parent.", "신고건수 누적으로 삭제처리 되었습니다.", history)
+            return;
+        }
+    }
+    else
+    {
+        if (Session["module_" + m + "_singo"] == null || !Session["module_" + m + "_singo"].ToString().Contains("[" + R["uid"] + "]"))
+        {
+            string UPDATE_CMT_SQL = "UPDATE " + AppState["table_s_comment"] + " SET singo=singo+1 WHERE uid=" + R["uid"];
+            @_DB.Execute(UPDATE_CMT_SQL);
+
+            Session["module_" + m + "_singo"] += "[" + R["uid"] + "]";
+            @_System.getLink("", "", "신고처리 되었습니다.", "")
+            return;
+        }
+        else
+        {
+            @_System.getLink("", "", "이미 신고하신 댓글입니다.", "")
+            return;
+        }
+    }
+}

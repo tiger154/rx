@@ -1,0 +1,167 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var typeset = new Dictionary<string, string>();
+    
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];    
+    
+    string frame_name = "_action_frame_" + m;
+
+    int TOT1 = 0;
+    int TOT2 = 0;
+    int TOT3 = 0;
+    
+    string SITES_sql = "SELECT * FROM " + AppState["table_s_site"] + " ORDER BY gid asc";
+    int SITE_cnt = _DB.GetDbData_Count(AppState["table_s_site"], "");        
+    
+    string year = Request["year"] != null && Request["year"] != "" ? Request["year"] : date["year"];
+    string month = Request["month"] != null && Request["month"] != "" ? Request["month"] : date["month"];
+    string day = Request["day"] != null && Request["day"] != "" ? Request["day"] : date["day"];
+    
+    string accountQue = Request["account"] != null && Request["account"] != "" ? "site=" + Request["account"] + " and " : "";      
+    
+}
+
+<form name="procForm" action="@g["s"]/" method="get">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="m" value="@m" />
+<input type="hidden" name="module" value="@module" />
+<input type="hidden" name="front" value="@Request["front"]" />
+
+<div class="sbox">
+	<select name="account" class="account" onchange="this.form.submit();">
+	<option value="">&nbsp;+ 전체사이트</option>
+	<option value="">---------------------------</option>
+    @foreach (var S in _DB.Query(SITES_sql))
+    {
+        <option value="@S["uid"]" @_System.getSltStr(Request["account"], S["uid"])>ㆍ@(S["name"])</option>
+    }
+
+    @if (SITE_cnt == 0)
+    {
+        <option value="">등록된 사이트가 없습니다.</option>
+    }
+	</select>
+	- 
+	<select name="year" onchange="this.form.submit();">
+    @for (int i = Convert.ToInt32(date["year"]); i > 2009; i--)
+    {
+        <option value="@i" @_System.getSltStr(year, i)>@(i)년</option>
+    }
+	</select>
+
+	<select name="month" onchange="this.form.submit();">
+    @for (int i = 1; i < 13; i++)
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(month, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)월</option>                                                                           
+    }
+	<option value="-1" @_System.getSltStr(month, -1) class="mall">전체</option>
+	</select>
+
+	<input type="button" value="@date["year"]년" class="btngray" onclick="this.form.year.value='@date["year"]',this.form.month.value='-1',this.form.submit();" />
+	<input type="button" value="@date["month"]월" class="btngray" onclick="this.form.year.value='@date["year"]',this.form.month.value='@date["month"]',this.form.submit();" />
+
+</div>
+</form>
+
+<table cellspacing="1">
+	<colgroup> 
+	<col width="65"> 
+	<col width="100"> 
+	<col width="100"> 
+	<col width="100"> 
+	<col width="100"> 
+	<col width="100"> 
+	<col>
+	</colgroup> 
+	<thead>
+	<tr class="sbjtr">
+		<th scope="col">날짜/구분</th>
+		<th scope="col">순방문</th>
+		<th scope="col">페이지뷰</th>
+		<th scope="col">평균뷰</th>
+		<th scope="col">모바일접속</th>
+		<th scope="col">비율</th>
+		<th scope="col"></th>
+	</tr>
+	</thead>
+	
+	<tbody>
+    @if (Convert.ToInt32(month) > 0) 
+    {
+        DateTime curDate = new DateTime(Convert.ToInt32(year), Convert.ToInt32(month), 1);
+        int numofmonth = Convert.ToInt32((curDate.AddMonths(1).AddDays(-1)).Day.ToString());
+
+        for (int i = 1; i <= numofmonth; i++) 
+        {
+            dynamic DayOf1 = _DB.getDbData(AppState["table_s_counter"], accountQue + "date='" + year + month + String.Format("{0:00}", i) + "'", "*");
+            int DayOf2 = _DB.GetDbData_Count(AppState["table_s_browser"], accountQue + "date='" + year + month + String.Format("{0:00}", i) + "'");            
+
+            TOT1 += (DayOf1 != null ? DayOf1["hit"] : 0);
+            TOT2 += (DayOf1 != null ? DayOf1["page"] : 0);
+            TOT3 += DayOf2;
+            
+            <tr class="looptr">
+		    <td class="datetd">@month/@String.Format("{0:00}", i)</td>
+  		    <td class="sumtd1">@(DayOf1["hit"] != 0 ? string.Format("{0:#,0}", DayOf1["hit"]) : "")</td>
+		    <td class="sumtd1">@(DayOf1["page"] != 0 ? string.Format("{0:#,0}", DayOf1["page"]) : "")</td>
+		    <td class="sumtd1">@(DayOf1["hit"] != 0 ? string.Format("{0:#,0}", Convert.ToInt32(DayOf1["page"] / DayOf1["hit"])) : "")</td>
+		    <td class="sumtd2">@(DayOf2 != 0 ? DayOf2.ToString() : "")</td>
+		    <td class="sumtd2">@(DayOf2 != 0 ? (DayOf2 / DayOf1["hit"] * 100).ToString() + "%" : "")</td>  
+		    <td></td>
+	        </tr>
+        }
+    }
+    else
+    {
+        for (int i = 1; i < 13; i++)
+        {
+            dynamic DayOf1 = _DB.QuerySingle("SELECT SUM(hit),SUM(page) FROM " + AppState["table_s_counter"] + " WHERE date like '" + year + String.Format("{0:00}", i) + "%'");
+            int DayOf2 = _DB.GetDbData_Count(AppState["table_s_browser"], accountQue + "date like '" + year + String.Format("{0:00}", i) + "%' and browser='Mobile'");
+
+            TOT1 += (DayOf1 != null ? DayOf1[0] : 0);
+            TOT2 += (DayOf1 != null ? DayOf1[1] : 0);
+            TOT3 += DayOf2;           
+            
+            <tr class="looptr">
+		    <td class="datetd hand" onclick="document.procForm.month.value='@String.Format("{0:00}", i)';document.procForm.submit();">@year / @String.Format("{0:00}", i)</td>
+   		    <td class="sumtd1">@(DayOf1[0] != 0 ? string.Format("{0:#,0}", DayOf1[0]) : "")</td>
+		    <td class="sumtd1">@(DayOf1[1] != 0 ? string.Format("{0:#,0}", DayOf1[1]) : "")</td>
+		    <td class="sumtd1">@(DayOf1[0] != 0 ? string.Format("{0:#,0}", Convert.ToInt32(DayOf1[1] / DayOf1[0])) : "")</td>
+		    <td class="sumtd2">@(DayOf2 != 0 ? DayOf2.ToString() : "")</td>
+		    <td class="sumtd2">@(DayOf2 != 0 ? (DayOf2 / DayOf1[0] * 100).ToString() + "%" : "")</td>
+            <td></td>
+            </tr>
+        }
+    }
+
+	<tr class="sumtr">
+		<td class="datetd"><b>합 계</b></td>
+		<td class="sumtd1">@(TOT1 != 0 ? string.Format("{0:#,0}", TOT1) : "")</td>
+		<td class="sumtd1">@(TOT2 != 0 ? string.Format("{0:#,0}", TOT2) : "")</td>
+		<td class="sumtd1">@(TOT1 != 0 ? string.Format("{0:#,0}", Convert.ToInt32(TOT2 / TOT1)) : "")</td>
+		<td class="sumtd2">@(TOT3 != 0 ? TOT3.ToString() : "")</td>
+        <td class="sumtd2">@(TOT3 != 0 ? (TOT3 / TOT1 * 100).ToString() + "%" : "")</td>
+		<td></td>
+	</tr>
+	</tbody>
+</table>

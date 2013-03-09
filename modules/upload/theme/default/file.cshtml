@@ -1,0 +1,257 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonAh Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    var g = PageData[0];    
+    var m = PageData[3];
+    var my = PageData[6];
+    
+    string mod = g["mod"];
+    string r = Request["r"];
+    string gparam = Request["gparam"];
+    string PHOTOS = g["PHOTOS"];    
+    string cupload = "Y";       // default upload = classic
+
+    decimal limit_size = Convert.ToDecimal(g["limit_size"]);    
+
+    int limit_num = Convert.ToInt32(g["limit_num"]);    
+    int SS = Convert.ToInt32(g["SS"]);
+    int N = Convert.ToInt32(g["N"]);
+ 
+    char[] delimiter = {'|'};
+    string[] gparamExp = gparam.Split(delimiter);    
+}
+
+<div id="filebox">
+	<div class="header">
+		<div class="xl">
+			<img src="@g["img_core"]/_public/ico_rx.png" class="logo" alt="kimsQ-Rx" />
+		</div>
+        
+		<div class="xr">
+		    @if(cupload != null && cupload != "") {
+			    <div class="cupload">
+			    <form name="cform" action="@g["s"]/" method="post" enctype="multipart/form-data" onsubmit="return upCheck(this);">
+                <input type="hidden" name="r" value="@r" />
+			    <input type="hidden" name="m" value="@m" />
+			    <input type="hidden" name="a" value="upload" />
+			    <input type="hidden" name="sess_Code" value="@Html.Raw(Session["upsescode"]+"_"+my["uid"])" />
+			    <input type="hidden" name="saveDir" value="@g["path_file"]" />
+			    <input type="hidden" name="upType" value="normal" />
+			    <input type="hidden" name="mod" value="@mod" />
+			    <input type="hidden" name="gparam" value="@gparam" />
+			    <input type="hidden" name="cupload" value="@cupload" />
+			    <input type="file" name="Filedata" class="file" />
+			    <input type="submit" value="첨부" class="btngray" />
+			    <input type="button" value="취소" class="btngray" onclick="goHref('?r=@r&m=@m&mod=@mod&gparam=@gparam');" />
+			    </form>
+			    </div>
+            }
+		</div>
+		<div class="clear"></div>
+	</div>
+
+	<div class="bar">
+		<div class="xl">
+			<img src="@g["img_module_skin"]/ico_drag.gif" alt="" />
+			<span class="dragstr">마우스로 드래그하면 순서를 변경할 수 있습니다.</span> 
+		</div>
+	</div>
+	<div class="body">
+	
+		<div class="fbox">
+			<div class="title">
+				<span class="info">
+				용량 : <span class="b">@_System.getSizeFormat(SS)</span> / @_System.getSizeFormat(limit_size) 
+				개수 : <span class="b">@Html.Raw(@N+"개")</span> / @Html.Raw(@limit_num+"개")
+				</span>
+			</div>
+			<div class="ibox scrollbar01">
+                
+			@if (N > 0) {
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/core.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/events.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/css.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/coordinates.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/drag.js"></script>
+                <script type="text/javascript" src="@g["url_root"]/_core/opensrc/tool-man/dragsort.js"></script>
+                    
+                <script type="text/javascript">
+                //<![CDATA[
+                var dragsort = ToolMan.dragsort();
+                
+                function slideshowOpen() {
+                    dragsort.makeListSortable(getId("fileorder"));
+                }
+                
+                window.onload = slideshowOpen;
+                //]]>
+                </script>
+
+                <ul id="fileorder">
+                @{
+                    foreach (var val in _DB.Query(PHOTOS)) {
+                       string file_ext = _System.getExt(val["name"]);
+                        string small_icon = "unknown.gif";
+                    
+                        if (File.Exists(g["path_root_ps"] + "_core\\image\\file\\small\\" + file_ext + ".gif") == true) {
+                            small_icon = file_ext + ".gif";
+                        }
+                   
+                        <li>
+                            <input type="checkbox" name="filemembers" value="@val["uid"]" checked="checked" />
+                            <img src="@g["img_core"]/file/small/@small_icon" alt="" />
+                            
+                            @val["name"]<span>(@_System.getSizeFormat(val["size"]))</span>
+                        </li>                     
+                    }
+                }
+	    		</ul>
+            }
+	
+			</div>
+		</div>
+	</div>
+
+    <div class="footer">
+			<img src="@g["img_module_skin"]/btn_regis.gif" alt="등록" class="hand" onclick="insertFiles();" />
+			<img src="@g["img_module_skin"]/btn_cancel.gif" alt="취소" class="hand" onclick="closeFile();" />
+	</div>
+
+</div>
+
+<div id="progress">
+	
+	<table>
+		<tr>
+		<td class="td1">전체크기 : </td>
+		<td class="td2"><span id="totalsize"></span></td>
+		<td class="td3"></td>
+		</tr>
+		<tr>
+		<td class="td1">파일갯수 : </td>
+		<td class="td2"><span id="totalnum">0</span>개</td>
+		<td class="td3"></td>
+		</tr>
+		<tr>
+		<td class="td1">남은파일 : </td>
+		<td class="td2"><span id="remainnum">0</span>개</td>
+		<td class="td3"></td>
+		</tr>
+		<tr>
+		<td class="td1">진행파일 : </td>
+		<td class="td2"><span id="filename"></span></td>
+		<td class="td3"></td>
+		</tr>
+		<tr>
+		<td class="td1">전송상태 : </td>
+		<td class="td2"><span class="bggrap"><span id="filegrap" class="grap"></span></span></td>
+		<td class="td3">(<span id="filepers">0%</span>)</td>
+		</tr>
+	</table>
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function upCheck(f)
+{
+	@if(limit_num < N+1 || limit_size <= SS) {
+    	@Html.Raw("alert('더 이상 첨부할 수 없습니다.');\n");
+	    @Html.Raw("return false;\n");
+    }
+   
+	if (f.Filedata.value == '') {
+		alert('첨부할 파일을 선택해 주세요.');
+		f.Filedata.focus();
+		return false;
+	}
+    
+	var extarr = f.Filedata.value.split('.');
+	var filext = extarr[extarr.length-1].toLowerCase();
+	var notext = '[html][php3][inc][cgi][pl][jsp]';
+	
+	if (filext == '') {
+		alert('파일확장자가 없습니다.');
+		return false;
+	}
+	if (notext.indexOf(filext) != -1) {
+		alert('php,cgi,jsp 파일은 등록할 수 없습니다.    ');
+		f.Filedata.focus();
+		return false;
+	}
+
+	return true;
+}
+function filesAlldelete(n,m) {
+	if (n == '0') {
+		alert('첨부된 파일이 없습니다.    ');
+		return false;
+	}
+	if (confirm('정말로 모두 삭제하시겠습니까?   ')) {
+		@Html.Raw("frames._action_frame_"+m+".location.href = '?r=" + r + "&m="+m+"&a=files_delete&dtype=file';\n");
+	}
+}
+
+function insertFiles() {
+    var l = document.getElementsByName('filemembers');
+    var n = l.length;
+    var i;
+	var j = 0;
+	var upfiles = '';
+
+	for	(i = 0; i < n; i++) {
+		if (l[i].checked == true) {
+			j++;
+			upfiles += '['+l[i].value+']';
+		}
+	}
+	if (!j) {
+		alert('첨부된 파일이 없습니다.     ');
+		return false;
+	}
+
+    @{
+        if(gparamExp[0] != null) {
+            @Html.Raw("if(opener.getId('"+gparamExp[0]+"'))\n");
+            @Html.Raw("{\n");
+            @Html.Raw("opener.getId('"+gparamExp[0]+"').value = opener.getId('"+gparamExp[0]+"').value + upfiles;\n");
+            @Html.Raw("}\n");
+        }
+    }
+    
+    @{
+        if(gparamExp[1] != null) {
+            @Html.Raw("if(opener.getId('"+gparamExp[1]+"'))\n");
+            @Html.Raw("{\n");
+            @Html.Raw("opener.frames."+gparamExp[1]+".location.href = opener.frames."+gparamExp[1]+".location.href + upfiles;\n");
+            @Html.Raw("}\n");
+        }
+    }
+    
+	@Html.Raw("frames._action_frame_"+m+".location.href = '?r=" + r + "&m="+m+"&a=sess_delete';\n");
+}
+
+function closeFile() {
+	@Html.Raw("frames._action_frame_"+m+".location.href = '?r=" + r + "&m="+m+"&a=files_delete&dtype=photo&close=Y';\n");
+}
+
+if (!opener) {
+	location.href = './';
+}
+else {
+	document.title = '파일첨부';
+	top.resizeTo(470,410);
+}
+//]]>
+</script>
+
+                
+                

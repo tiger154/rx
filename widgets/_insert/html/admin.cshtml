@@ -1,0 +1,124 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    dynamic _HS = PageData[1];
+    var wdgvar = PageData[2];
+
+    string swidget = PageData[3];
+    dynamic g = PageData[0];    
+
+    //string swidget = Request["swidget"]; 
+    string r = Request["r"];
+    string option = Request["option"];
+    string isWcode = Request["isWcode"];
+    string dropfield = Request["dropfield"];
+
+    var date = _System.GetVDate(_HS["timecal"]);
+
+    if (!wdgvar.ContainsKey("savename"))
+    {
+        wdgvar.Add("savename", "");
+    }
+}
+
+
+
+<div id="mjointbox">
+
+	<div class="title">
+		이 위젯(<span class="b">@_System.getFolderName(g["path_root_ps"] + g["path_widget"] + swidget, "name.txt")</span>)을 추가하시겠습니까?
+	</div>
+
+    @if (isWcode == "Y")
+    {
+	    <div class="none">
+	    <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+	    이 위젯은 위젯코드를 지원하지 않습니다.
+	    </div>
+    }
+    else
+    {
+ 	    <form name="procform" action="@g["s"]/" method="post" target="_action_frame_">
+	    <input type="hidden" name="r" value="@r" />
+	    <input type="hidden" name="m" value="@g["sys_module"]" />
+	    <input type="hidden" name="a" value="widgetdata_save" />
+	    <input type="hidden" name="widget" value="@swidget" />
+	    <input type="hidden" name="savedir" value="data" />
+	    <input type="hidden" name="savename" value="@((wdgvar["savename"] != "") ? wdgvar["savename"] :  date["totime"])" />
+
+	    <textarea name="source" id="sourceArea" rows="18" cols="54">@using (StreamReader sr = new StreamReader(g["path_root_ps"] + g["path_widget"] + swidget + "\\data\\" + wdgvar["savename"] + ".txt", System.Text.Encoding.UTF8, true)) { @Html.Raw(sr.ReadToEnd()) }</textarea>
+	    <div class="btnbox">
+	    <input type="button" value="편집기" class="btngray" onclick="editWindow('@g["s"]/?r=@r&system=edit.editor&iframe=Y&droparea=sourceArea');" />
+        @{
+            <input type="button" value="@Html.Raw((option != null && option != "") ?  "속성변경" : "위젯추가")" class="btnblue" onclick="saveCheck();" />
+            swidget = swidget.Replace("\\", "/");
+        } 
+	    </div>
+	    </form>
+	    <iframe name="_action_frame_" width="0" height="0" frameborder="0" scrolling="no"></iframe>      
+    }
+
+</div>
+
+<style type="text/css">
+#mjointbox {}
+#mjointbox .title {border-bottom:#dfdfdf dashed 1px;padding:0 0 10px 0;margin:0 0 20px 0;}
+#mjointbox textarea {padding:5px 0 5px 5px;line-height:150%;color:#000000;font-family:Courier new, arial, dotum;font-size:9pt;text-align:left;}
+#mjointbox .btnbox {text-align:center;padding:20px 0 0 0;}
+</style>
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+function editWindow(url) 
+{
+	window.open(url,'','left=0,top=0,width=800px,height=750px,statusbar=no,scrollbars=no,toolbar=no,resizable=yes');
+}
+function saveCheck()
+{
+	var f = document.procform;
+	if (f.source.value == '')
+	{
+		alert('HTML소스를 입력해 주세요.      ');
+		f.source.focus();
+		return;
+	}
+
+	f.submit();
+
+
+    @if(option==null || option==""){
+	    @Html.Raw("var i; \n");
+	    @Html.Raw("var n = 0; \n");
+
+        @Html.Raw("for (i=0; i<opener.maxTiles; i++) \n");
+	    @Html.Raw("{ \n");
+        @Html.Raw("if (opener.moveObject[i].style.display=='block') \n");
+		@Html.Raw("{ \n");
+		@Html.Raw("n = i+1; \n");
+        @Html.Raw("} \n");
+        @Html.Raw("} \n");
+    }
+    else{
+    	@Html.Raw("var n = " + dropfield + "; \n");
+    }
+
+    @if(option==null || option==""){
+        @Html.Raw("opener.createTile('355px','150px','0px','0px'); \n");
+    }
+
+	opener.blocktitle[n] = 'HTML소스';
+	opener.blockarray[n] = "@swidget,savename^" + f.savename.value;
+	opener.getId('wtitle'+n).innerHTML = opener.blocktitle[n];
+	top.close();
+}
+//]]>
+</script>
+

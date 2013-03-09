@@ -1,0 +1,2075 @@
+﻿@using System.Text.RegularExpressions;
+@using System.Security.Cryptography;
+@using System;
+@using System.Text;
+@using System.Web.Security
+@using System.Drawing;
+
+@using ICSharpCode.SharpZipLib; 
+@using ICSharpCode.SharpZipLib.Zip;
+@using ICSharpCode.SharpZipLib.Zip.Compression;
+@using System.Data.SqlServerCe;
+
+@helper getLink(string url, string target, string alert, string history)
+{      // page linking
+
+    @:<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    @:<html lang="ko" xml:lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+    @:<head>
+    @:<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    @:<title>안내메세지</title>
+    @:<script type="text/javascript">
+
+    @://<![CDATA[
+
+    @:var cHref = @(target != null && target != "" ? target : "")location.href.split('#');
+
+    if (alert != null && alert != "")
+    {
+        @:alert('@alert');
+    }
+
+    url = url.Replace("&amp;", "&");
+    
+    if (url == "reload")
+    {
+        if (IsPost)
+        {
+            @:@(target != null && target != "" ? target : "")location.replace(cHref[0]);
+        }
+        else
+        {
+            @:@(target != null && target != "" ? target : "")location.reload();
+        }
+    }
+
+    if (url != null && url != ""  && url != "reload")
+    {
+        @:@(target != null && target != "" ? target : "")location.href="@url";
+    }
+
+    if (history == "close")
+    {
+        @:window.top.close();
+    }
+
+    if (history != "" && Convert.ToInt32(history) < 0)
+    {
+        @:history.go(@history);
+    }
+
+    @://]]>
+
+    @:</script>
+    @:</head>
+    @:<body></body>
+    @:</html>
+
+    return;
+}
+
+@helper checkAdmin(string my_admin, int n)
+{        // check admin
+    if (my_admin != "1")
+    {
+        @_System.getLink("", "", "관리권한이 없습니다.", n.ToString())
+        return;
+    }
+}
+    
+@helper getWidget(string widget, dynamic wdgvar, dynamic g, object _HS)
+    {  
+        
+        //위젯 가져오기
+        string wcsswjsc = "";
+        if (!("_" + wcsswjsc).Contains("[" + widget + "]"))
+        {
+
+            string wcss = Request.PhysicalApplicationPath + "widgets\\" + widget + "\\main.css";
+            string wjsc = Request.PhysicalApplicationPath + "widgets\\" + widget + "\\main.js";
+            //string wcss = g["path_root_ps"] + g["path_widget"] + widget + "\\main.css";
+            //string wjsc = g["path_root_ps"] + g["path_widget"] + widget + "\\main.js";
+
+            if (File.Exists(wcss))
+            {
+            @: <link type="text/css" rel="stylesheet" charset="utf-8" href="./widgets/@widget.Replace("\\", "/")/main.css" />
+        }
+
+            if (File.Exists(wjsc))
+            {
+            @: <script type="text/javascript" charset="utf-8" src="./widgets/@widget.Replace("\\", "/")/main.js" /></script>            
+        }
+
+            wcsswjsc = wcsswjsc + "[" + widget + "]";
+
+        }
+
+        if (!wdgvar.ContainsKey("widget_id"))
+        {
+            wdgvar.Add("widget_id", widget);
+        }
+        else
+        {
+            wdgvar["widget_id"] = widget;
+        }
+}
+
+@helper getWidget(string wName, string _wdgvar)
+{   
+    Session["wdgvar"] = "";
+
+    //string widgetName = wName;
+    string path_widget = Request.PhysicalApplicationPath + "widgets\\";
+
+    if (File.Exists(path_widget + wName.Replace("/", "\\") + "\\main.css"))
+    {
+        @:<link type="text/css" rel="stylesheet" charset="utf-8" href="@Href("~")widgets/@wName/main.css" />
+    }
+
+    if (File.Exists(path_widget + wName.Replace("/", "\\") + "\\main.js"))
+    {
+        @:<script type="text/javascript" charset="utf-8" src="@Href("~")widgets/@wName/main.js"></script>
+    }
+
+    Session["wdgvar"] = wName + "," + _wdgvar;
+    
+    //RenderPage(\"~/\" + \"widgets/bbs/gallery01/main.cshtml\", g, _HS, _wdgvar)
+}
+
+
+
+
+
+
+@helper Random_Tag(string query, int x1, int x2, int arr_size, string r, dynamic g, dynamic db)
+    {       // Random Tag
+        string[] TARR = new string[arr_size];
+        string tmp_rand = "";
+
+        int k = 0;
+        int number = 0;
+        // 태그를 랜덤으로 가져오기
+        foreach (var TG in _DB.Query(query))
+        {
+            TARR[k] = TG["keyword"];
+            k++;
+        }
+
+        Random ran = new Random();
+
+        for (int i = 0; i < k; i++)
+        {
+            int ii = 0;
+            while (true)
+            {
+                number = ran.Next(0, k);
+
+                if (tmp_rand.IndexOf(number + "^") < 0)
+                {
+                    tmp_rand += number + "^";
+                    break;
+                }
+
+                ii++;
+            }
+        }
+
+        string[] rkey = tmp_rand.Split('^');
+        string TCNUM = "";
+
+        for (int j = 0; j < k; j++)
+        {
+            int tmp_rkey = 0;
+
+            if (Convert.ToInt32(rkey[j]) > x1)
+            {
+                TCNUM = "1";
+            }
+            else
+            {
+                if (Convert.ToInt32(rkey[j]) > x2)
+                {
+                    TCNUM = "2";
+                }
+                else
+                {
+                    TCNUM = "3";
+                }
+            }
+
+            tmp_rkey = Convert.ToInt32(rkey[j]);
+        	<a href="@g["s"]/?r=@r&amp;mod=search&amp;keyword=@Server.UrlEncode(TARR[tmp_rkey])"><span class="@Html.Raw("tags_" + TCNUM)">@TARR[tmp_rkey]</span></a>            
+        }
+}
+
+
+@functions {
+    public static string Strip_tags(string str)
+    {
+        Regex rx = new Regex("<(.*?)>");
+        string mc = rx.Replace(str, "");
+
+        return mc;
+    }
+    /*
+    public static string getDateCal(string d, string t)
+    {
+        DateTime calDate = DateTimeOffset.UtcNow.AddHours(1)
+       
+	    return date($f,mktime((int)substr($d,8,2)+$h,(int)substr($d,10,2),(int)substr($d,12,2),substr($d,4,2),substr($d,6,2),substr($d,0,4)));
+    }*/
+
+
+    // 날짜세팅하기 (개별 년, 월, 일)
+    public static object GetVDate(object t)
+    {
+        var date = new Dictionary<string, object>();
+        DateTime totime = new DateTime();
+        string proc = "";
+
+        if (t == null || Convert.ToInt32(t) == 0)
+        {       // 인수가 없거나 0이면 현재 날짜로 Setting
+            totime = DateTime.Now;
+        }
+        else
+        {
+            totime = DateTime.Now.AddHours(Convert.ToInt32(t));
+        }
+
+        proc = totime.ToString("yyyyMMddHHmmss");
+
+        date.Add("PROC", proc);
+        date.Add("totime", totime);
+
+        date.Add("year", proc.Substring(0, 4));
+        date.Add("month", proc.Substring(4, 2));
+        date.Add("day", proc.Substring(6, 2));
+        date.Add("today", proc.Substring(0, 8));
+
+        date.Add("insert", totime.ToString("yyyy-MM-dd HH:mm:ss")); // 데이터베이스애 현재시각 인서트 시 
+        date.Add("_yester", totime.AddDays(-1));    // 기간검색
+        date.Add("_week", totime.AddDays(-7));      // 기간검색
+        date.Add("_month", totime.AddMonths(-1));     // 기간검색
+        date.Add("curMonth", new DateTime(totime.Year, totime.Month, 1));
+        date.Add("preMonth1", totime.AddMonths(-1).AddDays(-totime.Day + 1));
+        date.Add("preMonth2", totime.AddDays(-totime.Day));
+
+        return date;
+    }
+
+    // 최신글 판별
+    public static bool getNew(string t, int hour)
+    {
+        bool is_value = false;
+
+        if (t == "")
+        {       // 관련 시간대가 없으면 1900년도로 세팅
+            t = "1900-01-01 오전 00:00:00";
+        }
+
+        DateTime ori_date = DateTime.Parse(t);
+        DateTime now_date = DateTime.Now;
+        DateTime adding_date = ori_date.AddHours(hour);
+
+        if (DateTime.Compare(now_date, adding_date) < 0)
+        {
+            is_value = true;
+        }
+
+        return is_value;
+    }
+    
+    //지정문자열필터링
+    public static string filterstr(string str)
+    {
+        str = str.Replace(",", "");
+        str = str.Replace(".", "");
+        str = str.Replace("-", "");
+        str = str.Replace(":", "");
+        str = str.Replace(" ", "");
+        
+        return str;
+    }
+
+    // 특정날짜 이후 얼마나 지났는지 체크
+    public static int getRemainDate(string t)
+    {
+        int is_value = 0;
+        
+        if (t.ToString() == "")
+        {
+            return is_value;
+        }
+
+        DateTime ori_date = DateTime.Parse(t);
+        DateTime now_date = DateTime.Now;
+        TimeSpan TS = now_date - ori_date;
+
+        is_value = TS.Days;  //날짜의 차이 구하기
+
+        return is_value;
+    }
+    
+    // 내용값 return
+    public static string getContents(string str, string html)
+    {
+        if (html == "HTML")
+        {
+            str = str.Replace("<A href=", "<A target='_blank' href=");
+            str = str.Replace("< param", "<param");
+            str = str.Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+            str = str.Replace("imgOrignWin", "onclick=imgOrignWin");
+            str = Html.Raw(str).ToString();
+        }
+        else
+        {
+            str = str.Replace("<", "&lt;");
+            str = str.Replace(">", "&gt;");
+            str = str.Replace("&nbsp;", "&amp;nbsp;");
+            str = str.Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+        }
+
+        return str;
+    }
+
+    //쿠키배열
+    public static string getArrayCookie(HttpCookie ck, char split, int n)
+    {
+        if (ck == null || ck.Value == null || ck.Value.ToString() == "" || ck.Value.Contains(split))
+        {
+            return "";
+        }
+        
+        return ck.ToString().Split(split)[n];
+    }        
+
+    // string 에서 관련값이 있는지 검사 (구분자 있을경우. 없는 경우는 IndexOf 로 판별)
+    public static bool IsValue(string str, string to_str, char delim)
+    {
+        bool is_value = false;
+        char[] delimiter = { delim };
+
+        string[] strArray = str.Split(delimiter);
+
+        if (to_str != "")
+        {
+            foreach (var tmp in strArray)
+            {
+                if (tmp == to_str)
+                {
+                    is_value = true;
+                }
+            }
+        }
+        return is_value;
+    }
+
+    // 폴더의 이름 알아내기 (디렉토리 안 name.txt 참조)
+    public static string getFolderName(string F_Path, string FN)
+    {
+        Array userData = null;
+        string folder_name = "";
+
+        if (File.Exists(F_Path + "\\" + FN) == false)
+        {
+            folder_name = "폴더명을 알 수 없습니다.";
+        }
+        else
+        {
+            userData = File.ReadAllLines(F_Path + "\\" + FN);
+
+            foreach (string name in userData)
+            {
+                folder_name = name;
+            }
+        }
+
+        return folder_name;
+    }
+
+    public static string getFolderName(string F_Path)
+    {
+        string folder_name = "";
+
+        if (!Directory.Exists(F_Path))
+        {
+            folder_name = "폴더를 찾을 수 없습니다.";
+        }
+        else
+        {
+            if (!F_Path.EndsWith("\\"))
+            {
+                F_Path += "\\";
+            }
+            
+            if (File.Exists(F_Path + "name.txt"))
+            {
+                foreach (string name in File.ReadAllLines(F_Path + "name.txt"))
+                {
+                    folder_name = name;
+                }                   
+            }            
+            else if (F_Path.Contains("\\"))
+            {
+                if (F_Path.Split('\\')[F_Path.Split('\\').Length - 1] != "")
+                {
+                    folder_name = F_Path.Split('\\')[F_Path.Split('\\').Length - 1];
+                }
+                else
+                {
+                    folder_name = F_Path.Split('\\')[F_Path.Split('\\').Length - 2];
+                }
+            }
+        }
+
+        return folder_name;
+    }
+
+
+    // 성별
+    public static string getSex(string str)
+    {
+        string return_sex = "남";
+
+        if (str == "" || str == "2")
+        {
+            return_sex = "여";
+        }
+
+        return return_sex;
+    }
+
+    // 나이
+    public static string getAge(string str)
+    {
+        string return_age = "-";
+        int temp_age = 0;
+
+        if (str != "")
+        {
+            temp_age = Convert.ToInt32(DateTime.Now.Year);
+            temp_age = temp_age - Convert.ToInt32(str) + 1;
+
+            return_age = temp_age.ToString();
+        }
+
+        return return_age;
+    }
+
+    // size format
+    public static string getSizeFormat(decimal size)
+    {
+        string set_size;
+        string set_tail = "";
+
+        if (size / (1024 * 1024 * 1024) > 1)
+        {
+            size = size / (1024 * 1024 * 1024);
+            set_tail = "GB";
+        }
+        else if (size / (1024 * 1024) > 1)
+        {
+            size = size / (1024 * 1024);
+            set_tail = "MB";
+        }
+        else if (size / 1024 > 1)
+        {
+            size = size / 1024;
+            set_tail = "KB";
+        }
+        else if (size / 1024 < 1)
+        {
+            set_tail = "B";
+        }
+
+        set_size = Math.Ceiling(size) + set_tail;
+
+        return set_size;
+    }
+
+    // total page counting
+    public static decimal getTotalPage(decimal num, decimal rec)
+    {
+        decimal getpage = 0;
+
+        if (rec != 0)
+        {
+            getpage = Math.Floor((num - 1) / rec) + 1;
+        }
+
+        if (getpage == 0)
+        {
+            getpage = 1;
+        }
+
+        return getpage;
+    }
+
+    // cync data extraction
+    public static string getSyncValue(string cync, int i)
+    {
+        char[] delimiter = { '[' };
+        string[] strArray = cync.Split(delimiter);
+
+        string putValue = strArray[i];
+        int putValue_Cut = putValue.Length - 1;
+
+        putValue = putValue.Substring(0, putValue_Cut);
+
+        return putValue;
+    }
+
+    // cync URL extraction
+    public static string getCyncURL(string cync, int i, char delim1, char delim2, char delim3)
+    {
+        string CyncURL = "./?";
+
+        if (cync != null && cync != "")
+        {
+            string[] strArray = cync.Split(delim1);
+
+            string step1 = strArray[i];
+            int putValue_Cut = step1.Length - 1;
+
+            step1 = step1.Substring(0, putValue_Cut);
+            string[] strArray2 = step1.Split(delim2);
+
+            foreach (var tmp in strArray2)
+            {
+                string[] strArray3 = tmp.Split(delim3);
+                CyncURL = CyncURL + strArray3[0] + "=" + strArray3[1] + "&";
+            }
+
+            int putValue_Cut2 = CyncURL.Length - 1;
+            CyncURL = CyncURL.Substring(0, putValue_Cut2);
+        }
+
+        return CyncURL;
+    }
+
+    // cync URL extraction
+    public static string getCyncURL(string cync, dynamic g, dynamic _HS)
+    {
+        if (cync == "")
+        {
+            return g["r"].ToString();
+        }
+        
+        string[] _r_arr = getArrayString(cync);
+        string _r = (_r_arr.Length > 5 ? _r_arr[5] : "");
+        
+        if (_HS["rewrite"] == "1" && ("_" + _r).Contains("m:bbs,bid:"))
+        {
+            _r = _r.Replace("m:bbs", "b");
+            _r = _r.Replace(",bid:", "/");
+            _r = _r.Replace(",uid:", "/");
+            _r = _r.Replace(",CMT:", "/");
+            _r = _r.Replace(",s:", "/s");
+            
+            return g["r"] + "/" + _r;
+        }
+        else
+        {
+            return (g["s"] + "/?" + (_HS["usescode"] != 0 ? "r=" + _HS["id"] + "&" : "") + _r.Replace(",", "&").Replace(":", "="));       
+        }        
+    }
+
+
+    // 모바일 접속 체크
+    public static string isMobileConnect(string agent)
+    {
+        if (Session["pcmode"] != null && Session["pcmode"].ToString() == "E")
+        {
+            return "RX-Emulator";
+        }
+
+        string mobile_connect = "";
+        string dataFile = Request.PhysicalApplicationPath + "_var\\mobile.agent.txt";
+
+        //agent = agent.ToLower();
+
+        Array userData = null;
+        userData = File.ReadAllLines(dataFile);
+
+        foreach (string dataLine in userData)
+        {
+            string[] strArray = dataLine.Split('=');
+            //string mType = agent.Split('(')[1].Split(';')[0];
+
+            if (agent.ToLower().IndexOf(strArray[0]) > -1)
+            {
+                //mobile_connect = strArray[1];
+                return strArray[1];
+            }
+        }
+        return "";
+    }
+
+
+    // 랜덤수 구하기
+    public static double RandomINT(int unit)
+    {
+        double init = 10;
+
+        Random rnd = new Random();
+        double unit2 = Math.Pow(init, unit) / unit;
+        double signal = rnd.Next(Convert.ToInt32(unit2));
+
+        return signal;
+    }
+
+    // Link Filter (parameter 만들기)
+    public static string getLinkFilter(string key, string val)
+    {
+        char[] delimiter = { '|' };
+        string link_url = "";
+        string[] key_array = key.Split(delimiter);
+        string[] val_array = val.Split(delimiter);
+        int val_num = 0;
+
+        foreach (var tmp in key_array)
+        {
+            if (val_array[val_num] != "")
+            {
+                link_url = link_url + "&" + tmp + "=" + val_array[val_num];
+            }
+            val_num++;
+        }
+
+        return link_url;
+    }
+
+    // 긴문자 자르기
+    public static string getStrCut(string str, int str_byte, string ext)
+    {
+        if (str_byte == 0)
+        {
+            return str;
+        }
+        if (str.Length > str_byte)
+        {
+            str = str.Substring(0, str_byte);
+            str = str + ext;
+        }
+
+        return str;
+    }
+
+    // htmlspecialchars (PHP함수구현 - Yoona)
+    public static string htmlspecialchars(string str)
+    {
+        if (str == null || str == "")
+        {
+            return "";
+        }
+        //str = str.Replace("&", "&amp;");
+        str = str.Replace("\"", "&quot;");
+        str = str.Replace("'", "&#039;");
+        str = str.Replace("<", "&lt;");
+        str = str.Replace(">", "&gt;");
+
+        return str;
+    }
+
+    //stripslashes (PHP함수구현 - Yoona)
+    public static string stripslashes(string str)
+    {
+        if (str == "" || str == null)
+        {
+            return str;
+        }
+
+        str = str.Replace("/", "");
+        return str;
+    }
+
+    //stripslashes (PHP함수구현 - Yoona)
+    public static string addslashes(string str)
+    {
+        str = str.Replace("'", "\'");
+
+        return str;
+    }
+
+    //RW (PHP함수구현 - Yoona) - 추후 SESSION 변경 예정
+    //public static string RW(string rwStr, string r, bool chkRw)
+    public static string RW(string rwStr, string g_r, dynamic _HS)
+    {
+        if (_HS["rewrite"] == "1")
+        {
+            if (rwStr == "")
+            {
+                if (g_r != null && g_r != "")
+                {
+                    return g_r;
+                }
+                else
+                {
+                    return "/";
+                }
+            }
+
+            rwStr = rwStr.Replace("c=", "c/");
+            rwStr = rwStr.Replace("mod=", "p/");
+            rwStr = rwStr.Replace("m=admin", "admin");
+            rwStr = rwStr.Replace("m=bbs", "b");
+            rwStr = rwStr.Replace("&bid=", "/");
+            rwStr = rwStr.Replace("&uid=", "/");
+            rwStr = rwStr.Replace("&CMT=", "/");
+            rwStr = rwStr.Replace("&s=", "/s");
+
+            return g_r + "/" + rwStr;
+        }
+        else
+        {
+            if (_HS["usescode"] == 1)
+            {
+                if (rwStr != "")
+                {
+                    return "./?r=" + _HS["id"] + "&" + rwStr;
+                }
+                else
+                {
+                    return "./?r=" + _HS["id"];
+                }
+            }
+            else
+            {
+                if (rwStr != null && rwStr != "")
+                {
+                    return "./?" + rwStr;
+                }
+                else
+                {
+                    return "./";
+                }
+            }
+        }
+
+        return "";
+    }
+
+    //요일 구하기 - Yoona
+    public static string getWeekday(DateTime dateTime)
+    {
+        var d = dateTime.DayOfWeek;
+        string ret = string.Empty;
+
+        switch (d)
+        {
+            case DayOfWeek.Friday:
+                ret = "금";
+                break;
+            case DayOfWeek.Monday:
+                ret = "월";
+                break;
+            case DayOfWeek.Saturday:
+                ret = "토";
+                break;
+            case DayOfWeek.Sunday:
+                ret = "일";
+                break;
+            case DayOfWeek.Thursday:
+                ret = "목";
+                break;
+            case DayOfWeek.Tuesday:
+                ret = "화";
+                break;
+            case DayOfWeek.Wednesday:
+                ret = "수";
+                break;
+            default:
+                break;
+        }
+
+        return ret;
+    }
+
+    public static int lastDay(int month)
+    {
+        int ret = 0;
+
+        switch (month)
+        {
+            case 1:
+                ret = 31;
+                break;
+            case 2:
+                ret = 29;
+                break;
+            case 3:
+                ret = 31;
+                break;
+            case 4:
+                ret = 30;
+                break;
+            case 5:
+                ret = 31;
+                break;
+            case 6:
+                ret = 30;
+                break;
+            case 7:
+                ret = 31;
+                break;
+            case 8:
+                ret = 31;
+                break;
+            case 9:
+                ret = 30;
+                break;
+            case 10:
+                ret = 31;
+                break;
+            case 11:
+                ret = 30;
+                break;
+            case 12:
+                ret = 31;
+                break;
+            default:
+                break;
+        }
+
+        return ret;
+    }
+
+    //대괄호 배열 -Yoona (modify: taiji88)
+    public static string[] getArrayString(string str)
+    {
+        string[] result = null;       //  Reason: 'Use of unassigned local variable' Error
+        int cnt = 0;
+
+        if (str == null || str.Trim() == "")
+        {
+            return new string[0];              
+        }
+        
+        if (!str.Contains("[") && !str.Contains("]"))
+        {
+            result = new string[1];
+            result[0] = str;
+            return result;
+        }
+
+        str = str.Trim();
+
+        if (str != "")
+        {
+            str = str.Replace("*[", "!@#$%^&*()");
+            str = str.Replace("]*", ")(*&^%$#@!");
+
+            str = str.Substring(1, str.Length - 1);
+            result = str.Split('[');
+
+            foreach (var tmp in result)
+            {
+                string tmp_val = tmp.Split(']')[0];
+                tmp_val = tmp_val.Replace(")(*&^%$#@!", "]");
+                tmp_val = tmp_val.Replace("!@#$%^&*()", "[");
+                result[cnt] = tmp_val;
+                cnt++;
+            }
+        }
+
+        return result;
+    }
+
+    public static string getPostLink(object s, dynamic arr, string g_r, dynamic _HS)
+    {
+        return RW("m=bbs&bid=" + arr["bbsid"] + "&uid=" + arr["uid"] + (s.ToString() != arr["site"] ? "&s=" + arr["site"] : ""), g_r, _HS);
+    }
+
+    //파일확장자 - Yoona
+    public static string getExt(string name)
+    {
+        string[] nx = name.Split('.');
+        return nx[nx.Length - 1];
+    }
+
+
+    //파일타입 - Yoona
+    public static int getFileType(string ext_Or_fullname)
+    {
+        string ext = ext_Or_fullname;
+
+        if (ext == null || ext == "")
+        {
+            return 1;
+        }           
+
+        if (ext.Contains("."))
+        {
+            ext = getExt(ext_Or_fullname);
+        }
+
+        if (("_gif,jpg,jpeg,png,bmp,png").Contains(ext.ToLower()))
+        {
+            return 2;
+        }
+        else if (("_swf,").Contains(ext.ToLower()))
+        {
+            return 3;
+        }
+        else if (("_mid,wav,mp3,").Contains(ext.ToLower()))
+        {
+            return 4;
+        }
+        else if (("_asf,asx,avi,mpg,mpeg,wmv,wma,mov,flv,").Contains(ext.ToLower()))
+        {
+            return 5;
+        }
+        else if (("_doc,xls,ppt,hwp").Contains(ext.ToLower()))
+        {
+            return 6;
+        }
+        else if (("_zip,tar,gz,tgz,alz,").Contains(ext.ToLower()))
+        {
+            return 7;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+
+    public static string DateSet(int d)
+    {
+        string rtDate = "";
+
+        if (d / 10 == 0)
+        {
+            rtDate = "0" + d.ToString();
+        }
+        else
+        {
+            rtDate = d.ToString();
+        }
+
+        return rtDate;
+    }
+
+    public static string DateSet(string d)
+    {
+        string rtDate = "";
+
+        if (d.Length == 1)
+        {
+            rtDate = "0" + d;
+        }
+        else
+        {
+            rtDate = d;
+        }
+
+        return rtDate;
+    }
+
+    // domain
+    public static string getDomain(string url)
+    {
+        if (url.Length <= 3 || url.Substring(0, 4).ToLower() != "http")
+        {
+            return "";
+        }
+        
+        string result = url;
+
+        if (url.Contains("http://"))
+        {
+            result = url.Replace("http://", "");
+            result = result.Split('/')[0];
+        }
+        else if (url.Contains("./"))
+        {
+            result = "";
+        }
+
+        return result;
+    }
+
+    // Numeric - Yoona
+    static bool IsNumeric(object Expression)
+    {
+        bool isNum;
+        double retNum;
+
+        isNum = Double.TryParse(Convert.ToString(Expression), System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retNum);
+        return isNum;
+
+    }
+
+    // keyword - Yoona
+    public static string getKeyword(string url)
+    {
+        if (url.IsEmpty())
+        {
+            return "";
+        }
+
+        string[] urlexp = url.Split('?');
+        string ret_val = "";
+
+        if (urlexp.Length < 2)
+        {
+            ret_val = "";
+        }
+        else if (urlexp[1].Trim() == "" || urlexp[1].Trim() == null)
+        {
+            ret_val = "";
+        }
+        else
+        {
+            string[] queexp = urlexp[1].Split('&');
+            int quenum = queexp.Length;
+            bool chk_i = false;
+
+            for (int i = 0; i < quenum; i++)
+            {
+                string[] valexp = queexp[i].Trim().Split('=');
+
+                if ((",query,q,p,").Contains("," + valexp[0] + ",") == true && IsNumeric(valexp[1]) == true)
+                {
+                    chk_i = true;
+                    ret_val = valexp[1];
+                }
+            }
+
+            if (chk_i == false)
+            {
+                ret_val = "";
+            }
+        }
+
+        return ret_val;
+    }
+
+    // search ('like' search)
+    public static string getSearchSql(string w, string k, string ik, string h)
+    {
+        string result = " and (";
+
+        if (h == "" || h == null)
+        {
+            h = "or";
+        }
+
+        if (k == "" || k == null)
+        {
+            return "";
+        }
+
+        k = k.Replace(" ", ",");
+
+        string[] karr = k.Split(',');
+        int knm = karr.Length;
+
+        if (h.ToLower() == "not")
+        {
+            h = "and";
+
+            if (w.Contains('|'))
+            {
+                string[] warr = w.Split('|');
+                int wnm = warr.Length;
+
+                for (int j = 0; j < knm; j++)
+                {
+                    if (karr[j] == null || karr[j] == "")
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < wnm; i++)
+                    {
+                        if (karr[j].Length > 0)
+                        {
+                            result = result + warr[i] + "<>'" + karr[j] + "' " + h + " ";
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < knm; i++)
+                {
+                    if (karr[i].Length > 0)
+                    {
+                        result = result + w + "<>'" + karr[i] + "' " + h + " ";
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (w.Contains('|'))
+            {
+                string[] warr = w.Split('|');
+                int wnm = warr.Length;
+
+                for (int j = 0; j < knm; j++)
+                {
+                    if (karr[j] == null || karr[j] == "")
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < wnm; i++)
+                    {
+                        if (karr[j].Length > 0)
+                        {
+                            result = result + warr[i] + " like '%" + karr[j] + "%' " + h + " ";
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < knm; i++)
+                {
+                    if (karr[i].Length > 0)
+                    {
+                        result = result + w + " like '%" + karr[i] + "%' " + h + " ";
+                    }
+                }
+            }
+        }
+
+        result = result.Substring(0, result.Length - 4) + ")";
+
+        if (ik != "" && ik != null)
+        {
+            result = result + _System.getSearchSql(w, ik, "", h);
+        }
+        return result;
+    }
+
+    // search engine - Yoona
+    public static string getSearchEngine(string url)
+    {
+        if (url.IsEmpty())
+        {
+            return "etc";
+        }
+
+        string[] set = { "naver", "nate", "daum", "yahoo", "google" };
+
+        foreach (string val in set)
+        {
+            if (url.IndexOf(val) > 0)
+            {
+                return val;
+            }
+        }
+        return "etc";
+    }
+
+    // get browser tyep
+    public static string getBrowser(string agent)
+    {
+        string val_path = Request.PhysicalApplicationPath;
+        
+        if (_System.isMobileConnect(agent) != "")
+        {
+            return "Mobile";
+        }
+        else
+        {
+            string[] set = { "MSIE 9", "MSIE 8", "MSIE 7", "MSIE 6", "Firefox", "Opera", "Chrome", "Safari" };
+
+            foreach (string val in set)
+            {
+                if (agent.IndexOf(val) > 0)
+                {
+                    return val;
+                }
+            }
+
+            return "a";
+        }
+    }
+    
+    public string GetMD5OfFile(string filepath)
+    {
+        StringBuilder strMD5 = new StringBuilder();
+        FileStream fs = new FileStream(filepath, FileMode.Open);
+        byte[] byteResult = (new MD5CryptoServiceProvider()).ComputeHash(fs);
+        fs.Close();
+
+        for (int i = 0; i < byteResult.Length; i++)
+        {
+            strMD5.Append(byteResult[i].ToString("X2"));
+        }
+
+        return strMD5.ToString();
+    }
+
+    //sharpzip 이용한 압축풀기 - Yoona
+    public static void Unzip(string ZipName, string SavePath)
+    {
+        ZipInputStream s = new ZipInputStream(File.OpenRead(ZipName));
+
+        ZipEntry theEntry;
+
+        while ((theEntry = s.GetNextEntry()) != null)
+        {
+            string FullName = SavePath + "\\" + theEntry.Name;
+            string DirName = Path.GetDirectoryName(FullName);
+            string FileName = Path.GetFileName(FullName);
+
+            //if (!Directory.Exists(DirName))
+            //    Directory.CreateDirectory(DirName);
+
+            if (!Directory.Exists(DirName))
+            {
+                Directory.CreateDirectory(DirName);
+            }
+
+            if (FileName != String.Empty)
+            {
+                FileStream SW = File.Create(FullName);
+
+                int Size = 2048;
+                byte[] data = new byte[2048];
+                while (true)
+                {
+                    Size = s.Read(data, 0, data.Length);
+                    if (Size > 0) SW.Write(data, 0, Size);
+                    else break;
+                }
+                SW.Close();
+            }
+        }
+        s.Close();
+    }
+
+    // directory copy - Yoona
+    public static void DirCopy(string sourceFolder, string destFolder)
+    {
+        if (!Directory.Exists(destFolder))
+        {
+            Directory.CreateDirectory(destFolder);
+        }
+        else
+        {
+            getLink("", "", "이미 동일한 이름의 폴더가 있습니다.", "");
+        }
+
+        string[] files = Directory.GetFiles(sourceFolder);
+        string[] folders = Directory.GetDirectories(sourceFolder);
+
+        foreach (string file in files)
+        {
+            string name = Path.GetFileName(file);
+            string dest = Path.Combine(destFolder, name);
+            File.Copy(file, dest);
+        }
+
+        foreach (string folder in folders)
+        {
+            string name = Path.GetFileName(folder);
+            string dest = Path.Combine(destFolder, name);
+            DirCopy(folder, dest);
+        }
+
+    }
+
+    public static void DirCopy(string sourceFolder, string destFolder, string exceptFolder)
+    {
+        if (!Directory.Exists(destFolder))
+        {
+            Directory.CreateDirectory(destFolder);
+        }
+        else
+        {
+            getLink("", "", "이미 동일한 이름의 폴더가 있습니다.", "");
+        }
+
+        string[] files = Directory.GetFiles(sourceFolder);
+        string[] folders = Directory.GetDirectories(sourceFolder);
+
+        foreach (string file in files)
+        {
+            string name = Path.GetFileName(file);
+            string dest = Path.Combine(destFolder, name);
+            File.Copy(file, dest);
+        }
+
+        foreach (string folder in folders)
+        {
+            string name = Path.GetFileName(folder);
+            string dest = Path.Combine(destFolder, name);
+
+            if (name.StartsWith(exceptFolder))
+            {
+                continue;
+            }
+
+            DirCopy(folder, dest);
+        }
+
+    }
+
+
+    // directory delete - Yoona  
+    public static void delAllDir(string delPath)
+    {
+        foreach (string folder in Directory.GetDirectories(delPath))
+        {
+            if (!Directory.Exists(folder))
+            {
+                break;
+            }
+            delAllDir(folder);
+            foreach (string file in Directory.GetFiles(folder))
+            {
+                File.Delete(file);
+            }
+            Directory.Delete(folder);
+        }
+        foreach (string file in Directory.GetFiles(delPath))
+        {
+            File.Delete(file);
+        }
+    }
+
+
+    public static int getDirexists(string dir)
+    {
+        int fex = 0;
+        foreach (string file in Directory.GetDirectories(dir))
+        {
+            string file_name = file.Substring(dir.Length, file.Length - dir.Length);
+            if (Directory.Exists(file))
+            {
+                if (!(".").Contains(file_name) && !("..").Contains(file_name) && !("image").Contains(file_name) && !("data").Contains(file_name))
+                {
+                    fex = 1;
+                    break;
+                }
+            }
+        }
+        return fex;
+    }
+
+
+    //배열 데이터 수
+    public static int arrCount(string[] arr)
+    {
+        int cnt = 0;
+        for (int i = 0; i < arr.Length; i++)
+        {
+            if (arr[i] == null || arr[i] == "")
+            {
+                break;
+            }
+            cnt++;
+        }
+
+        return cnt;
+    }
+
+    public static string getContents(string str)
+    {
+        str.Replace("<", "&lt;");
+        str.Replace(">", "&gt;");
+        str.Replace("&nbsp;", "&amp;nbsp;");
+        str.Replace("\t", "&nbsp;&nbsp;*nbsp;&nbsp;");
+
+
+        return str;
+    }
+
+    // r 값에 따른 parameter 값 (for url-rewrite)
+    public static string getRvalue(string r)
+    {
+        string r_prn = "";
+
+        if (r != "" && r != null)
+        {
+            r_prn = "r=" + r + "&";
+        }
+
+        return r_prn;
+    }
+
+    public static Dictionary<string, string> getWidgetCode(string bid, string limit, string width, string height, string title, string link, string widget_id,
+                string mainwidth, string mainheight, string top, string left)
+    {
+        if (mainwidth == "")
+        {
+            mainwidth = "700";
+        }
+
+        if (mainheight == "")
+        {
+            mainheight = "200";
+        }
+
+        if (top == "")
+        {
+            top = "0";
+        }
+        if (left == "")
+        {
+            left = "0";
+        }
+
+        var wdgvar = new Dictionary<string, string>();
+
+        wdgvar.Add("mainwidth", mainwidth);
+        wdgvar.Add("mainheight", mainheight);
+        wdgvar.Add("widget_id", widget_id);
+        wdgvar.Add("link", link);
+        wdgvar.Add("title", title);
+        wdgvar.Add("bid", bid);
+        wdgvar.Add("limit", limit);
+        wdgvar.Add("width", width);
+        wdgvar.Add("height", height);
+        wdgvar.Add("top", top);
+        wdgvar.Add("left", left);
+
+        return wdgvar;
+    }
+    /*
+    public static string callWidget(dynamic wdgvar)
+    {   
+        string result = "";
+        result += "<cshtml> \n";
+        result = "@{ \n";
+        result += "dynamic wdgvar = _System.getWidgetCode(\"\",\"5\",\"80\",\"80\",_System.getContents(\"갤러리\"),\"\",\"bbs/gallery01\", \"\", \"\", \"\", \"\"); \n";
+        result += "var g = PageData[0]; \n";
+        result += "var _HS = PageData[5]; \n";
+        result += "var _HP = PageData[13]; \n";
+        result += "var _HM = PageData[14]; \n";
+        
+        result += "@RenderPage(\"~/\" + \"_core/engine/widget.engine.cshtml\", g, _HS, _HP, _HM, wdgvar) \n";
+        result += "} \n";
+        result += "</cshtml>";
+
+        return result;        
+    }   */
+
+    public static string GetQuery(object table, string column, string where, string sort, string orderby, int startList, object rec)
+    {
+        string result = "";
+        string colStr = "*";
+        string whereStr = "";
+        string sortStr = "";
+
+        if (column != "")
+        {
+            colStr = column;
+        }
+
+        if (where.Trim() == "")
+        {
+            whereStr = "";
+        }
+        else if (!where.ToUpper().Trim().StartsWith("WHERE "))
+        {
+            whereStr = " WHERE " + where;
+        }
+        else
+        {
+            whereStr = where;
+        }
+
+        if (sort != null && sort != "" && orderby != null && orderby != "")
+        {
+            sortStr = " ORDER BY " + sort + " " + orderby;
+        }
+
+
+        if (rec == null || rec.ToString() == "" || rec.ToString() == "0")
+        {
+            result = "SELECT " + colStr + " FROM " + table.ToString() + whereStr + sortStr;
+        }
+        else
+        {
+            if (whereStr == "")
+            {
+                result = "SELECT TOP " + rec + " * FROM " + table.ToString() + " WHERE " + sort + " not in (SELECT TOP " + startList + " " + sort + " FROM " + table + " ORDER BY " + sort + " " + orderby + ") ORDER BY " + sort + " " + orderby;
+            }
+            else
+            {
+                result = "SELECT TOP " + rec + " * FROM " + table.ToString() + " WHERE " + sort + " not in (SELECT TOP " + startList + " " + sort + " FROM " + table + " ORDER BY " + sort + " " + orderby + ") AND " + whereStr.Replace(" WHERE ", "") + " ORDER BY " + sort + " " + orderby;
+            }
+        }
+
+        return result;
+    }
+
+    public static string getChkStr(object _chk1, object _chk2)
+    {
+        string chk1 = "";
+        string chk2 = "";
+        string result = "";
+
+        if (_chk1 == null || _chk2 == null)
+        {
+            return result;
+        }
+
+        chk1 = _chk1.ToString();
+        chk2 = _chk2.ToString();
+
+
+        if (chk1.Contains("|") && chk2.Contains("|"))
+        {
+            string[] chkArr1 = chk1.Split('|');
+            string[] chkArr2 = chk2.Split('|');
+
+            for (int i = 0; i < chkArr1.Length; i++)
+            {
+                if (chkArr1[i] == chkArr2[i])
+                {
+                    result = " checked='checked'";
+
+                    break;
+                }
+            }
+        }
+        else if (!chk1.Contains("|") && chk2.Contains("|"))
+        {
+            string[] chkArr2 = chk2.Split('|');
+
+            for (int i = 0; i < chkArr2.Length; i++)
+            {
+                if (chk1 == chkArr2[i])
+                {
+                    result = " checked='checked'";
+
+                    break;
+                }
+            }
+        }
+        else
+        {
+
+            if (chk1.ToString() == chk2.ToString())
+            {
+                result = " checked='checked'";
+            }
+        }
+
+        return result;
+    }
+
+    public static string getChkStr(bool ifStr)
+    {
+        if (ifStr)
+        {
+            return " checked='checked'";
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    public static string getSltStr(bool ifStr)
+    {
+        if (ifStr)
+        {
+            return " selected='selected'";
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    public static string getSltStr(object _slt1, object _slt2)
+    {
+        string slt1 = "";
+        string slt2 = "";
+        string result = "";
+
+        if (_slt1 == null || _slt2 == null)
+        {
+            return result;
+        }
+
+        slt1 = _slt1.ToString();
+        slt2 = _slt2.ToString();
+
+
+        if (slt1.Contains("|") && slt2.Contains("|"))
+        {
+            string[] sltArr1 = slt1.Split('|');
+            string[] sltArr2 = slt2.Split('|');
+
+            for (int i = 0; i < sltArr1.Length; i++)
+            {
+                if (sltArr1[i] == sltArr2[i])
+                {
+                    result = " selected='selected'";
+
+                    break;
+                }
+            }
+        }
+        else if (!slt1.Contains("|") && slt2.Contains("|"))
+        {
+            string[] sltArr2 = slt2.Split('|');
+
+            for (int i = 0; i < sltArr2.Length; i++)
+            {
+                if (slt1 == sltArr2[i])
+                {
+                    result = " selected='selected'";
+
+                    break;
+                }
+            }
+        }
+        else
+        {
+            if (slt1 == slt2)
+            {
+                result = " selected='selected'";
+            }
+        }
+        return result;
+    }
+
+    public static string isEqual(object obj1, object obj2, string trueStr, string falseStr)
+    {
+        string slt1 = "";
+        string slt2 = "";
+        string result = "";
+
+        if (obj1 == null || obj2 == null)
+        {
+            return result;
+        }
+
+        slt1 = obj1.ToString();
+        slt2 = obj2.ToString();
+
+
+        if (slt1 == slt2)
+        {
+            result = trueStr;
+        }
+        else
+        {
+            result = falseStr;
+        }
+
+        return result;
+    }
+
+
+
+    public static dynamic assingVar(dynamic obj, string key, object value)
+    {
+        if (obj.ContainsKey(key))
+        {
+            obj[key] = value;
+        }
+        else
+        {
+            obj.Add(key, value);
+        }
+        return obj;
+    }
+
+
+    //PHP rawurlencode
+    public string encodeURIStandard(string strURI)
+    {
+        string strEncoded;
+        char[] caReserved = "!'()*".ToCharArray();
+        string strCodeValue;
+
+        strEncoded = Server.UrlEncode(strURI);
+
+        foreach (short value in caReserved)
+        {
+            strCodeValue = String.Format("%{0,2:x}", value);
+            strEncoded = strEncoded.Replace(((char)value).ToString(), strCodeValue);
+        }
+
+        return strEncoded.Replace("+", "%20").Replace("%7e", "~");
+    }
+
+    public static bool putTracback(string trackback, string thisurl, string title, string name, string excerpt, object agent)
+    {
+        return true;
+    }
+
+    // 레이아웃 로고
+    public static string getLayoutLogo(dynamic LAYOUT_ARR, dynamic d_layout, dynamic g, dynamic _HS)
+    {
+        string logo_set = "";
+
+        if (LAYOUT_ARR["imglogo_use"] != "")
+        {
+            logo_set = "<a href='" + _System.RW("", g["r"], _HS) + "' style='margin:" + LAYOUT_ARR["title_t"] + "px 0 " + LAYOUT_ARR["title_b"] + "px 0;'><img src='" + g["s"] + "/layouts/" + d_layout["dir"] + "/_var/" + LAYOUT_ARR["imglogo"] + "' width='" + LAYOUT_ARR["imglogo_w"] + "' height='" + LAYOUT_ARR["imglogo_h"] + "' alt='' /></a>";
+        }
+        else
+        {
+            logo_set = "<h1><a href='" + _System.RW("", g["r"], _HS) + "' style='margin:" + LAYOUT_ARR["title_t"] + "px 0 " + LAYOUT_ARR["title_b"] + "px 0;color:" + LAYOUT_ARR["title_color"] + ";' id='_layout_title_'>" + LAYOUT_ARR["title"] + "</a></h1>";
+        }
+
+        return logo_set;
+    }
+
+    // 이미지주소 추출
+    public static string getImgs(string str, string type)
+    {
+        string result = "";
+
+        Regex rx = new Regex("src[ =]+['\"]([^'\"]+\\.(?:" + type + "))['\"]");
+        Match m = rx.Match(str);
+
+        if (m.Success == true)
+        {
+            result = m.ToString().Replace("src=", "");
+            result = result.Replace("\"", "");
+        }
+
+        return result;
+    }
+
+    // upload image
+    public static string getUploadImage(string upfiles, string d_regis, string content, string ext, dynamic g)
+    {
+        string imgs = getImgs(content, ext.ToLower());
+        string result = "";
+
+        if (imgs != "")
+        {
+            if (upfiles == "")
+            {
+                result = imgs;
+            }
+
+            string basename = imgs.Split('/')[imgs.Split('/').Length - 1];        // original
+            string encname = FormsAuthentication.HashPasswordForStoringInConfigFile(basename, "SHA1");      // thumbnail
+            string folder = d_regis.Substring(0, 4) + "\\" + d_regis.Substring(4, 2) + "\\" + d_regis.Substring(6, 2);
+
+            if (File.Exists(g["path_root_ps"] + g["path_file"] + folder + "\\" + encname) == true)   // no extension
+            {
+                string tmp_thumb = imgs.Replace(basename, "") + encname;
+                result = tmp_thumb;
+            }
+
+            if (upfiles != "")
+            {
+                foreach (var _val in _System.getArrayString(upfiles))
+                {
+                    dynamic U = _DB.GetDbData_M(AppState["table_s_upload"].ToString(), "uid=" + _val);
+
+                    if (U == null)
+                    {
+                        continue;
+                    }
+                    if (("_jpg,gif,png").Contains(U["ext"].ToLower()))
+                    {
+                        result = U["url"] + U["folder"].Replace("\\", "/") + "/" + U["thumbname"];
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // PHP function nl2br (for razor)
+    public static string nl2br(string str)
+    {
+        string result = str.Replace("\n", "<br />");
+        result = result.Replace("\n", "<br>");
+        result = result.Replace("\n", "<p />");
+        result = result.Replace("\n", "<p>");
+
+        return result;
+    }
+
+    // 관리자 계정이 있는지 검사
+    public static bool Admin_Account()
+    {
+        bool admin_yes = false;
+
+        int admin_cnt = _DB.GetDbData_Count(AppState["table_s_mbrdata"].ToString(), "admin='1'");
+        if (admin_cnt > 0)
+        {
+            return true;
+            //return false;
+        }
+
+        return false;
+        //return true;
+    }
+
+    // 이메일 보내기
+    public static bool getSendMail(string from, string to, string subjectX, string contentX, string html)
+    {
+        //SMTP 서버 주소 - Live메일이나 gmail도 됩니다. gmail의 경우 smtp.gmail.com 
+        string server = "smtp.gmail.com";
+
+        //SMTP 서버 포트(Live메일과 gmail모두 같음. gmail 공식 문서로 SSL은 465인데 여하간 587도 됩니다. 아래 참고자료) 
+        //대부분의 ISP가 스팸 방지 목적으로 25번 포트를 막기 때문에 요즘의 SMTP 제공자는 SSL이나 587를 기본 지원합니다.     
+        int port = 587;
+
+        // SSL 사용 여부(Live 메일과 gmail 모두 같음) 
+        bool enalbeSsl = true;
+
+        //라이브(MSN) 메신저 주소를 넣으세요. Live ID는 email 주소 입니다. 
+        //gmail은 gmail ID 메일 주소 
+        string userName = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "admin='1'", "email").ToString();
+
+        //라이브(MSN) 메신저 주소를 넣으세요. Live ID는 email 주소 입니다. 
+        //gmail은 gmail ID 메일 주소 
+        //string from = "yoonaaaaaaah@gmail.com";
+
+        string pw = _DB.GetDbData_S(AppState["table_s_mbrdata"].ToString(), "admin='1'", "pw_a").ToString();
+
+        try
+        {
+            WebMail.SmtpServer = server;
+            WebMail.SmtpPort = port;
+            WebMail.EnableSsl = enalbeSsl;
+            WebMail.UserName = from;    //WebMail.UserName = userName;
+            WebMail.From = from;
+            WebMail.Password = pw;
+            WebMail.Send(to: @to, subject: @subjectX, body: @contentX);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
+
+    //switch
+    public static string[] getSwitchList(string pos)
+    {
+        string dirh = Request.PhysicalApplicationPath + "switchs\\" + pos + "\\";
+
+        string[] folders = Directory.GetDirectories(dirh);
+        string[] incs = new string[folders.Length];
+        int i = 0;
+
+        foreach (string folder in folders)
+        {
+            string folder_name = folder.Substring(dirh.Length, folder.Length - dirh.Length);
+            string _fins = folder_name.Substring(0, 1);
+
+            if (_fins.Contains("_."))
+            {
+                continue;
+            }
+
+            incs[i++] = folder_name;
+        }
+        return incs;
+    }
+
+    public static Dictionary<string, string> getWdgvar()
+    {
+
+        string _wdgvar = Session["wdgvar"].ToString();
+        var wdgvar = new Dictionary<string, string>();
+
+        string widgetName = _wdgvar.Split(',')[0];
+        string[] tmpWdgvar = _System.getArrayString(_wdgvar.Split(',')[1]);
+
+        wdgvar.Add("widget_id", widgetName);
+
+        for (int i = 0; i < tmpWdgvar.Length; i++)
+        {
+            int startIndex = tmpWdgvar[i].IndexOf("=>");
+
+            string varKey = tmpWdgvar[i].Substring(0, startIndex);
+            string varVal = tmpWdgvar[i].Replace(varKey, "").Replace("=>", "");
+
+            wdgvar.Add(varKey, varVal);
+        }
+        
+        return wdgvar;
+    }
+
+    public static string getWidgetPath()
+    {
+        string _wdgvar = Session["wdgvar"].ToString();
+        string result = "~/" + "widgets/" + _wdgvar.Split(',')[0] + "/main.cshtml";
+
+        return result;
+    }
+
+    //디렉토리 이동시 파일이 이미 존재하면 덮어쓰기    
+    public static void DirMove(string oldPath, string newPath)
+    {
+        if (!Directory.Exists(newPath))
+        {
+            Directory.CreateDirectory(newPath);
+        }
+
+        foreach (string file in Directory.GetFiles(oldPath))
+        {
+            string file_name = Path.GetFileName(file);
+
+            string saveFile = newPath + file_name;
+
+            if (File.Exists(saveFile))
+            {
+                File.Delete(saveFile);
+            }
+
+            File.Move(file, saveFile);
+        }
+        
+        foreach (string folder in Directory.GetDirectories(oldPath))
+        {
+            string folder_name = Path.GetFileName(folder);
+
+            string saveFolder = newPath + folder_name + "\\";
+
+            if (!Directory.Exists(saveFolder))
+            {
+                Directory.CreateDirectory(saveFolder);
+            }
+
+            DirMove(folder, saveFolder);
+            Directory.Delete(folder);
+        }
+    }
+
+
+    public static string getJSONData(string data, string f)
+    {
+
+        string splitStr = "\"" + f + "\":\"";
+
+        string[] arr1 = data.Replace(": \"", ":\"").Replace(splitStr, "@").Split('@');
+        string[] arr2 = arr1[1].Split('\"');
+
+        return arr2[0];
+    }
+    
+    public static string[] SplitByString(string str, string split)
+    {
+        int offset = 0;
+        int index = 0;
+
+        int[] offsets = new int[str.Length + 1];
+        while (index < str.Length)
+        {
+            int indexOf = str.IndexOf(split, index);
+            if (indexOf != -1)
+            {
+                offsets[offset++] = indexOf;
+                index = (indexOf + split.Length);
+            }
+            else
+            {
+                index = str.Length;
+            }
+        }
+        string[] final = new string[offset + 1];
+
+        if (offset == 0)
+        {
+            final[0] = str;
+        }
+        else
+        {
+            offset--;
+            final[0] = str.Substring(0, offsets[0]);
+            for (int i = 0; i < offset; i++)
+            {
+                final[i + 1] = str.Substring(offsets[i] + split.Length, offsets[i + 1] - offsets[i] - split.Length);
+            }
+            final[offset + 1] = str.Substring(offsets[offset] + split.Length);
+        }
+        
+        return final;
+    }
+
+    public static string[] SplitByString(string str, string split, int cnt)
+    {
+        string[] final = new string[cnt];
+
+        for (int _i = 0; _i < cnt; _i++)
+        {
+            final[_i] = "";
+        }
+
+        if (str == "" || !str.Contains(split))
+        {
+            final[0] = str;
+            return final;
+        }
+                
+        int i = 0;
+
+        while (str.Contains(split))
+        {
+            string contents = str.Substring(0, str.IndexOf(split));
+            final[i++] = contents;
+            str = str.Substring(contents.Length + split.Length, str.Length - (contents.Length + split.Length));
+        }
+
+        return final;
+    }
+    
+    public static string[] SplitByChar(string str, char split, int cnt)
+    {
+        string[] final = new string[cnt];        
+        string[] orig = str.Split(split);
+        int index = 0;
+        
+        for (int _i = 0; _i < cnt; _i++)
+        {
+            final[_i] = "";
+        }
+        
+        if (str == "" || !str.Contains(split.ToString()))
+        {
+            return final;
+        }
+        
+        while (cnt >= orig.Length) 
+        {
+            final[index] = orig[index];
+        }
+        
+        return final;
+    }
+    
+    public static int[] getimagesize(string imgPath)
+    {
+        int[] size = { 0, 0 };
+        
+        using (Image Img = Image.FromFile(imgPath))
+        {
+            size[0] = Img.Width;
+            size[1] = Img.Height;
+        }
+
+        return size;        
+    }
+        
+    public static Image ResizeWidth(string imgPath, int width)
+    {
+        Image thumbImg = new Bitmap(imgPath);
+        thumbImg = thumbImg.GetThumbnailImage(width, Convert.ToInt32((width * thumbImg.Height) / thumbImg.Width), null, IntPtr.Zero);
+
+        return thumbImg;
+    }
+
+    public static Image ResizeWidthHeight(string imgPath, int width, int height)
+    {
+        Image thumbImg = new Bitmap(imgPath);
+        thumbImg = thumbImg.GetThumbnailImage(width, height, null, IntPtr.Zero);
+
+        return thumbImg;
+    }   
+    
+}

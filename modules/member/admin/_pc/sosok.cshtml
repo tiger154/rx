@@ -1,0 +1,275 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var editmode = Request["editmode"];
+
+    string frame_name = "_action_frame_" + m;    
+
+    string RCD_sql = "SELECT * FROM " + AppState["table_s_mbrgroup"] + " ORDER BY gid asc";
+    string levelnum = _DB.GetDbData_S(AppState["table_s_mbrlevel"].ToString(), "gid=1", "uid").ToString();
+    string level_sql = "SELECT TOP " + levelnum + " * FROM " + AppState["table_s_mbrlevel"] + " ORDER BY uid ASC";
+    
+    
+    if (!_isDragScript)
+    {
+        <script type="text/javascript" src="./_core/opensrc/tool-man/core.js"></script>
+        <script type="text/javascript" src="./_core/opensrc/tool-man/events.js"></script>
+        <script type="text/javascript" src="./_core/opensrc/tool-man/css.js"></script>
+        <script type="text/javascript" src="./_core/opensrc/tool-man/coordinates.js"></script>
+        <script type="text/javascript" src="./_core/opensrc/tool-man/drag.js"></script>
+        <script type="text/javascript" src="./_core/opensrc/tool-man/dragsort.js"></script>
+        <script type="text/javascript">
+        //<![CDATA[
+            var dragsort = ToolMan.dragsort();
+        //]]>
+        </script>        
+    }
+}
+
+<div id="sosokbox">
+
+	<form name="sosokForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return regisCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="sosok_regis" />
+
+	<div class="sosok">
+	<div class="title">
+		<div class="xl">회원그룹</div>
+		<div class="xr">
+			<span class="ninput" id="ninput">
+			<input type="text" name="name" class="input" />
+			</span>
+			<img src="@g["img_core"]/_public/btn_add.gif" alt="추가" title="추가" class="hand" onclick="regisSosok();" />
+            @if(editmode != "Y") 
+            {
+                <a href="@g["adm_href"]&editmode=Y"><img src="@g["img_core"]/_public/btn_edit.gif" alt="그룹명칭 변경모드로 전환" title="그룹명칭 변경모드로 전환" class="trans hand" /></a>    
+            }
+            else {
+                <a href="@g["adm_href"]"><img src="@g["img_core"]/_public/btn_edit.gif" alt="그룹순서 변경모드로 전환" title="그룹순서 변경모드로 전환" class="hand" /></a>    
+            }
+			<input type="image" src="@g["img_core"]/_public/btn_save.gif" alt="save" title="그룹순서 저장" />
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div class="box">
+	<div class="msgbox">
+		회원관리에 필요한 소속그룹들을 등록해 주세요.<br />
+		(보기) 준회원,정회원,특별회원,관리자 등
+	</div>
+	<ul id="sosokorder">
+    @{
+        int i = 0;        
+        
+        foreach(var R in _DB.Query(RCD_sql)) 
+        {
+            i++;
+ 	        <li>
+	        <input type="checkbox" name="sosokmembers" value="@R["uid"]" checked="checked" class="hide" />
+	        <div class="sosokbox">            
+	        <div class="num"><span>@(R["num"] != 0 ? string.Format("{0:#,0}", R["num"]) + ")" : "")</span></div>
+	        <div class="delbtn"><a href="@g["s"]/?r=@r&m=@module&a=sosok_delete&uid=@R["uid"]" target="@frame_name" onclick="return sosokDelCheck(@R["num"]);"><img src="@g["img_core"]/_public/btn_del_s01.gif" alt="삭제" title="삭제" /></a></div>  
+	        <div class="icon" @Html.Raw(editmode != "Y" ? "style='cursor:move;'" : "")><img src="@g["img_core"]/blank.gif" width="100%" height="100%" alt="" /></div>
+	        <div class="name"><input type="text" name="name_@(R["uid"])" value="@R["name"]" class="input" /></div>
+	        </div>
+	        </li>           
+        }
+    }
+	</ul>
+	</div>
+	</div>
+
+	</form>
+
+
+	<form name="levelForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return levelCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@module" />
+	<input type="hidden" name="a" value="level_regis" />
+
+	<div class="level">
+	<div class="title">
+		<div class="xl">회원등급</div>
+		<div class="xr">
+			<select name="num">
+
+            @for (i = 5; i < 101; i = i + 5) 
+            {
+                <option value="@i" @_System.getSltStr(i, levelnum)>사용등급 : @i</option>
+            }   
+
+			</select>
+			<input type="image" src="@g["img_core"]/_public/btn_save.gif" alt="save" title="저장" />
+		</div>
+		<div class="clear"></div>
+	</div>
+
+	<div class="leveltbl">
+	<table cellspacing="1" cellpadding="1" summary="회원등급 표입니다.">
+	<caption>회원등급표</caption>
+	<colgroup> 
+	<col width="50">
+	<col width="60">
+	<col width="70"> 
+	<col width="60"> 
+	<col width="60"> 
+	<col width="60"> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" rowspan="2">등급</th>
+	<th scope="col" rowspan="2">회원수</th>
+	<th scope="col" rowspan="2">명칭</th>
+	<th scope="col" colspan="3">회원등급 자동갱신 수량설정</th>
+	</tr>
+	<tr>
+	<th scope="col">(접속수)</th>
+	<th scope="col">(게시물수)</th>
+	<th scope="col">(댓글수)</th>
+	</tr>
+	</thead>
+	<tbody>
+    @{
+        i = 0;        
+                
+        foreach(var R in _DB.Query(level_sql)) 
+        {   
+            i++;     
+            
+ 	        <tr>
+	        <td><div class="num">@R["uid"]</div></td>
+	        <td>@(R["num"] != 0 ? string.Format("{0:#,0}", R["num"]) : "")</td>
+	        <td><input type="text" name="name_@(R["uid"])" size="10" value="@R["name"]" class="input" /></td>
+	        <td><input type="text" name="login_@(R["uid"])" size="6" value="@(R["login"] != 0 ? R["login"].ToString() : "")" class="input" onkeyup="numFormat1(this);" onkeypress="numFormat1(this);" @Html.Raw(i == 0 ? "onblur=\"autoNumber(this);\" title=\"입력하시면 자동완성됩니다.\"" : "") /></td>
+	        <td><input type="text" name="post_@(R["uid"])" size="6" value="@(R["post"] != 0 ? R["login"].ToString() : "")" class="input" onkeyup="numForma1t(this);" onkeypress="numFormat1(this);" @Html.Raw(i == 0 ? "onblur=\"autoNumber(this);\" title=\"입력하시면 자동완성됩니다.\"" : "") /></td>
+	        <td><input type="text" name="comment_@(R["uid"])" size="6" value="@(R["comment"] != 0 ? R["login"].ToString() : "")" class="input" onkeyup="numFormat1(this);" onkeypress="numFormat1(this);" @Html.Raw(i == 0 ? "onblur=\"autoNumber(this);\" title=\"입력하시면 자동완성됩니다.\"" : "") /></td>
+	        </tr>      
+        }
+        
+    }
+
+	</tbody>
+	</table>
+	</div>
+	</div>
+
+	</form>
+
+
+	<div class="clear"></div>
+
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+var nvisible = false;
+function autoNumber(obj)
+{
+	if (!obj.value) return false;
+	
+	var znum = obj.name == 'login_1' ? 2 : 1;
+	var f = obj.form;
+	var levelnum = levelnum["uid"];
+	var i;
+	var exp;
+	for	(i = 1; i < levelnum; i++)
+	{
+		exp = obj.name.split('_');
+		eval('f.'+exp[0]+'_'+(i+1)).value = (parseInt(obj.value) * znum * i) + parseInt(eval('f.'+exp[0]+'_'+i).value);
+	}
+
+}
+function sosokDelCheck(n)
+{
+	if (n > 0)
+	{
+		alert('소속회원이 존재하는 그룹은 삭제할 수 없습니다. ');
+		return false;
+	}
+	if (confirm('정말로 삭제하시겠습니까?      '))
+	{
+		return true;
+	}
+	return false;
+}
+function regisSosok()
+{
+	if (nvisible == false)
+	{
+		getId('ninput').style.visibility = 'visible';
+		document.sosokForm.name.focus();
+		nvisible = true;
+	}
+	else {
+		getId('ninput').style.visibility = 'hidden';
+		nvisible = false;
+	}
+}
+function levelCheck(f)
+{
+	if (!confirm('정말로 실행하시겠습니까?   '))
+	{
+		return false;
+	}
+}
+function regisCheck(f)
+{
+	if (nvisible == true)
+	{
+		if (f.name.value == '')
+		{
+			alert('추가할 그룹명을 입력해 주세요.   ');
+			f.name.focus();
+			return false;
+		}
+	}
+	if (!confirm('정말로 실행하시겠습니까?   '))
+	{
+		return false;
+	}
+}
+function numFormat1(obj)
+{
+	if (!getTypeCheck(obj.value,'0123456789'))
+	{
+		alert('숫자만 입력해 주세요.');
+		obj.value = '';
+		obj.focus();
+		return false;
+	}
+}
+
+@if (editmode == null || editmode != "Y") 
+{
+    @:dragsort.makeListSortable(getId("sosokorder"));
+}
+
+//]]>
+</script>
+

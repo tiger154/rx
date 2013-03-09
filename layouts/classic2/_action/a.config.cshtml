@@ -1,0 +1,356 @@
+﻿@using System.Drawing;
+@using System.Drawing.Imaging;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var my = PageData[1];
+    var s = PageData[2];
+    var r = PageData[3];
+    var _HS = PageData[4];
+    var d_layout = PageData[5];
+
+    string changeType = Request["changeType"];
+    string nowLayout = Request["nowLayout"];
+        
+    string _WHERE = " layout='" + nowLayout + "'";
+
+    dynamic LAYOUT_ARR = _DB.Get_code_layout(d_layout["dir"]);   
+    
+    @_System.checkAdmin(my["admin"], 0)     // 관리자 체크
+
+    // config initial page change
+    LAYOUT_ARR["begin"] = "1";
+    
+    /*
+    string begin_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='1' WHERE " + _WHERE + " AND id='begin'";            
+    @_DB.Execute(begin_SQL);
+    */
+    
+    // Front
+    if (changeType == "front")
+    {
+        string mainType_layout = Request["mainType_layout"];
+        string mainType_rb = Request["mainType_rb"];
+        string bbs1 = Request["bbs1"];
+        string sort1 = Request["sort1"];
+        string bbs1_day = Request["bbs1_day"];
+        string bbs2 = Request["bbs2"];
+        string sort2 = Request["sort2"];
+        string bbs2_day = Request["bbs2_day"];
+        string bbs2_num = Request["bbs2_num"];
+        string bbs3 = Request["bbs3"];
+        string sort3 = Request["sort3"];
+        string bbs3_day = Request["bbs3_day"];
+        string bbs3_num = Request["bbs3_num"];
+        string bbs4 = Request["bbs4"];
+        string sort4 = Request["sort4"];
+        string bbs4_day = Request["bbs4_day"];
+        string bbs4_num = Request["bbs4_num"];
+        
+        if(LAYOUT_ARR["mainType_layout"] == "1" && mainType_layout == "1")
+        {
+
+            LAYOUT_ARR["bbs1"] = bbs1;
+            LAYOUT_ARR["sort1"] = sort1;
+            LAYOUT_ARR["bbs1_day"] = bbs1_day;
+            LAYOUT_ARR["bbs2"] = bbs2;
+            LAYOUT_ARR["sort2"] = sort2;
+            LAYOUT_ARR["bbs2_day"] = bbs2_day;
+            LAYOUT_ARR["bbs2_num"] = bbs2_num;
+            LAYOUT_ARR["bbs3"] = bbs3;
+            LAYOUT_ARR["sort3"] = sort3;
+            LAYOUT_ARR["bbs3_day"] = bbs3_day;
+            LAYOUT_ARR["bbs3_num"] = bbs3_num;
+            LAYOUT_ARR["bbs4"] = bbs4;
+            LAYOUT_ARR["sort4"] = sort4;
+            LAYOUT_ARR["bbs4_day"] = bbs4_day;
+            LAYOUT_ARR["bbs4_num"] = bbs4_num;
+            
+            /*
+            string bbs1_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs1 + "' WHERE " + _WHERE + " AND id='bbs1'";            
+            string sort1_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + sort1 + "' WHERE " + _WHERE + " AND id='sort1'";            
+            string bbs1_day_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs1_day + "' WHERE " + _WHERE + " AND id='bbs1_day'";            
+            string bbs2_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs2 + "' WHERE " + _WHERE + " AND id='bbs2'";            
+            string sort2_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + sort2 + "' WHERE " + _WHERE + " AND id='sort2'";            
+            string bbs2_day_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs2_day + "' WHERE " + _WHERE + " AND id='bbs2_day'";            
+            string bbs2_num_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs2_num + "' WHERE " + _WHERE + " AND id='bbs2_num'";            
+            string bbs3_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs3 + "' WHERE " + _WHERE + " AND id='bbs3'";            
+            string sort3_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + sort3 + "' WHERE " + _WHERE + " AND id='sort3'";            
+            string bbs3_day_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs3_day + "' WHERE " + _WHERE + " AND id='bbs3_day'";            
+            string bbs3_num_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs3_num + "' WHERE " + _WHERE + " AND id='bbs3_num'";            
+            string bbs4_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs4 + "' WHERE " + _WHERE + " AND id='bbs4'";            
+            string sort4_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + sort4 + "' WHERE " + _WHERE + " AND id='sort4'";            
+            string bbs4_day_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs4_day + "' WHERE " + _WHERE + " AND id='bbs4_day'";            
+            string bbs4_num_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bbs4_num + "' WHERE " + _WHERE + " AND id='bbs4_num'";            
+
+            @_DB.Execute(bbs1_SQL);
+            @_DB.Execute(sort1_SQL);
+            @_DB.Execute(bbs1_day_SQL);
+            @_DB.Execute(bbs2_SQL);
+            @_DB.Execute(sort2_SQL);
+            @_DB.Execute(bbs2_day_SQL);
+            @_DB.Execute(bbs2_num_SQL);
+            @_DB.Execute(bbs3_SQL);
+            @_DB.Execute(sort3_SQL);
+            @_DB.Execute(bbs3_day_SQL);
+            @_DB.Execute(bbs3_num_SQL);
+            @_DB.Execute(bbs4_SQL);
+            @_DB.Execute(sort4_SQL);
+            @_DB.Execute(bbs4_day_SQL);
+            @_DB.Execute(bbs4_num_SQL);
+            */
+        }
+
+        LAYOUT_ARR["mainType_layout"] = mainType_layout;
+        LAYOUT_ARR["mainType_rb"] = mainType_rb;
+        
+        /*
+        string mainType_layout_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + mainType_layout + "' WHERE " + _WHERE + " AND id='mainType_layout'";            
+        string mainType_rb_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + mainType_rb + "' WHERE " + _WHERE + " AND id='mainType_rb'";            
+
+        @_DB.Execute(mainType_layout_SQL);
+        @_DB.Execute(mainType_rb_SQL);
+        */
+    }    
+    
+    // Theme
+    if (changeType == "theme")
+    {
+        string theme = Request["theme"];
+
+        LAYOUT_ARR["theme"] = theme;
+        
+        /*
+        string theme_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + theme + "' WHERE " + _WHERE + " AND id='theme'";        
+        @_DB.Execute(theme_SQL);
+        */
+    }
+
+    // Detail
+    if (changeType == "detail")
+    {
+        string title = Request["title"];
+        string title_t = Request["title_t"];
+        string title_b = Request["title_b"];
+        string imglogo_w = Request["imglogo_w"];
+        string imglogo_h = Request["imglogo_h"];
+        string imglogo_use = Request["imglogo_use"];
+        string bgtitle_use = Request["bgtitle_use"];
+        string bgtitle_o = Request["bgtitle_o"];
+        string title_color = Request["title_color"];
+        string memberlink_color = Request["memberlink_color"];
+        string mainmenu_color = Request["mainmenu_color"];
+        string mainmenu_color1 = Request["mainmenu_color1"];
+        string menunum = Request["menunum"];
+        string homestr = Request["homestr"].Trim();
+        string homestr_use = Request["homestr_use"];
+        string imglogo_w_SQL = "";
+        string imglogo_h_SQL = "";
+        string imglogo_SQL = "";
+        string bgtitle_SQL = "";
+        
+        var uploadedFile = Request.Files[0];
+        var uploadedFile1 = Request.Files[1];
+        bool _newupload = false;
+        bool _imglogo_use = false;
+        
+        string name = Path.GetFileName(uploadedFile.FileName);
+        string name1 = Path.GetFileName(uploadedFile1.FileName);
+        
+        // file upload (1)
+        if(name != "" && name != null)
+        {
+            string fileExt = _System.getExt(name).ToLower();    
+
+            if(fileExt=="jpeg") {
+                fileExt = "jpg";
+            }    
+            
+            if(!("[gif][jpg][png]").Contains(fileExt)) {
+                @_System.getLink("", "", "gif/jpg/png 파일만 등록할 수 있습니다.", "")
+                return;
+            }
+
+            string photo = "logo." + fileExt;    
+            string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + photo;
+            string saveFile2 = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["imglogo"];
+            
+            _imglogo_use = true;
+
+            if(File.Exists(saveFile2) == true)
+            {
+                
+                // Process Unlock
+                using (Image Img = Image.FromFile(saveFile2)){
+                    using(Image thumbImg = new Bitmap(Img)) {
+                        thumbImg.Dispose();
+                    }
+                }
+
+                File.Delete(saveFile2);
+            }
+
+            uploadedFile.SaveAs(saveFile);
+            Image image = Image.FromFile(saveFile, false);
+
+            LAYOUT_ARR["imglogo_w"] = image.Width;
+            LAYOUT_ARR["imglogo_h"] = image.Height;
+            LAYOUT_ARR["imglogo"] = photo;
+            
+            /*            
+            imglogo_w_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + image.Width + "' WHERE " + _WHERE + " AND id='imglogo_w'";
+            imglogo_h_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + image.Height + "' WHERE " + _WHERE + " AND id='imglogo_h'";
+            imglogo_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + photo + "' WHERE " + _WHERE + " AND id='imglogo'";
+
+            @_DB.Execute(imglogo_w_SQL);
+            @_DB.Execute(imglogo_h_SQL);       
+            @_DB.Execute(imglogo_SQL);       
+            */
+            _newupload = true;
+        }
+        
+        // file upload (2)
+        if(name1 != "" && name1 != null)
+        {
+            string fileExt = _System.getExt(name1).ToLower();    
+
+            if(fileExt=="jpeg") {
+                fileExt = "jpg";
+            }    
+            
+            if(!("[gif][jpg][png]").Contains(fileExt)) {
+                @_System.getLink("", "", "gif/jpg/png 파일만 등록할 수 있습니다.", "")
+                return;
+            }
+
+            string photo = "bgtitle." + fileExt;    
+            string saveFile = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + photo;
+            string saveFile2 = g["path_root_ps"] + g["path_layout"] + nowLayout + "\\_var\\" + LAYOUT_ARR["bgtitle"];
+            
+            if(File.Exists(saveFile2) == true)
+            {
+                // Process Unlock
+                using (Image Img = Image.FromFile(saveFile2)){
+                    using(Image thumbImg = new Bitmap(Img)) {
+                        thumbImg.Dispose();
+                    }
+                }
+                
+                File.Delete(saveFile2);
+            }
+
+            uploadedFile1.SaveAs(saveFile);
+
+            LAYOUT_ARR["bgtitle"] = photo;
+            
+            /*
+            bgtitle_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + photo + "' WHERE " + _WHERE + " AND id='bgtitle'";
+
+            @_DB.Execute(bgtitle_SQL);
+             */ 
+        }
+
+        LAYOUT_ARR["title"] = title;
+        LAYOUT_ARR["title_t"] = title_t;
+        LAYOUT_ARR["title_b"] = title_b;
+        
+        /*
+        string title_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + title + "' WHERE " + _WHERE + " AND id='title'";
+        string title_t_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + title_t + "' WHERE " + _WHERE + " AND id='title_t'";
+        string title_b_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + title_b + "' WHERE " + _WHERE + " AND id='title_b'";
+        string imglogo_use_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + imglogo_use + "' WHERE " + _WHERE + " AND id='imglogo_use'";
+        string bgtitle_use_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bgtitle_use + "' WHERE " + _WHERE + " AND id='bgtitle_use'";
+        string bgtitle_o_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + bgtitle_o + "' WHERE " + _WHERE + " AND id='bgtitle_o'";
+        string title_color_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + title_color + "' WHERE " + _WHERE + " AND id='title_color'";
+        string memberlink_color_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + memberlink_color + "' WHERE " + _WHERE + " AND id='memberlink_color'";
+        string mainmenu_color_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + mainmenu_color + "' WHERE " + _WHERE + " AND id='mainmenu_color'";
+        string mainmenu_color1_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + mainmenu_color1 + "' WHERE " + _WHERE + " AND id='mainmenu_color1'";
+        string menunum_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + menunum + "' WHERE " + _WHERE + " AND id='menunum'";
+        string homestr_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + homestr + "' WHERE " + _WHERE + " AND id='homestr'";
+        string homestr_use_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + homestr_use + "' WHERE " + _WHERE + " AND id='homestr_use'";
+
+        @_DB.Execute(title_SQL);
+        @_DB.Execute(title_t_SQL);
+        @_DB.Execute(title_b_SQL);
+        */
+        
+        if(_imglogo_use == true || (_imglogo_use == false && LAYOUT_ARR["imglogo"] != "")) {
+            LAYOUT_ARR["imglogo_use"] = imglogo_use;
+            /*
+            @_DB.Execute(imglogo_use_SQL);            
+            */
+        }
+
+        LAYOUT_ARR["bgtitle_use"] = bgtitle_use;
+        LAYOUT_ARR["bgtitle_o"] = bgtitle_o;
+        LAYOUT_ARR["title_color"] = title_color;
+        LAYOUT_ARR["memberlink_color"] = memberlink_color;
+        LAYOUT_ARR["mainmenu_color"] = mainmenu_color;
+        LAYOUT_ARR["mainmenu_color1"] = mainmenu_color1;
+        LAYOUT_ARR["menunum"] = menunum;
+        LAYOUT_ARR["homestr"] = homestr;
+        LAYOUT_ARR["homestr_use"] = homestr_use;
+        
+        /*
+        @_DB.Execute(bgtitle_use_SQL);
+        @_DB.Execute(bgtitle_o_SQL);
+        @_DB.Execute(title_color_SQL);
+        @_DB.Execute(memberlink_color_SQL);
+        @_DB.Execute(mainmenu_color_SQL);
+        @_DB.Execute(mainmenu_color1_SQL);
+        @_DB.Execute(menunum_SQL);
+        @_DB.Execute(homestr_SQL);
+        @_DB.Execute(homestr_use_SQL);       
+        */
+        
+        if(_newupload == false)
+        {
+            LAYOUT_ARR["imglogo_w"] = imglogo_w;
+            LAYOUT_ARR["imglogo_h"] = imglogo_h;
+            
+            /*
+            imglogo_w_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + imglogo_w + "' WHERE " + _WHERE + " AND id='imglogo_w'";
+            imglogo_h_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + imglogo_h + "' WHERE " + _WHERE + " AND id='imglogo_h'";
+
+            @_DB.Execute(imglogo_w_SQL);
+            @_DB.Execute(imglogo_h_SQL);       
+            */ 
+        }
+    }
+
+    // SNS
+    if (changeType == "sns")
+    {
+        string sns_use = Request["sns_use"];
+
+        LAYOUT_ARR["sns_use"] = sns_use;
+        
+        /*
+        string sns_use_SQL = "UPDATE " + AppState["table_code_d_layout"] + " SET id_value='" + sns_use + "' WHERE " + _WHERE + " AND id='sns_use'";            
+        @_DB.Execute(sns_use_SQL);
+         */ 
+    }
+
+    string filePath = g["path_root_ps"] + "layouts\\" + nowLayout + "\\_var\\_var.cshtml";
+    
+    File.WriteAllText(filePath, "", System.Text.Encoding.UTF8);
+    
+    StreamWriter sw = File.AppendText(filePath);
+    
+    foreach (string key in LAYOUT_ARR.Keys)
+    {
+        sw.WriteLine("[" + nowLayout + "][" + key + "][" + LAYOUT_ARR[key] + "]");
+    }
+    
+    sw.Close();
+    
+    @_System.getLink("reload", "parent.", "", "")
+    return;
+}

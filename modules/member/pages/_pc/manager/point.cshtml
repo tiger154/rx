@@ -1,0 +1,332 @@
+﻿@{
+    /*****************************************************************
+    // Programmed by SungHO Kim (Migration: Yoona Sim)
+    // KimsQ-Rx (for Microsoft Razor)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    *****************************************************************/    
+    
+    var g = PageData[0];
+    var _m = PageData[1];
+    var m = PageData[3];
+    var p = PageData[4];
+    var _HS = PageData[5];
+    var my = PageData[6];
+    var s = PageData[9];
+    var _keyword = PageData[10];
+    var _mod = PageData[11];
+
+    var mbruid = Request["mbruid"];
+    var account = Request["account"];
+    var sort = Request["sort"];
+    var orderby = Request["orderby"];
+    var recnum = Request["recnum"];
+    var where = Request["where"];
+    var keyword = Request["keyword"];
+    var front = Request["front"];
+    var page = Request["page"];
+    var type = Request["type"];
+    var iframe = Request["iframe"];
+    var skin = Request["skin"];
+    var price = Request["price"];
+    var r = Request["r"];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+
+    string frame_name = "_action_frame_" + m;
+
+    dynamic M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + mbruid);
+    dynamic levelnum = _DB.GetDbData_M(AppState["table_s_mbrlevel"].ToString(), "gid=1");
+    dynamic levelname= _DB.GetDbData_M(AppState["table_s_mbrlevel"].ToString(), "uid="+M["level"]);
+    dynamic sosokname= _DB.GetDbData_M(AppState["table_s_mbrgroup"].ToString(), "uid="+M["sosok"]);
+    dynamic joinsite = _DB.GetDbData_M(AppState["table_s_site"].ToString(), "uid="+M["site"]);
+    dynamic M1 = _DB.GetDbData_M(AppState["table_s_mbrid"].ToString(), "uid="+M["memberuid"]);
+
+    if (type == null || type == "")
+    {
+        type = "point";
+    }    
+    
+    decimal TPG = 0;
+        
+    if(sort == null || sort == "") {
+        sort = "uid";
+    }
+
+    if(orderby == null || orderby == "") {
+        orderby = "desc";
+	}        
+    if(recnum == null || recnum == "" || Convert.ToInt32(recnum) >= 200) {
+        recnum = "15";
+	}
+    
+    string sqlque = "my_mbruid=" + M["memberuid"];
+    
+    if (price == "1")
+    {
+        sqlque += " and price > 0";        
+    }
+    
+    if (price == "2")
+    {
+        sqlque += " and price < 0";        
+    }
+    
+    if(where != null && where != "" && keyword != null && keyword != "") {
+        string where_set = "(";
+                
+        char[] delimiter = {'|'};
+        string[] strArray = where.Split(delimiter);
+        int str_int = 0;
+                
+        sqlque = sqlque+" AND ";
+                
+        foreach(var tmp in strArray) {
+           if(str_int > 0) {
+                where_set = where_set+" OR ";
+			}
+
+           where_set = where_set + tmp + " LIKE '%" + front + "%'";
+            str_int++;
+        }
+        where_set = where_set + ")";                
+        sqlque = sqlque + where_set;
+	}
+      
+    int list_start = (Convert.ToInt32(p)-1) * Convert.ToInt32(recnum);      // 페이지별 리스트 개수
+    int NUM = _DB.GetDbData_Count(AppState["table_s_" + type].ToString(), sqlque);
+
+    string RCD_sql = _System.GetQuery(AppState["table_s_" + type].ToString(), "", sqlque, sort, orderby, list_start, recnum);
+    
+    TPG = @_System.getTotalPage(Convert.ToDecimal(NUM), Convert.ToDecimal(recnum));     // 총 페이지수
+
+    @RenderPage("_menu.cshtml",g, mbruid, m, _HS)
+    
+    
+}
+
+
+
+<div id="pointlist">
+	<div class="info">
+		<div class="article">
+            <span class="tx">
+			<a class="@Html.Raw(_System.isEqual(type, "point", "b hand", "hand"))" onclick="document.hideForm.type.value='point';document.hideForm.submit();">포인트</a> |
+			<a class="@Html.Raw(_System.isEqual(type, "cash", "b hand", "hand"))" onclick="document.hideForm.type.value='cash';document.hideForm.submit();">적립금</a> |
+			<a class="@Html.Raw(_System.isEqual(type, "money", "b hand", "hand"))" onclick="document.hideForm.type.value='money';document.hideForm.submit();">예치금</a>
+			</span>          
+                        
+            @string.Format("{0:#,0}", Convert.ToInt32(M[type])) (@p/@TPG 페이지)
+		</div>
+		
+		<div class="category">
+        <form name="giveForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return giveCheck(this);">
+			<input type="hidden" name="r" value="@r" />
+			<input type="hidden" name="m" value="@m" />
+			<input type="hidden" name="a" value="admin_action" />
+			<input type="hidden" name="act" value="give_point" />
+			<input type="checkbox" name="mbrmembers" value="@M["memberuid"]" checked="checked" class="hide" />
+			<input type="hidden" name="pointType" value="@type" />
+
+			<select name="how" class="sm">
+			<option value="+">+</option>
+			<option value="-">-</option>
+			</select>
+
+            <input type="text" name="price" size="5" class="input" />@Html.Raw(_System.isEqual(type, "point", "P", "원")) | 지급사유 :                
+            <input type="text" name="comment" size="35" class="input" />
+			<input type="submit" class="btngray" value="지급(차감)" />
+			</form>
+            
+		</div>
+		<div class="clear"></div>
+	</div>
+
+    <form name="hideForm" action="@g["s"]/" method="get">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@m" />
+	<input type="hidden" name="iframe" value="@iframe" />
+	<input type="hidden" name="front" value="@front" />
+	<input type="hidden" name="mbruid" value="@mbruid" />
+	<input type="hidden" name="page" value="@page" />
+	<input type="hidden" name="type" value="@type" />
+	<input type="hidden" name="price" value="@price" />
+	</form>
+    
+    
+    <form name="procForm" action="@g["s"]/" method="post" target="@frame_name" onsubmit="return submitCheck(this);">
+	<input type="hidden" name="r" value="@r" />
+	<input type="hidden" name="m" value="@m" />
+	<input type="hidden" name="front" value="@front" />
+	<input type="hidden" name="a" value="" />
+
+
+    <table summary="포인트 리스트입니다.">
+	<caption>포인트</caption> 
+	<colgroup> 
+	<col width="30"> 
+	<col width="50"> 
+	<col width="80"> 
+	<col> 
+	<col width="90"> 
+	</colgroup> 
+	<thead>
+	<tr>
+	<th scope="col" class="side1"><img src="@g["img_core"]/_public/ico_check_01.gif" class="hand" alt="" onclick="chkFlag('members');" /></th>
+	<th scope="col">번호</th>
+	<th scope="col">
+		<select onchange="document.hideForm.price.value=this.value;document.hideForm.submit();">
+		<option value="">&nbsp;+ 전체</option>
+		<option value="">-----</option>
+		<option value="1" @_System.getSltStr(price, 1)>획득</option>
+		<option value="2" @_System.getSltStr(price, 2)>사용</option>
+		</select>	
+	</th>
+	<th scope="col">내역</th> 
+	<th scope="col" class="side2">날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+        
+        
+    @if (NUM==0)
+    {
+        <tr>
+        <td><input type="checkbox" disabled="disabled" /></td>
+        <td>1</td>
+        <td class="cat">-</td>
+        <td class="sbj1">내역이 없습니다.</td>
+        <td>@date["totime"].ToString().Substring(0, 10)</td>
+        </tr> 
+    }
+    else
+    {
+        int _rec = 0;
+        foreach(var R in _DB.Query(RCD_sql)){                
+            int tmp_num = ((Convert.ToInt32(p)-1) * Convert.ToInt32(recnum)) + _rec++;
+            int tmp_num2 = NUM - tmp_num;
+                
+            <tr>
+            <td><input type="checkbox" name="members" value="@R["uid"]" /></td>
+            <td>@tmp_num2</td>
+            <td class="cat">
+                @if(Convert.ToInt32(R["price"]) > 0){
+                    @:+                        
+                } 
+                @string.Format("{0:#,0}", Convert.ToInt32(R["price"]))
+            </td>
+            <td class="sbj">
+                @R["content"]
+                @if(_System.getNew(R["d_regis"].ToString(), 24) == true) {
+                    <span class="new">new</span>
+                }  
+            </td>
+            <td>@R["d_regis"].ToString("yyyy.MM.dd HH:mm")</td>
+            </tr>  
+        }
+    }
+    </tbody>
+    </table>    
+    
+        
+    <div class="pagebox01">
+	<script type="text/javascript">getPageLink(10, @p, @TPG, '@g["img_core"]/page/default');</script>
+	</div>
+
+	<input type="text" name="category" id="iCategory" value="" class="input none" />
+	<input type="button" value="선택/해제" class="btngray" onclick="chkFlag('members');" />
+	<input type="button" value="내역정리" class="btnblue" onclick="actCheck('point_sum');" />
+	<input type="button" value="삭제" class="btnblue" onclick="actCheck('point_delete');" />
+
+	</form>
+</div>
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+function submitCheck(f)
+{
+	if (f.a.value == "")
+	{
+		return false;
+	}
+}
+function giveCheck(f)
+{    
+	if (f.price.value == "")
+	{
+		alert('지급할 포인트를 입력해 주세요.   ');
+		f.price.focus();
+		return false;
+	}
+
+    if (!isNumeric(f.price.value)) {
+
+    @if (type == "point")
+    {
+    @:alert("포인트를 숫자로 입력하세요.");
+    }
+    else if (type == "cash")
+    {
+    @:alert("적립금 숫자로 입력하세요.");
+    }
+    else
+    {
+    @:alert("예치금 숫자로 입력하세요.");
+    }
+		
+		f.price.focus();
+		return false;
+    }
+	if (f.comment.value == "")
+	{
+		alert('지급사유를 입력해 주세요.   ');
+		f.comment.focus();
+		return false;
+	}
+}
+function isNumeric(s) 
+{
+	for (i=0; i<s.length; i++) 
+	{
+		c = s.substr(i, 1);
+		if (c < "0" || c > "9") return false;
+	}
+	return true;
+}
+
+function actCheck(act)
+{
+	var f = document.procForm;
+    var l = document.getElementsByName("members");
+    var n = l.length;
+	var j = 0;
+    var i;
+
+    for (i = 0; i < n; i++)
+	{
+		if(l[i].checked == true)
+		{
+			j++;	
+		}
+	}
+	if (!j)
+	{
+		alert('선택된 항목이 없습니다.      ');
+		return false;
+	}
+	
+	if(confirm('정말로 실행하시겠습니까?    '))
+	{
+		f.a.value = act;
+		f.submit();
+	}
+}
+
+document.title = "@M[_HS["nametype"]]님의 포인트";
+self.resizeTo(800,750);
+
+//]]>
+</script>
+
+

@@ -1,0 +1,167 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var g = PageData[0];
+    var m = PageData[1];
+    var _HS = PageData[2];
+    var my = PageData[3];
+    var _isDragScript = PageData[4];
+    var p = PageData[5];
+    var r = PageData[6];
+    var s = PageData[7];
+    var module = PageData[8];
+    var date = PageData[9];
+   
+    
+    string frame_name = "_action_frame_" + m;
+
+    string SITES_sql = "SELECT * FROM " + AppState["table_s_site"] + " ORDER BY gid asc";
+    int SITE_cnt = _DB.GetDbData_Count(AppState["table_s_site"], "");
+
+    string year1 = Request["year1"] != null && Request["year1"] != "" ? Request["year1"] : date["year"];
+    string month1 = Request["month1"] != null && Request["month1"] != "" ? Request["month1"] : date["month"];
+    string day1 = Request["day1"] != null && Request["day1"] != "" ? Request["day1"] : "01";
+    string year2 = Request["year2"] != null && Request["year2"] != "" ? Request["year2"] : date["year"];
+    string month2 = Request["month2"] != null && Request["month2"] != "" ? Request["month2"] : date["month"];
+    string day2 = Request["day2"] != null && Request["day2"] != "" ? Request["day2"] : date["day"];    
+    
+    p = (p != null && p != 0 ? p : 1);
+    string recnum = (Request["recnum"] != null && Request["recnum"] != "" && Convert.ToInt32(Request["recnum"]) < 200 ? Request["recnum"] : "20");
+    string sort = (Request["sort"] != null && Request["sort"] != "" ? Request["sort"] : "hit");
+    string orderby = (Request["orderby"] != null && Request["orderby"] != "" ? Request["orderby"] : "desc");
+    
+    string accountQue = (Request["account"] != null && Request["account"] != "" ? "site=" + Request["account"] + " and " : "");   
+    
+ 
+    string _WHERE1 = accountQue + "date BETWEEN " + year1 + month1 + day1 + " AND " + year2 + month2 + day2;
+    string _WHERE2 = "keyword,sum(hit) as hit";
+    string RCD_sql = "SELECT TOP " + recnum + " "  + _WHERE2 + " FROM " + AppState["table_s_inkey"].ToString() + " WHERE " + _WHERE1 + " group by keyword order by " + sort + " " + orderby;
+}
+
+<form name="procForm" action="@g["s"]/" method="get">
+<input type="hidden" name="r" value="@r" />
+<input type="hidden" name="m" value="@m" />
+<input type="hidden" name="module" value="@module" />
+<input type="hidden" name="front" value="@Request["front"]" />
+
+<div class="sbox">
+
+	<select name="account" class="account" onchange="this.form.submit();">
+	<option value="">&nbsp;+ 전체사이트</option>
+	<option value="">---------------------------</option>
+    @foreach (var S in _DB.Query(SITES_sql)) 
+    {        
+        <option value="@S["uid"]" @_System.getSltStr(Request["account"], S["uid"])>ㆍ@(S["name"])</option>
+    }
+
+    @if (SITE_cnt == 0) 
+    {
+        <option value="">등록된 사이트가 없습니다.</option>
+    }
+	</select>
+
+	<div>
+	<select name="year1">
+    @for (int i = Convert.ToInt32(date["year"]); i > 2009; i--) 
+    {
+        <option value="@i" @_System.getSltStr(year1, i)>@(i)년</option>
+    }
+	</select>
+	<select name="month1">
+    @for (int i = 1; i < 13; i++) 
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(month1, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)월</option>
+    }  
+	</select>
+    <select name="day1">
+    @for (int i = 1; i < 32; i++)
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(day1, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)일</option>
+    } 
+    </select>
+	~
+	<select name="year2">
+    @for (int i = Convert.ToInt32(date["year"]); i > 2009; i--) 
+    {
+        <option value="@i" @_System.getSltStr(year2, i)>@(i)년</option>
+    }
+    </select>
+    <select name="month2">
+    @for (int i = 1; i < 13; i++) 
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(month2, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)월</option>
+    }
+    </select>              
+    <select name="day2">
+    @for (int i = 1; i < 32; i++)
+    {
+        <option value="@String.Format("{0:00}", i)" @_System.getSltStr(day2, String.Format("{0:00}", i)))>@String.Format("{0:00}", i)일</option>
+    } 
+    </select>
+
+    <input type="button" class="btngray" value="기간적용" onclick="this.form.submit();" />
+	<input type="button" class="btngray" value="어제" onclick="dropDate('@date["_yester"]','@date["_yester"]');" />
+	<input type="button" class="btngray" value="오늘" onclick="dropDate('@date["totime"]','@date["totime"]');" />
+	<input type="button" class="btngray" value="일주" onclick="dropDate('@date["_week"]','@date["totime"]');" />
+	<input type="button" class="btngray" value="한달" onclick="dropDate('@date["_month"]','@date["totime"]');" />
+    <input type="button" class="btngray" value="당월" onclick="dropDate('@date["curMonth"]','@date["totime"]');" />
+	<input type="button" class="btngray" value="전월" onclick="dropDate('@date["preMonth1"]','@date["preMonth2"]');" />
+	<input type="button" class="btngray" value="전체" onclick="dropDate('2009-01-01','@date["totime"]');" />
+	</div>
+</div>
+</form>
+
+<div class="kbox">
+@{
+    int j = 0;
+        
+    foreach (var G in _DB.Query(RCD_sql)) 
+    {
+        j++;
+        
+        <div class="keywordarea">
+            <span class="num">@j.</span> 
+            <a href="@g["s"]/?r=@r&mod=search&keyword=@Server.UrlEncode(G["keyword"])" target="_blank" title="@G["keyword"]">@_System.getStrCut(G["keyword"],6,"..")</a> 
+            <span class="hit">(@G["hit"]건)</span>
+        </div>
+    }
+    
+    if (j == 0)
+    {
+        <div class="nodata"><img src="@g["img_core"]/_public/ico_notice.gif" alt="" /> 지정된 기간내에 기록된 키워드가 없습니다.</div>
+    }    
+}
+
+<div class="clear"></div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+function dropDate(date1, date2) {
+    var f = document.procForm;
+
+    f.year1.value = date1.substring(0, 4);
+    f.month1.value = date1.substring(5, 7);
+    f.day1.value = date1.substring(8, 10);
+
+    f.year2.value = date2.substring(0, 4);
+    f.month2.value = date2.substring(5, 7);
+    f.day2.value = date2.substring(8, 10);
+
+    f.submit();
+}
+//]]>
+</script>
+
+
+

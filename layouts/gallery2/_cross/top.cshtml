@@ -1,0 +1,88 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/   
+    var g = PageData[0];
+    var my = PageData[1];
+    var r = PageData[2];
+    var s = PageData[3];
+    var _HP = PageData[4];
+    var _CA = PageData[5];
+    var _HS = PageData[6];
+    var d_layout = PageData[7];
+    var LAYOUT_ARR = PageData[8];
+    var _HM = PageData[9];
+    var system = PageData[10];
+
+    string _keyword = Request["_keyword"];
+    string keyword_prn = "";
+
+    char[] delimiter = { ',' };
+
+    int _i = 0;
+    
+    if(_keyword != "" && _keyword != null)
+    {
+        keyword_prn = "done";
+    }
+}
+
+<div id="header"@d_layout["_titlebg"]>
+	<div class="wrap">
+		<div class="logo">
+			@Html.Raw(_System.getLayoutLogo(LAYOUT_ARR, d_layout, g, _HS))
+		</div>
+		<div class="search">
+			<form action="@g["s"]/">
+			<input type="hidden" name="r" value="@r" />
+			<input type="hidden" name="mod" value="search" />
+			<input type="text" name="keyword" class="keyword @keyword_prn" value="@_keyword" />
+			<input type="image" src="@g["img_layout"]/btn_search.gif" class="sbtn" alt="search" />
+			</form>
+		</div>
+		<div class="account">
+			<div id="_layout_memberlink_" class="member">
+				<img src="@g["img_core"]/blank.gif" width="1" height="20" alt="" />
+				@if(my["uid"] > 0)
+                {
+                    if(my["admin"] == "1")
+				    {
+                        <a href="@g["s"]/?r=@r&amp;_themeConfig=detail&amp;prelayout=@d_layout["dir"]/zone" class="admin">설정</a> @("|")                         
+                    }
+                    
+                    <a href="@_System.RW("mod=mypage", g["r"], _HS)"@d_layout["_memberlink_color"]>나의계정</a> @("|") 
+                    <a href="@g["s"]/?r=@r&a=logout"@d_layout["_memberlink_color"]>로그아웃</a>
+
+                    if(LAYOUT_ARR["sns_use"] == "1")
+                    {
+                        <a href="#." onclick="getLayerBox('@g["s"]/?r=@r&m=social&page=account&iframe=Y','소셜계정',600,650,event,false,'l');"@d_layout["_memberlink_color"]><img src="@g["img_layout"]/sns.png" alt="" title="소셜계정" /> SNS</a>
+                    }
+                }
+				else
+                {
+                    <a href="@_System.RW("mod=join", g["r"], _HS)"@d_layout["_memberlink_color"]>회원가입</a> @("|") 
+                    <a href="@_System.RW("mod=login", g["r"], _HS)"@d_layout["_memberlink_color"]>로그인</a>
+        
+                    if(LAYOUT_ARR["sns_use"] == "1")
+                    {
+                        <a href="#." onclick="getLayerBox('@g["s"]/?r=@r&m=social&page=login&iframe=Y','소셜 로그인',350,300,event,false,'l');"@d_layout["_memberlink_color"]><img src="@g["img_layout"]/sns.png" alt="" title="소셜 로그인" /> SNS</a>
+                    }		
+                }
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>
+
+<div id="container" class="wrap">
+@{
+    //////////////////////////////////////////////////////////
+    ///// Header File Rendering
+    //////////////////////////////////////////////////////////        
+    @RenderPage("../../../" + g["path_core"] + "engine/container_head.engine.cshtml", g, _HM, system)
+}

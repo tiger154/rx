@@ -1,0 +1,61 @@
+﻿body {font-size:12px;font-family:gulim;}
+input,select,textarea {font-size:12px;font-family:gulim;}
+select {font-size:12px;font-family:dotum;}
+label {cursor:pointer;}
+a {text-decoration:none;color:#000;}
+a:hover {color:#666;}
+
+.wrap {width:950px;margin:auto;}
+
+#header {}
+
+#header .topbox {background:#424951;}
+#header .topbox .logo {float:left;}
+#header .topbox .logo h1 {padding:0;margin:0;}
+#header .topbox .logo a {color:#ffffff;font-size:30px;font-family:"malgun gothic";outline:none;display:block;}
+#header .topbox .logo img {}
+
+#header .topbox .logoside {float:left;height:1px;position:relative;top:-42px;left:120px;}
+#header .topbox .logoside ul {padding:0;margin:0 0 0 20px;list-style-type:none;}
+#header .topbox .logoside li {float:left;padding:6px 12px 5px 12px;}
+#header .topbox .logoside li a {color:#ccccce;}
+#header .topbox .logoside li a:hover {color:#ffffff;}
+#header .topbox .logoside .on {background:#373C42;border-radius:4px 4px 4px 4px;box-shadow:0 1px 0 #373C42;}
+#header .topbox .logoside .on a {font-weight:bold;font-family:dotum;color:#ffffff;letter-spacing:-1px;}
+
+#header .topbox .search {float:right;height:1px;position:relative;top:-45px;}
+
+#header .topbox .search .member {float:left;padding:1px 0 0 0;text-align:right;font-size:11px;font-family:dotum;letter-spacing:2px;font-family:dotum;color:#666666;}
+#header .topbox .search .member a {font-family:gulim;font-size:12px;letter-spacing:-1px;outline:none;color:#999999;}
+#header .topbox .search .member a:hover {text-decoration:underline;}
+#header .topbox .search .member img {margin-bottom:-3px;}
+#header .topbox .search .member .admin {font-size:11px;font-family:dotum;font-weight:bold;color:#FA5800;}
+
+#header .topbox .search form {}
+#header .topbox .search form .keyword {float:left;margin-left:30px;width:170px;height:12px;background:url('./image/bg_search.gif') 5px center no-repeat #efefef;border:1px solid #efefef;border-radius:4px 4px 4px 4px;color:#444444;font:13px Arial,sans-serif;padding:6px 5px 4px 6px;}
+#header .topbox .search form .keyword:hover {background:url('./image/bg_search.gif') 5px center no-repeat #f9f9f9;}
+#header .topbox .search form .keyword:focus {background:#ffffff;color:#444;outline:none;}
+#header .topbox .search form .sbtn {float:left;margin:0 0 0 6px;}
+#header .topbox .search form .done,#header .topbox .search form .done:hover {background:#ffffff;}
+
+#header .btmbox {background:#efefef;border-top:#ffffff solid 1px;border-bottom:#dddddd solid 1px;height:60px;}
+#header .btmbox .title {float:left;}
+#header .btmbox .title h2 {color:#42494F;font-size:21px;font-family:"malgun gothic";padding:10px 0 0 0;margin:0;}
+#header .btmbox .tabmenu {float:right;}
+
+#header .btmbox .tabmenu ul {padding:28px 0 0 0;margin:0;list-style-type:none;}
+#header .btmbox .tabmenu li {float:left;background:url('./image/bg_tab.jpg') left top repeat-x;margin:0 0 0 3px;}
+#header .btmbox .tabmenu li a {display:block;height:20px;padding:11px 10px 0 10px;font-weight:bold;color:#6E7F86;font-family:dotum;font-size:11px;letter-spacing:-1px;border-top:#dddddd solid 1px;border-left:#dddddd solid 1px;border-right:#dddddd solid 1px;border-bottom:#dddddd solid 1px;}
+#header .btmbox .tabmenu li:hover {background:url('./image/bg_tab_hover.jpg') left top repeat-x;}
+#header .btmbox .tabmenu .on,#header .btmbox .tabmenu .on:hover {background:#ffffff;}
+#header .btmbox .tabmenu .on a {color:#387FBD;border-bottom:#ffffff solid 1px;}
+
+#footer {margin:15px 0 30px 0;}
+#footer .footer {padding:15px 0 0 0;border-top:#ebebeb solid 1px;}
+#footer .footer .slinks {float:left;}
+#footer .footer .slinks .elink {padding:10px 0 10px 0;font-size:11px;font-family:dotum;color:#c0c0c0;letter-spacing:2px;}
+#footer .footer .slinks .elink a {font-family:gulim;font-size:12px;letter-spacing:-1px;color:#666666;}
+#footer .footer .slinks .elink a:hover {text-decoration:underline;}
+#footer .footer .slinks .copyright {font-size:11px;font-family:arial;color:#999999;}
+#footer .footer .powered {float:right;}
+#footer .footer .kimsq {padding:10px 0 10px 0;font-size:11px;font-family:arial;color:#c0c0c0;}

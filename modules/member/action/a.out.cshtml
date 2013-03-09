@@ -1,0 +1,96 @@
+﻿@using System.Web.Security;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var pw1 = Request["pw1"];
+    var pw2 = Request["pw2"];
+
+    dynamic d_member = _DB.Get_code("member");
+    
+    string sha1_pw = FormsAuthentication.HashPasswordForStoringInConfigFile(pw1, "SHA1");
+
+    if(my["uid"] == 0 || pw1 == "" || pw1 == null || pw2 == "" || pw2 == null || pw1 != pw2) {
+	    @_System.getLink("", "", "정상적인 접근이 아닙니다.", "")
+        return;
+    }
+    if(sha1_pw != my["pw"]) {
+	    @_System.getLink("", "", "패스워드가 일치하지 않습니다.", "")
+        return;
+    }
+    
+    if(d_member["join_out"] == "1") {
+        string DEL_MBRID_SQL = "DELETE FROM "+AppState["table_s_mbrid"]+" WHERE uid="+my["uid"];
+        string DEL_MBRDATA_SQL = "DELETE FROM "+AppState["table_s_mbrdata"]+" WHERE memberuid="+my["uid"];
+        string DEL_MBRCOMP_SQL = "DELETE FROM "+AppState["table_s_mbrcomp"]+" WHERE memberuid="+my["uid"];        
+        string DEL_PAPER_SQL = "DELETE FROM " + AppState["table_s_paper"] + " WHERE my_mbruid=" + my["uid"];
+        string DEL_POINT_SQL = "DELETE FROM " + AppState["table_s_point"] + " WHERE my_mbruid=" + my["uid"];
+        string DEL_SCRAP_SQL = "DELETE FROM " + AppState["table_s_scrap"] + " WHERE mbruid=" + my["uid"];
+        string DEL_SIMBOL_SQL = "DELETE FROM " + AppState["table_s_simbol"] + " WHERE mbruid=" + my["uid"];
+        string DEL_FRIEND_SQL = "DELETE FROM " + AppState["table_s_friend"] + " WHERE my_mbruid=" + my["uid"] + " or by_mbruid=" + my["uid"];                
+        string UP_MBRLEVEL_SQL = "UPDATE "+AppState["table_s_mbrlevel"]+" SET num=num-1 WHERE uid="+my["level"];
+        string UP_MBRGROUP_SQL = "UPDATE "+AppState["table_s_mbrgroup"]+" SET num=num-1 WHERE uid="+my["sosok"];
+
+        @_DB.Execute(DEL_MBRID_SQL);
+        @_DB.Execute(DEL_MBRDATA_SQL);
+        @_DB.Execute(DEL_MBRCOMP_SQL);
+        @_DB.Execute(DEL_PAPER_SQL);
+        @_DB.Execute(DEL_POINT_SQL);
+        @_DB.Execute(DEL_SCRAP_SQL);
+        @_DB.Execute(DEL_SIMBOL_SQL);
+        @_DB.Execute(DEL_FRIEND_SQL);        
+        @_DB.Execute(UP_MBRLEVEL_SQL);
+        @_DB.Execute(UP_MBRGROUP_SQL);
+
+        string photoPath = g["path_root_ps"] + g["path_var"] + "simbol\\" + my["photo"];
+        if (File.Exists(photoPath)) {
+            File.Delete(photoPath);
+        }
+                
+        string outTxtPath = g["path_root_ps"] + g["path_tmp"] + "out\\" + my["id"] + ".txt";
+
+        File.WriteAllText(outTxtPath, date["time"].ToString(), System.Text.Encoding.UTF8);
+    }
+    else {
+        string UP_MBRDATA_SQL = "UPDATE " + AppState["table_s_mbrdata"] + " SET auth=4 WHERE memberuid=" + my["memberuid"];
+        @_DB.Execute(UP_MBRDATA_SQL);
+    }
+    string UP_MBRDATA_SQL2 = "UPDATE " + AppState["table_s_numinfo"]+" SET mbrout=mbrout-1 WHERE date='"+date["totime"].ToString("yyyyMMdd")+"' AND site=" + s;
+
+    @_DB.Execute(UP_MBRDATA_SQL2);
+
+    HttpCookie Cookie_svshop = new HttpCookie("id_save_Cookie");
+    Cookie_svshop.Value = null;
+    Response.Cookies.Add(Cookie_svshop);
+   
+    Session["mbr_uid"] = null;
+    Session["mbr_pw"]  = null;
+
+    @_System.getLink(_System.RW("", g["r"], _HS), "parent.", "", "")
+    return;
+}

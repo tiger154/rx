@@ -1,0 +1,143 @@
+﻿@using System.Drawing;
+@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Sim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+    var typeset = new Dictionary<string, string>();
+
+    var g = PageData[0];
+    var m = PageData[3];
+    var _HS = PageData[5];
+    var system = PageData[7];
+    var d_layout = PageData[8];
+    var s = PageData[9];
+    var r = PageData[12];
+    var _HP = PageData[13];
+    int p = PageData[4];
+
+    var iframe = Request["iframe"];
+    var folder = Request["folder"];
+    var sfolder = Request["sfolder"];
+    
+    folder = g["path_root_ps"] + folder.Replace("./", "").Replace("/", "\\");
+
+    if (folder == null || folder == "")
+    {
+        @_System.getLink("", "", "잘못된 접근입니다.", "close")
+        return;
+    }
+
+    if (sfolder != null && sfolder != "")
+    {
+        sfolder += "\\";
+    }
+    else
+    {
+        sfolder = "";
+    }
+
+    sfolder = folder + sfolder;
+}
+
+<div id="imagebox">
+
+	<div class="header">
+		<h1>이미지 불러오기</h1>
+		<div class="guide">
+		선택된 폴더내의 이미지파일을 본문에 삽입할 수 있습니다.<br />
+		삽입하려는 이미지를 선택해 주세요.
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div class="line1"></div>
+	<div class="line2"></div>
+	<div class="line3"></div>
+
+	<div class="content">
+
+    @{
+        int i = 0;
+
+        if ( sfolder != null && sfolder != "")
+        {
+            foreach (string file in Directory.GetFiles(sfolder))
+            {
+                string file_name = file.Substring(sfolder.Length, file.Length - sfolder.Length);
+
+                if (file_name == "." || file_name == "..")
+                {
+                    continue;
+                }
+
+                string fileExt = _System.getExt(file_name).ToLower();
+
+                if (!"[jpg][jpeg][png][gif][png]".Contains(fileExt))
+                {
+                    continue;
+                }
+
+                i++;
+
+                int IM0 = 0;
+
+                using (Image Img = Image.FromFile(file))
+                {
+                    IM0 = Img.Width;
+                }   
+            
+                <div class="photo"><img src="@g["url_root"]@sfolder.Replace(g["path_root_ps"], "").Replace("\\", "/")@file_name" @Html.Raw(_System.isEqual(IM0 > 105, true, "width='105'", "")) alt="@file_name" title="@file_name" class="hand" onclick="insertPhoto(this);" /></div>
+            }
+        }
+
+        if (i == 0)
+        {
+            <div class="none">
+		    <img src="@g["img_core"]/_public/ico_notice.gif" alt="" />
+		    현재폴더(@sfolder)에는 이미지파일이 없습니다.
+		    </div>
+        }
+    }
+
+	</div>
+
+	<div class="footer">
+
+		폴더위치 : @folder
+		<select style="padding:2px;margin:1px;" onchange="goHref('@g["s"]/?r=@r&system=@system&iframe=@iframe&folder=@folder&sfolder='+this.value);">
+		<option value=""></option>
+        @foreach (string tpl in Directory.GetFiles(folder))
+        {
+            string tpl_name = tpl.Substring(folder.Length, tpl.Length - folder.Length);
+
+            if (tpl_name == "." || tpl_name == ".." || File.Exists(tpl))
+            {
+                continue;
+            }
+            
+            <option value="@tpl_name" @_System.getSltStr(sfolder, tpl + "\\")>@tpl_name</option>
+        }
+		</select>
+
+		<input type="button" value="이미지 올리기" class="btngray" onclick="window.open('@g["s"]/?r=@r&m=admin&module=filemanager&front=main&fileupload=Y&iframe=Y&pwd=@Server.UrlEncode(sfolder)');" />
+		<input type="button" value="새 폴더" class="btngray" onclick="window.open('@g["s"]/?r=@r&m=admin&module=filemanager&front=main&folderadd=Y&iframe=Y&pwd=@Server.UrlEncode(folder)');" />
+		<input type="button" value="취소(창닫기)" class="btngray" onclick="top.close();" />
+	</div>
+</div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+    function insertPhoto(obj) {
+        var photos = '<img src="' + obj.src + '" class="photo" alt="" /><br /><br />';
+        opener.frames.editFrame.EditDrop(photos);
+    }
+    document.title = '이미지 불러오기';
+    top.resizeTo(630, 600);
+//]]>
+</script>

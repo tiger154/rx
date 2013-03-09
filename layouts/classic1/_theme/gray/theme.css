@@ -1,0 +1,9 @@
+﻿/* gray */
+#header .tabmenu {border:#8C8C8C solid 1px;}
+#header .tabmenu .twrap {border:#AEAEAE solid 1px;background:#9E9E9E;}
+#header .tabmenu .twrap li a {color:#F9FEF8;}
+#header .tabmenu .twrap li .on {color:#171916;}
+#header .tabmenu .twrap li div dl {border:#8C8C8C solid 1px;}
+#header .tabmenu .twrap .vline {border-right:#B7B7B7 solid 1px;border-left:#6D6D6D solid 1px;}
+#header .tabmenu .twrap li div dt a {color:#222222;}
+#header .tabmenu .twrap li div dd a {color:#222222;}

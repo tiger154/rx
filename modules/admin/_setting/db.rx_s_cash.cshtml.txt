@@ -1,0 +1,9 @@
+﻿CREATE TABLE rx_s_cash ( 
+uid  int  identity(1,1)  NOT NULL , 
+my_mbruid  int   NOT NULL , 
+by_mbruid  int   NOT NULL , 
+price  int   NOT NULL , 
+content  nvarchar(100)   NOT NULL , 
+d_regis  datetime   ,
+PRIMARY KEY (uid)
+);

@@ -1,0 +1,8 @@
+android=안드로이드
+ipod=아이팟
+ipad=아이패드
+iphone=아이폰
+blackberry=블랙베리
+windows ce=윈도우즈모바일
+windows phone os 7=윈도우7폰
+mobile=모바일

@@ -1,0 +1,100 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];    
+    var r = PageData[1];    
+    var m = PageData[2];
+    var my = PageData[3];
+    var LANG_ARR = PageData[4];
+    var d_layout = PageData[5];
+    var LAYOUT_ARR = PageData[6];
+}
+
+<link type="text/css" rel="stylesheet" charset="utf-8" href="@g["url_root"]_core/css/sys.css" />
+<link type="text/css" rel="stylesheet" charset="utf-8" href="@g["url_layout"]/_main.css" />
+
+@if(my["admin"] != "")
+{
+    <link type="text/css" rel="stylesheet" charset="utf-8" href="@g["url_root"]_core/css/bar.css" />
+}
+
+<script type="text/javascript">
+//<![CDATA[
+    var mbrclick = false;
+    var rooturl = '@g["url_root_host"]';
+    var raccount = '@r';
+    var moduleid = '@m';
+    var memberid = '@my["id"]';
+    var is_admin = '@my["admin"]';
+    var needlog = '@LANG_ARR["need_login"]';
+    var neednum = '@LANG_ARR["need_num"]';
+    var myagent = navigator.appName.indexOf('Explorer') != -1 ? 'ie' : 'ns';
+//]]>
+</script>
+
+<script type="text/javascript" charset="utf-8" src="@g["url_root"]_core/js/sys.js"></script>
+<script type="text/javascript" charset="utf-8" src="@g["url_layout"]/_main.js"></script>
+
+@{
+    ////////////////////////////////////
+    // CSS Check
+    ////////////////////////////////////
+    if (File.Exists(g["path_root_ps"] + d_layout["pwd"] + ".css") == true)
+    {
+        string pwd_file = d_layout["str"].Replace("\\", "/") + ".css";
+        
+        <link type="text/css" rel="stylesheet" charset="utf-8" href="@g["url_root"]layouts/@pwd_file" />
+    }
+    if (File.Exists(g["path_root_ps"] + g["dir_module"] + "_main.css") == true)
+    {
+        <link type="text/css" rel="stylesheet" charset="utf-8" href="@g["url_module"]/_main.css" />
+    }
+    if (File.Exists(g["path_root_ps"] + g["dir_module_skin"] + "_main.css") == true)
+    {
+        <link type="text/css" rel="stylesheet" charset="utf-8" href="@g["url_module_skin"]/_main.css" />
+    }
+    if (File.Exists(g["path_root_ps"] + g["dir_module_mode"] + ".css") == true)
+    {
+        <link type="text/css" rel="stylesheet" charset="utf-8" href="@Html.Raw(g["url_module_mode"] + ".css")" />
+    }
+    if (File.Exists(g["path_root_ps"] + g["dir_module_admin"] + ".css") == true)
+    {
+    <link type="text/css" rel="stylesheet" charset="utf-8" href="@Html.Raw(g["url_module_admin"] + ".css")" />
+    }
+    if(d_layout["dir"] != "_blank" && LAYOUT_ARR["theme"] != "")
+    {
+        <link type="text/css" rel="stylesheet" charset="utf-8" href="@g["url_layout"]/_theme/@LAYOUT_ARR["theme"]/theme.css" />
+    }
+    
+    ////////////////////////////////////
+    // Javascript Check
+    ////////////////////////////////////
+    if (File.Exists(g["path_root_ps"] + d_layout["pwd"] + ".js"))
+    {
+        string pwd_file1 = d_layout["str"].Replace("\\", "/") + ".js";
+    
+        @:<script type="text/javascript" charset="utf-8" src="@g["url_root"]/layouts/@pwd_file1" /></script>
+    }
+    if (File.Exists(g["path_root_ps"] + g["dir_module"] + "_main.js"))
+    {
+        @:<script type="text/javascript" charset="utf-8" src="@g["url_module"]/_main.js" /></script>
+    }
+    if (File.Exists(g["path_root_ps"] + g["dir_module_skin"] + "_main.js"))
+    {
+        @:<script type="text/javascript" charset="utf-8" src="@g["url_module_skin"]/_main.js" /></script>
+    }
+    if (File.Exists(g["path_root_ps"] + g["dir_module_mode"] + ".js"))
+    {
+        @:<script type="text/javascript" charset="utf-8" src="@Html.Raw(g["url_module_mode"] + ".js")" /></script>
+    }
+    if (File.Exists(g["path_root_ps"] + g["dir_module_admin"] + ".js"))
+    {
+        @:<script type="text/javascript" charset="utf-8" src="@Html.Raw(g["url_module_admin"] + ".js")" /></script>
+    }
+}

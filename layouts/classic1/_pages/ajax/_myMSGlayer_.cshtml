@@ -1,0 +1,190 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: YoonA Shim, TaiHyung Kim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    var g = PageData[0];
+    var my = PageData[1];
+    var s = PageData[2];
+    var r = PageData[3];
+    var _HS = PageData[4];
+    var d_layout = PageData[5];
+
+    var type = Request["type"];
+
+    dynamic date = _System.GetVDate(_HS["timecal"]);
+    
+    int _i = 0;
+    
+    Session["r"] = r;
+}
+
+[RESULT:
+
+@if(type == "1") {
+    <ul>
+    @{
+        DateTime _date = date["totime"].AddDays(-30);
+        string _RCD = _System.GetQuery(AppState["table_bbsdata"].ToString(), "", "mbruid=" + my["uid"] + " AND site=" + s + " AND comment > 0 AND d_regis > '" + _date.ToString("yyyy-MM-dd HH:mm:ss") + "'", "d_comment", "DESC", 0, "5");
+    
+        foreach (var _R in _DB.Query(_RCD))
+        {
+            _i++;
+            string oneline_num = "";
+                        
+            var _C = _DB.GetDbData_M(AppState["table_s_comment"].ToString(), "parent='bbs" + _R["uid"] + "'");
+
+            <li>
+            <a href="@_System.getPostLink(s, _R, g["r"], _HS)">@_R["subject"]</a>
+                    
+            @if(_R["comment"] > 0) {
+                <span class="comment">
+                               
+                @if(_R["oneline"] > 0) {
+                    oneline_num = "+" + _R["oneline"].ToString();
+                }
+                @Html.Raw("(" + _R["comment"] + oneline_num + ")")
+                            
+                </span>
+            }
+                        
+            @if(_System.getNew(_R["d_regis"].ToString(), 24)) {
+                <span class="new">new</span>
+            }
+                        
+            <br />
+            <span class="reply">@Html.Raw("ㄴ" + _C[_HS["nametype"]] + "님이") @_R["d_last"].ToString("yyyy.MM.dd") 일에 남김</span>
+            </li>
+        }    
+    }
+    </ul>
+
+    if(_i == 0) {
+        <div class="none">
+            <span>내 알림이 없습니다.</span>
+            <p>내가 작성한 포스트,댓글의<br />반응을 바로바로 알려드려요</p>
+        </div>                    
+    }
+}
+
+@if(type == "2") {
+    <ul>
+    @{
+        string _RCD1 = _System.GetQuery(AppState["table_s_paper"].ToString(), "", "my_mbruid=" + my["uid"] + " AND d_read=''", "uid", "DESC", 0, "1");
+        int _RCD1_ROW = _DB.GetDbData_Count(AppState["table_s_paper"].ToString(), "my_mbruid=" + my["uid"] + " AND d_read=''");
+    
+        foreach (var _R1 in _DB.Query(_RCD1))
+        {
+            string my_photo = "0.gif";
+            string m_uid = "0";
+            string m_nic = "관리자";
+            
+            if(_R1["by_mbruid"] != "")
+            {
+                var _M = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + _R1["by_mbruid"]);
+                
+                m_uid = _M["memberuid"];
+                
+                if(_M["photo"] != "")
+                {
+                    my_photo = _M["photo"];
+                }
+                
+                if(_M["nic"] != "")
+                {
+                    m_nic = _M["nic"];
+                }
+            }
+                    
+            <li>
+            <div class="pic">
+            <img src="./_var/simbol/@my_photo" width="30" height="30" alt="" class="hand" onclick="getMemberLayer('@m_uid',event);" />
+            </div>
+            <div class="info">
+            <a href="#." onclick="getLayerBox('@g["s"]/?r=@r&system=popup.papersend&iframe=Y&type=send&rcvmbr=@m_uid','메세지 보내기',300,270,event,true,'b');">@_System.Strip_tags(_R1["content"])</a>
+            <span class="reply">@Html.Raw("(" + m_nic + "님이,") @_R1["d_regis"].ToString("yyyy.MM.dd")일에 보냄)</span>
+            </div>
+            <div class="clear"></div>
+            </li>        
+        }
+    }
+    </ul>
+        
+    if(_RCD1_ROW == 0)
+    {
+        <div class="none">
+            <span>새 쪽지가 없습니다.</span>
+            <p>새로 도착한 쪽지를 실시간으로<br />갯수와 함께 알려드려요</p>
+        </div>            
+    }
+}
+
+@if(type == "3") {
+    <table width="100%">
+    @{
+        string _RCD2 = _System.GetQuery(AppState["table_s_friend"].ToString(), "", "by_mbruid=" + my["uid"], "uid", "DESC", 0, "1");
+        int _RCD2_ROW = _DB.GetDbData_Count(AppState["table_s_friend"].ToString(), "my_mbruid=" + my["uid"]);        
+
+        foreach (var _R2 in _DB.Query(_RCD2))
+        {
+            string my_photo = "0.gif";
+            string m_uid = "0";
+            string m_nic = "관리자";
+            
+            var _M2 = _DB.GetDbData_M(AppState["table_s_mbrdata"].ToString(), "memberuid=" + _R2["by_mbruid"]);
+
+            if(_M2["photo"] != "")
+            {
+                my_photo = _M2["photo"];
+            }
+            
+        
+            <tr height="40">
+            <td width="35">
+            <img src="./_var/simbol/@my_photo" width="30" height="30" alt="" class="hand" onclick="getMemberLayer('@m_uid',event);" />
+            </td>
+            <td>
+            <a>@Html.Raw(m_nic + "님")</a>
+            <span style="display:block;font-family:dotum;font-size:11px;color:#888888;padding-top:3px;">(@_R2["d_regis"].ToString("yyyy.MM.dd"))</span>
+            </td>
+            <td width="97">
+            @if(my["uid"] == _M2["memberuid"])
+            {
+                <a class="btnGray01 plusBlue filter"><i><s>나</s></i></a>
+            }
+            else
+            {
+                var ISF = _DB.GetDbData_M(AppState["table_s_friend"].ToString(), "my_mbruid=" + my["uid"] + " AND by_mbruid='" + _M2["memberuid"]);                
+                
+                if(ISF["uid"] != null)
+                {
+                    <a href="#" class="btnGray01 plusBlue hand" onclick="followAction('friend_unfollow','@ISF["uid"]');"><i><s>Unfollow</s></i></a>
+                }
+                else
+                {
+                    var ISF2 = _DB.GetDbData_M(AppState["table_s_friend"].ToString(), "my_mbruid=" + _M2["memberuid"] + " AND by_mbruid='" + my["uid"]);
+                    <a href="#" class="btnGray01 plusBlue hand" onclick="followAction('friend_follow','@ISF2["uid"]');"><i><s>Follow</s></i></a>                    
+                }
+            }
+            </td>
+            </tr>            
+        }
+    }
+    </table>
+
+    if(_RCD2_ROW == 0)
+    {
+        <div class="none">
+            <span>팔로워가 없습니다.</span>
+            <p>@Html.Raw(my[_HS["nametype"]] + "님의 팔로워들을<br />실시간으로 알려드려요")</p>
+        </div>            
+    }
+}
+
+
+:RESULT]
+

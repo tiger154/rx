@@ -1,0 +1,8 @@
+﻿body {margin:0;padding:0;font-size:12px;font-family:gulim;word-wrap:break-word;word-break:break-all;}
+input,select,textarea {font-size:12px;font-family:gulim;}
+img,p {border:0;margin:0;padding:0;}
+form {display:inline;margin:0;padding:0;}
+select {font-size:12px;font-family:dotum;}
+label {cursor:pointer;}
+a {text-decoration:none;color:#000;}
+a:hover {color:#666;}

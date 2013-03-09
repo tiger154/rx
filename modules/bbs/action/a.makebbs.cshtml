@@ -1,0 +1,315 @@
+﻿@{
+    /*****************************************************************
+    //
+    // Programmed by SungHO Kim (Migration: TaiHyung Kim, YoonA Shim)
+    // KimsQ-Rx (for Microsoft ASP.NET WebPages)
+    // Copyrights © Redblock Allrights Reserved. Powered by kimsQ-Rx
+    // Since 2011.
+    //
+    *****************************************************************/
+    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get PageDate
+    //////////////////////////////////////////////////////////////////
+    var my = PageData[0];
+    var g = PageData[1];
+    var s = PageData[2];
+    var referer = PageData[3];
+    var m = PageData[4];
+    var _HM = PageData[5];
+    var _HS = PageData[6];
+    var r = PageData[7];
+    var c = PageData[8];
+    var bid = PageData[9];
+    var date = PageData[10];    
+
+    //////////////////////////////////////////////////////////////////
+    /// Get Request
+    //////////////////////////////////////////////////////////////////
+    var id = Request["id"];
+    var name = Request["name"];
+    var codhead = Request.Unvalidated("codhead");
+    var codfoot = Request.Unvalidated("codfoot");
+    var category = Request["category"];
+    var addinfo = Request["addinfo"];
+    var writecode = Request.Unvalidated("writecode");
+    var inc_head_list = Request["inc_head_list"];
+    var inc_head_view = Request["inc_head_view"];
+    var inc_head_write = Request["inc_head_write"];
+    var inc_foot_list = Request["inc_foot_list"];
+    var inc_foot_view = Request["inc_foot_view"];
+    var inc_foot_write = Request["inc_foot_write"];
+    var backUrl = Request["backUrl"];
+    var layout = Request["layout"];
+    var skin = Request["skin"];
+    var m_skin = Request["m_skin"];
+    var c_skin = Request["c_skin"];
+    var c_mskin = Request["c_mskin"];
+    var c_hidden = Request["c_hidden"];
+    var c_open = Request["c_open"];
+    var perm_g_list = Request["perm_g_list"];
+    var perm_g_view = Request["perm_g_view"];
+    var perm_g_write = Request["perm_g_write"];
+    var perm_l_list = Request["perm_l_list"];
+    var perm_l_view = Request["perm_l_view"];
+    var perm_l_write = Request["perm_l_write"];
+    var admin = Request["admin"];
+    var hitcount = Request["hitcount"];
+    var recnum = Request["recnum"];
+    var sbjcut = Request["sbjcut"];
+    var newtime = Request["newtime"];
+    var rss = Request["rss"];
+    var sosokmenu = Request["sosokmenu"];
+    var point1 = Request["point1"];
+    var point2 = Request["point2"];
+    var display = Request["display"];
+    var hidelist = Request["hidelist"];
+    var snsconnect = Request["snsconnect"];
+    var file = Request["file"];
+    var uploadedFile = Request.Files;
+    
+    @_System.checkAdmin(my["admin"], 0)
+    
+    dynamic R = null;
+
+    if (id != null && id.Trim() != "")
+    {
+        id = id.Trim();
+    }
+    else
+    {
+        id = bid;
+    }
+
+    if (name != null && name != "")
+    {
+        name = name.Trim();
+    }
+    if (codhead != null && codhead != "")
+    {
+        codhead = codhead.Trim();
+    }
+    if (codfoot != null && codfoot != "")
+    {
+        codfoot = codfoot.Trim();
+    }
+    if (category != null && category != "")
+    {
+        category = category.Trim();
+    }
+    if (addinfo != null && addinfo != "")
+    {
+        addinfo = addinfo.Trim();
+    }
+    if (writecode != null && writecode != "")
+    {
+        writecode = writecode.Trim();
+    }
+
+    string puthead = inc_head_list + inc_head_view + inc_head_write;
+    string putfoot = inc_foot_list + inc_foot_view + inc_foot_write;
+
+    if (name == null || name == "")
+    {
+        @_System.getLink("", "", "게시판이름을 입력해 주세요.", "")
+        return;
+    }
+    if (id == null || id == "")
+    {
+        @_System.getLink("", "", "아이디를 입력해 주세요.", "")
+        return;
+    }
+
+    if (bid != null && bid != "" && bid != "0")
+    {
+        R = _DB.Get_module_data(AppState["table_" + m + "list"].ToString(), "id", bid);
+
+        string imghead = R["imghead"];
+        string imgfoot = R["imgfoot"];
+
+        string[] imgset = { "head", "foot" };
+        string[] userimgSet = { R["imghead"], R["imgfoot"] };
+
+        if (file != null && file != "")
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                if (uploadedFile[i] == null || uploadedFile[i].ContentLength == 0)
+                {
+                    continue;
+                }
+                string realname = Path.GetFileName(uploadedFile[i].FileName);
+
+                string fileExt = _System.getExt(realname).ToLower();
+
+                if (fileExt == "jpeg")
+                {
+                    fileExt = "jpg";
+                }
+
+
+                userimgSet[i] = R["id"].ToString() + "_" + imgset[i] + "." + fileExt;
+                string saveFile = g["path_root_ps"] + g["dir_module"] + "\\var\\files\\" + userimgSet[i];
+
+                if (!("[gif][jpg][png][swf]".Contains(fileExt)))
+                {
+                    @_System.getLink("", "", "헤더/풋터파일은 gif/jpg/png/swf 파일만 등록할 수 있습니다.", "")
+                    return;
+                }
+
+                if (!Directory.Exists(g["path_root_ps"] + g["dir_module"] + "\\var\\files"))
+                {
+                    Directory.CreateDirectory(g["path_root_ps"] + g["dir_module"] + "\\var\\files");
+                }
+
+                uploadedFile[i].SaveAs(saveFile);
+            }
+        }
+
+        imghead = userimgSet[0];
+        imgfoot = userimgSet[1];
+
+        string QVAL = "name='" + name + "',category='" + category + "',imghead='" + imghead + "',imgfoot='" + imgfoot + "',puthead='" + puthead + "',putfoot='" + putfoot + "',addinfo='" + addinfo + "',writecode='" + writecode + "'";
+        string UPADATE_MLIST_SQL = "UPDATE " + AppState["table_" + m + "list"] + " SET " + QVAL + " WHERE id='" + bid + "'";
+
+        @_DB.Execute(UPADATE_MLIST_SQL);
+
+        string update_VAL = "layout='" + layout + "', skin='" + skin + "', m_skin='" + m_skin + "', c_skin='" + c_skin + "', c_mskin='" + c_mskin + "', c_hidden='" + c_hidden + "', c_open='" + c_open + "', perm_g_list='" + perm_g_list
+           + "', perm_g_view='" + perm_g_view + "', perm_g_write='" + perm_g_write + "', perm_l_list=" + Convert.ToInt32(perm_l_list) + ", perm_l_view=" + Convert.ToInt32(perm_l_view) + ", perm_l_write=" + Convert.ToInt32(perm_l_write)
+           + ", admin='" + admin + "', hitcount=" + Convert.ToInt32(hitcount) + ", recnum=" + Convert.ToInt32(recnum) + ", sbjcut="
+           + Convert.ToInt32(sbjcut) + ", newtime=" + Convert.ToInt32(newtime) + ",rss='" + rss + "', sosokmenu='" + sosokmenu + "', point1=" + Convert.ToInt32(point1) + ", point2=" + Convert.ToInt32(point2)
+           + ", display='" + display + "', hidelist='" + hidelist + "', snsconnect='" + Convert.ToInt32(snsconnect) + "'";
+        string UPDATE_BBSENV = "UPDATE " + AppState["table_code_d_bbsenv"] + " SET " + update_VAL + " WHERE id='" + bid + "'";
+
+        @_DB.Execute(UPDATE_BBSENV);
+
+        string vfile = g["path_root_ps"] + "\\modules\\" + m + "\\var\\code\\" + R["id"];
+
+
+        if (!Directory.Exists(g["path_root_ps"] + "\\modules\\" + m + "\\var\\code"))
+        {
+            Directory.CreateDirectory(g["path_root_ps"] + "\\modules\\" + m + "\\var\\code");
+        }
+
+        if (codhead != null && codhead != "")
+        {
+            File.WriteAllText(vfile + ".header.cshtml", codhead);
+        }
+        else
+        {
+            if (File.Exists(vfile + ".header.cshtml"))
+            {
+                File.Delete(vfile + ".header.cshtml");
+            }
+        }
+
+        if (codfoot != null && codfoot.Trim() != "")
+        {
+            File.WriteAllText(vfile + ".footer.cshtml", _System.stripslashes(codfoot).Trim());
+        }
+        else
+        {
+            if (File.Exists(vfile + ".footer.cshtml"))
+            {
+                File.Delete(vfile + ".footer.cshtml");
+            }
+        }
+    }
+    else
+    {
+        if (_DB.GetDbData_M(AppState["table_" + m + "list"], "id='" + id + "'") != null)
+        {
+            @_System.getLink("", "", "이미 같은 아이디의 게시판이 존재합니다.", "")
+            return;
+        }
+
+        string[] imgset = { "head", "foot" };
+        string[] userimgSet = { "", "" };
+
+
+        if (file != null && file != "")
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                if (uploadedFile[i] == null || uploadedFile[i].ContentLength == 0)
+                {
+                    continue;
+                }
+                string realname = Path.GetFileName(uploadedFile[i].FileName);
+                string fileExt = _System.getExt(realname).ToLower();
+
+                if (fileExt == "jpeg")
+                {
+                    fileExt = "jpg";
+                }
+
+                userimgSet[i] = id + "_" + imgset[i] + "." + fileExt;
+                string saveFile = g["path_root_ps"] + g["dir_module"] + "\\var\\files\\" + userimgSet[i];
+
+                if (!("[gif][jpg][png][swf]".Contains(fileExt)))
+                {
+                    @_System.getLink("", "", "헤더/풋터파일은 gif/jpg/png/swf 파일만 등록할 수 있습니다.", "")
+                    return;
+                }
+                uploadedFile[i].SaveAs(saveFile);
+            }
+        }
+
+
+        string imghead = userimgSet[0];
+        string imgfoot = userimgSet[1];
+
+        int Ugid = _DB.GetDbData_Count(AppState["table_" + m + "list"], "") + 1;
+
+        string QKEY = "gid,id,name,category,num_r,d_last,d_regis,imghead,imgfoot,codehead,codefoot,puthead,putfoot,addinfo,writecode";
+        string QVAL = "'" + Ugid + "','" + id + "','" + name + "','" + category + "','0','','" + date["insert"] + "','" + imghead + "','" + imgfoot + "','" + codhead + "','" + codfoot + "','" + puthead + "','" + putfoot + "','" + addinfo + "','" + writecode + "'";
+        string fdset_QKEY = "id,layout,skin,m_skin,c_skin,c_mskin,c_hidden,c_open,perm_g_list,perm_g_view,perm_g_write,perm_l_list,perm_l_view,perm_l_write,admin,hitcount,recnum,sbjcut,newtime,rss,sosokmenu,point1,point2,display,hidelist,snsconnect";
+        string fdset_QVAL = "'" + id + "','" + layout + "','" + skin + "','" + m_skin + "','" + c_skin + "','" + c_mskin + "','" + c_hidden + "','" + c_open + "','" + perm_g_list + "','" + perm_g_view + "','" + perm_g_write + "','" + Convert.ToInt32(perm_l_list) + "','" + Convert.ToInt32(perm_l_view) + "','" + Convert.ToInt32(perm_l_write)
+            + "','" + admin + "','" + Convert.ToInt32(hitcount) + "','" + Convert.ToInt32(recnum) + "','"
+            + Convert.ToInt32(sbjcut) + "','" + Convert.ToInt32(newtime) + "','" + rss + "','" + sosokmenu + "','" + Convert.ToInt32(point1) + "','" + Convert.ToInt32(point2) + "','" + display + "','" + hidelist + "','" + Convert.ToInt32(snsconnect) + "'";
+        string INSERT_MLIST_SQL = "INSERT INTO " + AppState["table_" + m + "list"] + " (" + QKEY + ") VALUES (" + QVAL + ")";
+        string INSERT_BBSENV = "INSERT INTO " + AppState["table_code_d_bbsenv"] + " (" + fdset_QKEY + ") VALUES (" + fdset_QVAL + ")";
+
+        @_DB.Execute(INSERT_MLIST_SQL);
+        @_DB.Execute(INSERT_BBSENV);
+
+        string mfile = g["path_root_ps"] + "\\modules\\" + m + "\\var\\code\\" + id;
+
+        if (!Directory.Exists(g["path_root_ps"] + "\\modules\\" + m + "\\var\\code"))
+        {
+            Directory.CreateDirectory(g["path_root_ps"] + "\\modules\\" + m + "\\var\\code");
+        }
+        if (codhead != null && codhead.Trim() != "")
+        {
+            File.WriteAllText(mfile + ".header.cshtml", _System.stripslashes(codhead).Trim());
+        }
+        if (codfoot != null && codfoot.Trim() != "")
+        {
+            File.WriteAllText(mfile + ".footer.cshtml", _System.stripslashes(codfoot).Trim());
+        }
+    }
+
+    string backString = "";
+    string bidString = "";
+
+    if (backUrl != null && backUrl != "")
+    {
+        backString = backUrl + "&id=" + id;
+    }
+    else
+    {
+        backString = "reload";
+    }
+    if (bid != null && bid != "")
+    {
+        bidString = "게시판설정이 변경되었습니다.";
+    }
+    else
+    {
+        bidString = "새 게시판이 만들어졌습니다.";
+    }
+    
+    @_System.getLink(backString, "parent.", bidString, "")
+    return;
+}
